@@ -3,7 +3,7 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { formatRupiah } from '@/lib/utils'
 import Link from 'next/link'
 import { Search, Filter, Download, Eye, ChevronLeft, ChevronRight, Package, Truck, MessageCircle } from 'lucide-react'
-import OrderRowActions from '@/components/admin/OrderRowActions'
+import OrderTableClient from '@/components/admin/OrderTableClient'
 
 export const metadata: Metadata = { title: 'Orders' }
 export const revalidate = 0
@@ -143,86 +143,8 @@ export default async function OrdersPage({
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-gray-50 border-b border-gray-100">
-                {['Order', 'Nama Pemesan', 'WhatsApp', 'Total', 'Metode', 'Pembayaran', 'Status', 'Tanggal', 'Aksi'].map(h => (
-                  <th key={h} className="px-4 py-3 text-left text-xs font-display font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {(orders ?? []).map((order: any) => {
-                const waUrl = formatWaLink(order.whatsapp, order.order_number, order.full_name)
-                const isPickup = order.fulfillment_method === 'PICKUP'
-
-                return (
-                  <tr key={order.order_number} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-3 font-display font-bold text-sm text-gray-900 whitespace-nowrap">
-                      {order.order_number}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="text-sm font-semibold text-gray-800">{order.full_name}</div>
-                      <div className="text-xs text-gray-500">Stambuk: {order.stambuk}</div>
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <a
-                        href={waUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-green-50 hover:bg-green-100 text-green-700 text-xs font-semibold border border-green-200 transition-colors"
-                        title="Chat via WhatsApp"
-                      >
-                        <MessageCircle className="w-3.5 h-3.5" />
-                        {order.whatsapp}
-                      </a>
-                    </td>
-                    <td className="px-4 py-3 font-semibold text-sm whitespace-nowrap" style={{ color: 'var(--gontor-green)' }}>
-                      {formatRupiah(Number(order.total_amount))}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-display font-bold border ${
-                        isPickup
-                          ? 'bg-green-50 text-green-800 border-green-200'
-                          : 'bg-blue-50 text-blue-800 border-blue-200'
-                      }`}>
-                        {isPickup ? <Package className="w-3 h-3 text-green-600" /> : <Truck className="w-3 h-3 text-blue-600" />}
-                        {isPickup ? 'Ambil Stand' : 'Kirim Alamat'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <span className={`text-xs px-2 py-0.5 rounded-full border font-semibold ${statusCls[order.payment_status] ?? 'badge-unpaid'}`}>
-                        {paymentLabels[order.payment_status]}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <span className={`text-xs px-2 py-0.5 rounded-full border font-semibold ${statusCls[order.order_status] ?? 'badge-unpaid'}`}>
-                        {statusLabels[order.order_status]}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">
-                      {new Date(order.created_at).toLocaleDateString('id-ID')}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <OrderRowActions order={order} />
-                    </td>
-                  </tr>
-                )
-              })}
-              {(orders ?? []).length === 0 && (
-                <tr>
-                  <td colSpan={9} className="px-4 py-16 text-center text-gray-400 text-sm">
-                    Tidak ada order ditemukan
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden relative pb-16">
+        <OrderTableClient orders={orders || []} />
 
         {/* Pagination */}
         {totalPages > 1 && (
