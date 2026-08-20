@@ -49,6 +49,14 @@ export default function ShippingLabelModal({ order, isOpen, onClose }: ShippingL
     window.print()
   }
 
+  // 2. Clean up Address
+  // The database saves shipping_address with [Kurir: ...] and [Map Pin: ...] appended.
+  // We want to strip those out for the sticker.
+  const cleanAddressText = fullAddressText
+    .replace(/\[Kurir:.*?\]/gi, '')
+    .replace(/\[Map Pin:.*?\]/gi, '')
+    .trim()
+
   // Helper to split text into lines for SVG
   const wrapSvgText = (text: string, maxCharsPerLine = 75) => {
     const words = text.split(' ')
@@ -69,7 +77,7 @@ export default function ShippingLabelModal({ order, isOpen, onClose }: ShippingL
 
   // Export Clean Formal SVG File for Canva / Corel / Illustrator (A5 Landscape Format)
   const handleExportSVG = () => {
-    const addressLines = wrapSvgText(fullAddressText, 75)
+    const addressLines = wrapSvgText(cleanAddressText, 75)
     const addressTspans = addressLines.map((line, idx) => 
       `<tspan x="25" dy="${idx === 0 ? 0 : 18}">${line}</tspan>`
     ).join('')
@@ -77,8 +85,8 @@ export default function ShippingLabelModal({ order, isOpen, onClose }: ShippingL
     const formattedItemsSvg = items.length > 0
       ? items.slice(0, 10).map((item: any, idx: number) => {
           const qty = item.quantity || 1
-          const name = item.product_name || 'Merchandise'
-          const variant = item.variant_name ? ` (${item.variant_name})` : ''
+          const name = item.item_name_snapshot || item.product_name || 'Merchandise'
+          const variant = item.variant_name_snapshot || item.variant_name ? ` (${item.variant_name_snapshot || item.variant_name})` : ''
           return `<text x="560" y="${280 + idx * 18}" fill="#111827" font-size="12" font-weight="600">• ${qty}x ${name}${variant}</text>`
         }).join('\n')
       : `<text x="560" y="280" fill="#111827" font-size="12" font-weight="600">• Merchandise Reunion Kit 100 Tahun Gontor</text>`
@@ -236,14 +244,14 @@ export default function ShippingLabelModal({ order, isOpen, onClose }: ShippingL
             {/* Main Content: 2 Columns */}
             <div className="flex gap-3 flex-1 min-h-0">
               
-              {/* Left Column: Recipient (Takes more width) */}
-              <div className="w-2/3 border-2 border-black rounded-xs bg-white flex flex-col overflow-hidden">
+              {/* Left Column: Recipient (Takes more width, use min-w-0 to prevent flex blowout) */}
+              <div className="w-2/3 min-w-0 border-2 border-black rounded-xs bg-white flex flex-col overflow-hidden">
                 <div className="flex items-stretch border-b border-gray-300">
-                  <div className="flex-1 p-3 flex flex-col gap-1.5">
+                  <div className="flex-1 min-w-0 p-3 flex flex-col gap-1.5">
                     <p className="text-[11px] font-bold text-green-900 font-display uppercase tracking-wider">
                       PENERIMA (RECIPIENT):
                     </p>
-                    <p className="text-lg font-bold text-gray-900">
+                    <p className="text-lg font-bold text-gray-900 truncate">
                       {recipientName} <span className="text-sm text-gray-600 font-normal">(Stambuk: {stambuk})</span>
                     </p>
                     <p className="text-base font-bold text-green-800">
@@ -262,32 +270,32 @@ export default function ShippingLabelModal({ order, isOpen, onClose }: ShippingL
                     </span>
                   </div>
                 </div>
-                <div className="p-3 flex-1">
+                <div className="p-3 flex-1 min-h-0 overflow-hidden">
                   <p className="text-sm font-semibold text-gray-900 mb-1">📍 Alamat Pengiriman Lengkap:</p>
-                  <p className="font-bold text-gray-900 text-base leading-snug whitespace-pre-wrap">{fullAddressText}</p>
+                  <p className="font-bold text-gray-900 text-base leading-snug whitespace-pre-wrap break-words">{cleanAddressText}</p>
                 </div>
               </div>
 
               {/* Right Column: Sender & Items */}
-              <div className="w-1/3 flex flex-col gap-3">
+              <div className="w-1/3 min-w-0 flex flex-col gap-3">
                 {/* Sender Box */}
-                <div className="p-3 rounded-xs border-2 border-black bg-white flex flex-col gap-0.5">
+                <div className="p-3 rounded-xs border-2 border-black bg-white flex flex-col gap-0.5 shrink-0">
                   <p className="text-[11px] font-bold text-gray-700 uppercase tracking-wider font-display">PENGIRIM (SENDER):</p>
-                  <p className="font-bold text-gray-900 text-sm">Panitia 100 Tahun Gontor</p>
+                  <p className="font-bold text-gray-900 text-sm truncate">Panitia 100 Tahun Gontor</p>
                   <p className="text-gray-700 text-xs leading-tight">Pondok Modern Darussalam Gontor, Ponorogo, Jawa Timur (63411)</p>
                 </div>
 
                 {/* Package Items */}
-                <div className="flex-1 p-3 rounded-xs border-2 border-black bg-white flex flex-col overflow-hidden">
-                  <p className="text-[11px] font-bold text-gray-700 uppercase tracking-wider font-display mb-1.5">ISI PAKET (ITEMS):</p>
+                <div className="flex-1 min-h-0 p-3 rounded-xs border-2 border-black bg-white flex flex-col overflow-hidden">
+                  <p className="text-[11px] font-bold text-gray-700 uppercase tracking-wider font-display mb-1.5 shrink-0">ISI PAKET (ITEMS):</p>
                   <ul className="space-y-1 text-sm text-gray-900 font-semibold border-t border-gray-200 pt-2 flex-1 overflow-y-auto pr-1 custom-scrollbar">
                     {items.length > 0 ? (
                       items.map((it: any, i: number) => {
                         const qty = it.quantity || 1
-                        const name = it.product_name || 'Merchandise'
-                        const variant = it.variant_name ? ` (${it.variant_name})` : ''
+                        const name = it.item_name_snapshot || it.product_name || 'Merchandise'
+                        const variant = it.variant_name_snapshot || it.variant_name ? ` (${it.variant_name_snapshot || it.variant_name})` : ''
                         return (
-                          <li key={i} className="leading-tight">
+                          <li key={i} className="leading-tight break-words">
                             • {qty}x {name}{variant}
                           </li>
                         )
