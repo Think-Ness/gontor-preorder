@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { MessageCircle, Package, Truck, CheckSquare, Square, ChevronDown, Loader2 } from 'lucide-react'
+import { MessageCircle, Package, Truck, ChevronDown, Loader2, CreditCard, Clock, Layers } from 'lucide-react'
 import { formatRupiah } from '@/lib/utils'
 import OrderRowActions from '@/components/admin/OrderRowActions'
 
@@ -18,10 +18,16 @@ const paymentLabels: Record<string, string> = {
 }
 
 const statusCls: Record<string, string> = {
-  PAYMENT_REVIEW: 'badge-review', PAID: 'badge-paid', PROCESSING: 'bg-blue-50 text-blue-700 border-blue-200',
-  READY_FOR_PICKUP: 'bg-purple-50 text-purple-700 border-purple-200', SHIPPED: 'bg-indigo-50 text-indigo-700 border-indigo-200',
-  COMPLETED: 'badge-paid', REJECTED: 'badge-rejected', CANCELLED: 'badge-unpaid', DRAFT: 'badge-unpaid',
-  PROOF_UPLOADED: 'badge-scheduled',
+  PAYMENT_REVIEW: 'bg-yellow-50 text-yellow-700 border-yellow-200', 
+  PAID: 'bg-emerald-50 text-emerald-700 border-emerald-200', 
+  PROCESSING: 'bg-blue-50 text-blue-700 border-blue-200',
+  READY_FOR_PICKUP: 'bg-purple-50 text-purple-700 border-purple-200', 
+  SHIPPED: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+  COMPLETED: 'bg-emerald-50 text-emerald-700 border-emerald-200', 
+  REJECTED: 'bg-red-50 text-red-700 border-red-200', 
+  CANCELLED: 'bg-gray-100 text-gray-500 border-gray-200', 
+  DRAFT: 'bg-gray-100 text-gray-500 border-gray-200',
+  PROOF_UPLOADED: 'bg-amber-50 text-amber-700 border-amber-200',
 }
 
 function formatWaLink(phone: string, orderNumber: string, name: string) {
@@ -70,7 +76,15 @@ export default function OrderTableClient({ orders }: { orders: any[] }) {
 
   const handleMouseEnter = (orderNumber: string) => {
     if (isDragging) {
-      toggleOrder(orderNumber, true) // Always select when dragging over
+      toggleOrder(orderNumber, true)
+    }
+  }
+
+  const handleSelectAll = () => {
+    if (selectedOrders.size === orders.length) {
+      setSelectedOrders(new Set())
+    } else {
+      setSelectedOrders(new Set(orders.map(o => o.order_number)))
     }
   }
 
@@ -101,68 +115,82 @@ export default function OrderTableClient({ orders }: { orders: any[] }) {
     }
   }
 
+  const isAllSelected = orders.length > 0 && selectedOrders.size === orders.length
+  const isSomeSelected = selectedOrders.size > 0 && selectedOrders.size < orders.length
+
   return (
     <>
       {/* Floating Bulk Action Bar */}
       {selectedOrders.size > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-5 w-[92%] md:w-auto">
-          <div className="bg-gray-900 text-white rounded-2xl p-3 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-3 md:gap-4">
-            <div className="px-3 flex-shrink-0">
-              <span className="font-bold">{selectedOrders.size}</span> terpilih
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-6 w-[92%] max-w-3xl">
+          <div className="bg-white/80 backdrop-blur-xl border border-gray-200/60 p-4 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex flex-col md:flex-row items-center justify-between gap-4 md:gap-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-700 shadow-sm border border-green-200">
+                <Layers className="w-5 h-5" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-gray-900 font-black text-lg leading-none">{selectedOrders.size} Order</span>
+                <span className="text-gray-500 text-xs font-semibold uppercase tracking-wider">Terpilih</span>
+              </div>
             </div>
-            <div className="hidden md:block w-px h-6 bg-gray-700"></div>
-            <div className="flex w-full md:w-auto items-center gap-2">
-              <select 
-                value={bulkStatus}
-                onChange={e => setBulkStatus(e.target.value)}
-                className="flex-1 md:flex-none bg-gray-800 border border-gray-700 text-sm rounded-lg px-3 py-2 outline-none focus:border-gray-500"
-              >
-                <option value="">Pilih Status Baru...</option>
-                <option value="PROCESSING">Processing</option>
-                <option value="READY_FOR_PICKUP">Ready Pickup</option>
-                <option value="SHIPPED">Shipped</option>
-                <option value="COMPLETED">Selesai</option>
-              </select>
+            
+            <div className="hidden md:block w-px h-10 bg-gray-200"></div>
+            
+            <div className="flex w-full md:w-auto items-center gap-3">
+              <div className="relative flex-1 md:w-56">
+                <select 
+                  value={bulkStatus}
+                  onChange={e => setBulkStatus(e.target.value)}
+                  className="w-full appearance-none bg-gray-50 border border-gray-200 text-gray-900 font-semibold text-sm rounded-xl px-4 py-3 outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100 transition-all cursor-pointer"
+                >
+                  <option value="" disabled>Pilih Progress Baru...</option>
+                  <option value="PROCESSING">Status: Processing</option>
+                  <option value="READY_FOR_PICKUP">Status: Ready Pickup</option>
+                  <option value="SHIPPED">Status: Shipped</option>
+                  <option value="COMPLETED">Status: Selesai</option>
+                </select>
+                <ChevronDown className="w-4 h-4 text-gray-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
               <button 
                 onClick={handleBulkUpdate}
                 disabled={!bulkStatus || isUpdating}
-                className="bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white text-sm font-bold px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
+                className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 disabled:opacity-50 text-white font-black px-6 py-3 rounded-xl shadow-lg shadow-green-600/30 transition-all flex items-center justify-center gap-2 whitespace-nowrap transform active:scale-95"
               >
-                {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Update'}
+                {isUpdating ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Terapkan Update'}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      <div className="overflow-x-auto select-none" style={{ userSelect: isDragging ? 'none' : 'auto' }}>
-        <table className="w-full">
+      <div className="overflow-x-auto select-none rounded-xl" style={{ userSelect: isDragging ? 'none' : 'auto' }}>
+        <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-gray-50 border-b border-gray-100">
-              <th className="px-4 py-3 text-left w-10">
-                {/* Select All Checkbox */}
-                <button 
-                  onClick={() => {
-                    if (selectedOrders.size === orders.length) setSelectedOrders(new Set())
-                    else setSelectedOrders(new Set(orders.map(o => o.order_number)))
-                  }}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  {selectedOrders.size === orders.length && orders.length > 0 ? (
-                    <CheckSquare className="w-5 h-5 text-green-600" />
-                  ) : (
-                    <Square className="w-5 h-5" />
-                  )}
-                </button>
+            <tr className="bg-gray-50/80 border-b border-gray-100 uppercase tracking-widest text-[10px] font-black text-gray-500">
+              <th className="px-5 py-4 w-12 text-center">
+                <input 
+                  type="checkbox" 
+                  className="w-4 h-4 text-green-600 rounded border-gray-300 focus:ring-green-500 cursor-pointer transition-all"
+                  checked={isAllSelected}
+                  ref={el => { if (el) el.indeterminate = isSomeSelected }}
+                  onChange={handleSelectAll}
+                />
               </th>
-              {['Order', 'Nama Pemesan', 'WhatsApp', 'Total', 'Metode', 'Pembayaran', 'Status', 'Tanggal', 'Aksi'].map(h => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-display font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                  {h}
-                </th>
-              ))}
+              <th className="px-4 py-4 whitespace-nowrap">Order ID & Pemesan</th>
+              <th className="px-4 py-4 whitespace-nowrap">Metode Pengiriman</th>
+              <th className="px-4 py-4 whitespace-nowrap text-right">Pembayaran & Total</th>
+              <th className="px-4 py-4 whitespace-nowrap text-center">Progress (Status)</th>
+              <th className="px-4 py-4 whitespace-nowrap text-center">Aksi</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50">
+          <tbody className="divide-y divide-gray-100 bg-white">
+            {orders.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="py-12 text-center text-gray-400 text-sm font-medium">
+                  Tidak ada pesanan yang sesuai filter.
+                </td>
+              </tr>
+            ) : null}
             {orders.map((order: any) => {
               const waUrl = formatWaLink(order.whatsapp, order.order_number, order.full_name)
               const isPickup = order.fulfillment_method === 'PICKUP'
@@ -171,78 +199,72 @@ export default function OrderTableClient({ orders }: { orders: any[] }) {
               return (
                 <tr 
                   key={order.order_number} 
-                  className={`transition-colors ${isSelected ? 'bg-green-50/50' : 'hover:bg-gray-50'}`}
+                  className={`transition-colors ${isSelected ? 'bg-green-50/40' : 'hover:bg-gray-50/60'}`}
                 >
                   <td 
-                    className="px-4 py-3 cursor-pointer"
+                    className="px-5 py-4 text-center cursor-pointer"
                     onMouseDown={() => handleMouseDown(order.order_number)}
                     onMouseEnter={() => handleMouseEnter(order.order_number)}
                   >
-                    {isSelected ? (
-                      <CheckSquare className="w-5 h-5 text-green-600 pointer-events-none" />
-                    ) : (
-                      <Square className="w-5 h-5 text-gray-300 pointer-events-none" />
+                    <input 
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => toggleOrder(order.order_number)}
+                      className="w-4 h-4 text-green-600 rounded border-gray-300 focus:ring-green-500 cursor-pointer transition-all"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </td>
+                  <td className="px-4 py-4">
+                    <div className="font-display font-black text-green-700 text-sm mb-1">{order.order_number}</div>
+                    <div className="font-bold text-gray-900 text-sm flex items-center gap-1.5">
+                      {order.full_name}
+                    </div>
+                    <div className="text-xs text-gray-500 font-semibold mt-0.5">Stambuk: {order.stambuk}</div>
+                  </td>
+                  <td className="px-4 py-4">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-gray-600 mb-1">
+                      {isPickup ? <Package className="w-3.5 h-3.5 text-amber-600" /> : <Truck className="w-3.5 h-3.5 text-blue-600" />}
+                      {isPickup ? 'AMBIL DI STAND' : 'KIRIM ALAMAT'}
+                    </div>
+                    {!isPickup && (
+                      <div className="text-xs text-gray-500 line-clamp-1 max-w-[200px]" title={order.shipping_city}>
+                        {order.shipping_city}
+                      </div>
                     )}
                   </td>
-                  <td className="px-4 py-3 font-display font-bold text-sm text-gray-900 whitespace-nowrap">
-                    {order.order_number}
+                  <td className="px-4 py-4 text-right">
+                    <div className="font-black text-gray-900 text-sm mb-1">{formatRupiah(order.total_amount)}</div>
+                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded border text-[10px] font-bold uppercase tracking-wider bg-gray-50 text-gray-600 border-gray-200">
+                      <CreditCard className="w-3 h-3" />
+                      {paymentLabels[order.payment_status] || order.payment_status}
+                    </div>
                   </td>
-                  <td className="px-4 py-3">
-                    <div className="text-sm font-semibold text-gray-800">{order.full_name}</div>
-                    <div className="text-xs text-gray-500">Stambuk: {order.stambuk}</div>
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <a
-                      href={waUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-green-50 hover:bg-green-100 text-green-700 text-xs font-semibold border border-green-200 transition-colors"
-                      title="Chat via WhatsApp"
-                      onClick={e => e.stopPropagation()}
-                    >
-                      <MessageCircle className="w-3.5 h-3.5" />
-                      {order.whatsapp}
-                    </a>
-                  </td>
-                  <td className="px-4 py-3 font-semibold text-sm whitespace-nowrap" style={{ color: 'var(--gontor-green)' }}>
-                    {formatRupiah(Number(order.total_amount))}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-display font-bold border ${
-                      isPickup
-                        ? 'bg-green-50 text-green-800 border-green-200'
-                        : 'bg-blue-50 text-blue-800 border-blue-200'
-                    }`}>
-                      {isPickup ? <Package className="w-3 h-3 text-green-600" /> : <Truck className="w-3 h-3 text-blue-600" />}
-                      {isPickup ? 'Ambil Stand' : 'Kirim Alamat'}
+                  <td className="px-4 py-4 text-center">
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wide border ${statusCls[order.order_status] || 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+                      {statusLabels[order.order_status] || order.order_status}
                     </span>
+                    <div className="text-[10px] text-gray-400 font-medium mt-1.5 flex items-center justify-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {new Date(order.created_at).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}
+                    </div>
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <span className={`text-xs px-2 py-0.5 rounded-full border font-semibold ${statusCls[order.payment_status] ?? 'badge-unpaid'}`}>
-                      {paymentLabels[order.payment_status]}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <span className={`text-xs px-2 py-0.5 rounded-full border font-semibold ${statusCls[order.order_status] ?? 'badge-unpaid'}`}>
-                      {statusLabels[order.order_status]}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">
-                    {new Date(order.created_at).toLocaleDateString('id-ID')}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap" onMouseDown={e => e.stopPropagation()}>
-                    <OrderRowActions order={order} />
+                  <td className="px-4 py-4 text-center">
+                    <div className="flex items-center justify-center gap-2">
+                      <a
+                        href={waUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-green-50 hover:bg-green-100 text-green-700 transition-colors"
+                        title="Chat WA"
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                      </a>
+                      <OrderRowActions order={order} />
+                    </div>
                   </td>
                 </tr>
               )
             })}
-            {orders.length === 0 && (
-              <tr>
-                <td colSpan={10} className="px-4 py-16 text-center text-gray-400 text-sm">
-                  Tidak ada order ditemukan
-                </td>
-              </tr>
-            )}
           </tbody>
         </table>
       </div>
