@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { EventSettings, PreorderStatus, Product, Package, PaymentMethod, CartItem } from '@/types'
 import { useCart } from '@/hooks/useCart'
 import { useCheckoutDraft } from '@/hooks/useCheckoutDraft'
@@ -46,10 +46,15 @@ export default function OrderFlow({
   const [showResume, setShowResume] = useState(false)
   const router = useRouter()
 
+  const hasCheckedResume = useRef(false)
+
   // Check for existing draft on load
   useEffect(() => {
-    if (isLoaded && draft && draft.stambuk) {
-      setShowResume(true)
+    if (isLoaded && !hasCheckedResume.current) {
+      hasCheckedResume.current = true
+      if (draft && draft.stambuk) {
+        setShowResume(true)
+      }
     }
   }, [isLoaded, draft])
 
