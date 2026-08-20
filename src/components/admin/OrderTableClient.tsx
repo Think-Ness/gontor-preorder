@@ -118,8 +118,6 @@ export default function OrderTableClient({ orders }: { orders: any[] }) {
                 className="bg-gray-800 border border-gray-700 text-sm rounded-lg px-3 py-2 outline-none focus:border-gray-500"
               >
                 <option value="">Pilih Status Baru...</option>
-                <option value="PAYMENT_REVIEW">Payment Review</option>
-                <option value="PAID">Paid</option>
                 <option value="PROCESSING">Processing</option>
                 <option value="READY_FOR_PICKUP">Ready Pickup</option>
                 <option value="SHIPPED">Shipped</option>
