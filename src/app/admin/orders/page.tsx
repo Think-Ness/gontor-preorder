@@ -51,30 +51,7 @@ export default async function OrdersPage({
 
   let query = supabase
     .from('orders')
-    .select(`
-      order_number,
-      full_name,
-      stambuk,
-      whatsapp,
-      total_amount,
-      fulfillment_method,
-      payment_status,
-      order_status,
-      created_at,
-      shipping_address,
-      shipping_village,
-      shipping_district,
-      shipping_city,
-      shipping_province,
-      shipping_postal_code,
-      shipping_courier,
-      order_items (
-        quantity,
-        product_name,
-        variant_name,
-        price
-      )
-    `, { count: 'exact' })
+    .select('*, order_items(*)', { count: 'exact' })
     .order('created_at', { ascending: false })
     .range(from, from + PAGE_SIZE - 1)
 
