@@ -16,7 +16,7 @@ export default function ShippingLabelA5({ order }: ShippingLabelProps) {
   // Generate QR code URL
   // Domain is hardcoded for now or we can just use order_number for track
   const qrData = encodeURIComponent(`Order: ${order.order_number}`)
-  const qrUrl = \`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=\${qrData}\`
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${qrData}`
 
   return (
     <div className="w-[210mm] h-[148mm] bg-white text-black p-8 relative shadow-lg print:shadow-none overflow-hidden"
@@ -89,7 +89,7 @@ export default function ShippingLabelA5({ order }: ShippingLabelProps) {
           <ul className="space-y-1.5 columns-2 gap-x-6">
             {order.items?.map((item, idx) => {
               const displayName = item.variant_name_snapshot 
-                ? \`\${item.item_name_snapshot} - \${item.variant_name_snapshot}\` 
+                ? `${item.item_name_snapshot} - ${item.variant_name_snapshot}` 
                 : item.item_name_snapshot;
                 
               return (
