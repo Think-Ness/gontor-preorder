@@ -46,6 +46,7 @@ export default function OrderFlow({
   const { cart, addItem, removeItem, updateQuantity, clearCart } = useCart()
   const { draft, saveDraft, clearDraft, sessionId, isLoaded } = useCheckoutDraft()
   const [showResume, setShowResume] = useState(false)
+  const [copiedOrder, setCopiedOrder] = useState(false)
   const router = useRouter()
 
   const hasCheckedResume = useRef(false)
@@ -170,8 +171,6 @@ export default function OrderFlow({
       </div>
     )
   }
-
-  const [copiedOrder, setCopiedOrder] = useState(false)
 
   const copyOrder = () => {
     if (!orderNumber) return
