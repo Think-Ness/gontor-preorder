@@ -4,7 +4,7 @@ import { formatRupiah } from '@/lib/utils'
 import PaymentActions from '@/components/admin/PaymentActions'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, User, MapPin, Package, CreditCard, MessageCircle } from 'lucide-react'
+import { ChevronLeft, User, MapPin, Package, CreditCard, MessageCircle, Truck } from 'lucide-react'
 import Image from 'next/image'
 
 export const metadata: Metadata = { title: 'Detail Order' }
@@ -105,8 +105,12 @@ export default async function OrderDetailPage({
             Pengiriman
           </h2>
           <div className="text-sm">
-            <div className="font-semibold text-gray-800 mb-2">
-              {order.fulfillment_method === 'PICKUP' ? '📦 Ambil di Stand' : '🚚 Kirim ke Rumah'}
+            <div className="font-semibold text-gray-800 mb-2 flex items-center gap-1.5">
+              {order.fulfillment_method === 'PICKUP' ? (
+                <span className="flex items-center gap-1.5 text-green-800"><Package className="w-4 h-4 text-green-700" /> Ambil di Stand</span>
+              ) : (
+                <span className="flex items-center gap-1.5 text-blue-800"><Truck className="w-4 h-4 text-blue-600" /> Kirim ke Rumah</span>
+              )}
             </div>
             {order.fulfillment_method === 'DELIVERY' && (
               <div className="text-gray-600 space-y-1">

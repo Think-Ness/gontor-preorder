@@ -64,10 +64,10 @@ export default function PaymentActions({
   // If payment is already approved, show Order Status Progress Management
   if (currentPaymentStatus === 'PAID') {
     const statuses = [
-      { id: 'PROCESSING', label: '⚙️ Sedang Diproses', desc: 'Pesanan sedang disiapkan panitia' },
-      { id: 'READY_FOR_PICKUP', label: '🎒 Siap Diambil di Stand', desc: 'Merchandise dapat diambil di stand acara' },
-      { id: 'SHIPPED', label: '🚚 Dalam Pengiriman', desc: 'Pesanan telah diserahkan ke ekspedisi/kurir' },
-      { id: 'COMPLETED', label: '✨ Pesanan Selesai', desc: 'Merchandise telah diserahterimakan' },
+      { id: 'PROCESSING', label: 'Sedang Diproses', desc: 'Pesanan sedang disiapkan panitia' },
+      { id: 'READY_FOR_PICKUP', label: 'Siap Diambil di Stand', desc: 'Merchandise dapat diambil di stand acara' },
+      { id: 'SHIPPED', label: 'Dalam Pengiriman', desc: 'Pesanan telah diserahkan ke ekspedisi/kurir' },
+      { id: 'COMPLETED', label: 'Pesanan Selesai', desc: 'Merchandise telah diserahterimakan' },
     ]
 
     return (
@@ -75,8 +75,9 @@ export default function PaymentActions({
         <div>
           <div className="flex items-center justify-between">
             <h2 className="font-display font-bold text-gray-900 text-base">Perbarui Status Progres Pesanan</h2>
-            <span className="text-xs px-2.5 py-1 rounded-full font-semibold bg-green-100 text-green-800">
-              Pembayaran Disetujui ✓
+            <span className="text-xs px-2.5 py-1 rounded-full font-semibold bg-green-100 text-green-800 flex items-center gap-1">
+              <CheckCircle className="w-3.5 h-3.5 text-green-700" />
+              Pembayaran Disetujui
             </span>
           </div>
           <p className="text-xs text-gray-500 mt-1">
@@ -121,8 +122,9 @@ export default function PaymentActions({
   if (currentPaymentStatus === 'REJECTED') {
     return (
       <div className="card-premium p-5 bg-red-50 border border-red-200">
-        <p className="text-sm text-red-700 text-center font-semibold">
-          Pembayaran ditolak ✕ (Memerlukan upload ulang bukti dari pembeli)
+        <p className="text-sm text-red-700 text-center font-semibold flex items-center justify-center gap-1.5">
+          <XCircle className="w-4 h-4 text-red-600" />
+          Pembayaran ditolak (Memerlukan upload ulang bukti dari pembeli)
         </p>
       </div>
     )
@@ -139,7 +141,7 @@ export default function PaymentActions({
             onChange={e => setNote(e.target.value)}
             placeholder="Alasan penolakan (wajib diisi)..."
             rows={3}
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-red-400"
+            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-red-400 font-display"
           />
           <div className="flex gap-2">
             <button
@@ -164,7 +166,7 @@ export default function PaymentActions({
             className="py-3 rounded-xl bg-green-600 text-white font-display font-bold text-sm flex items-center justify-center gap-2 hover:bg-green-700 disabled:opacity-50"
           >
             {loading === 'APPROVE' ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
-            ✓ Approve
+            Approve (ACC)
           </button>
 
           <button
@@ -173,7 +175,7 @@ export default function PaymentActions({
             className="py-3 rounded-xl bg-red-50 text-red-600 border border-red-200 font-display font-bold text-sm flex items-center justify-center gap-2 hover:bg-red-100 disabled:opacity-50"
           >
             <XCircle className="w-4 h-4" />
-            ✕ Reject
+            Tolak Pembayaran
           </button>
 
           <button
@@ -182,7 +184,7 @@ export default function PaymentActions({
             className="py-3 rounded-xl bg-amber-50 text-amber-700 border border-amber-200 font-display font-bold text-sm flex items-center justify-center gap-2 hover:bg-amber-100 disabled:opacity-50"
           >
             {loading === 'NEEDS_REVIEW' ? <Loader2 className="w-4 h-4 animate-spin" /> : <AlertTriangle className="w-4 h-4" />}
-            ⚠ Needs Review
+            Needs Review
           </button>
 
           <button
@@ -191,7 +193,7 @@ export default function PaymentActions({
             className="py-3 rounded-xl bg-blue-50 text-blue-700 border border-blue-200 font-display font-bold text-sm flex items-center justify-center gap-2 hover:bg-blue-100 disabled:opacity-50"
           >
             {loading === 'REQUEST_REUPLOAD' ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-            ↻ Re-upload
+            Re-upload Bukti
           </button>
         </div>
       )}
