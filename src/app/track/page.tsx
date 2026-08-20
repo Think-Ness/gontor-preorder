@@ -43,9 +43,12 @@ function TrackingContent() {
   
   const [query, setQuery] = useState(initialQuery)
   const [loading, setLoading] = useState(false)
-  const [order, setOrder] = useState<TrackedOrder | null>(null)
+  const [orders, setOrders] = useState<TrackedOrder[]>([])
+  const [selectedIndex, setSelectedIndex] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+
+  const order = orders[selectedIndex] ?? null
 
   const fetchTrack = async (searchVal: string) => {
     if (!searchVal.trim()) return
@@ -55,9 +58,10 @@ function TrackingContent() {
       const res = await fetch(`/api/track?order=${encodeURIComponent(searchVal.trim())}`)
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Pesanan tidak ditemukan')
-      setOrder(data.order)
+      setOrders(data.orders || [data.order])
+      setSelectedIndex(0)
     } catch (err) {
-      setOrder(null)
+      setOrders([])
       setError(err instanceof Error ? err.message : 'Terjadi kesalahan')
     } finally {
       setLoading(false)
@@ -130,7 +134,7 @@ function TrackingContent() {
               <Search className="w-6 h-6" style={{ color: 'var(--gontor-green)' }} />
             </div>
             <h1 className="font-display font-bold text-xl text-gray-900">Lacak Status Pesanan</h1>
-            <p className="text-sm text-gray-500 mt-1">Masukkan Nomor Order Anda untuk mengecek status terbaru</p>
+            <p className="text-sm text-gray-500 mt-1">Masukkan Stambuk, Nomor Order, atau No. WhatsApp Anda</p>
           </div>
 
           <form onSubmit={handleSearch} className="flex gap-2">
@@ -138,7 +142,7 @@ function TrackingContent() {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Contoh: MCH-2026-00011 atau Stambuk"
+              placeholder="Contoh: Stambuk (66820), No. WA, atau MCH-2026-00011"
               className="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100 font-display"
               required
             />
@@ -157,6 +161,28 @@ function TrackingContent() {
           <div className="p-4 rounded-xl bg-red-50 border border-red-200 flex items-center gap-3 text-red-700 text-sm mb-6">
             <AlertTriangle className="w-5 h-5 flex-shrink-0" />
             <p>{error}</p>
+          </div>
+        )}
+
+        {/* Multi-order Selector if user has multiple orders */}
+        {orders.length > 1 && (
+          <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100 mb-6">
+            <p className="text-xs font-semibold text-gray-500 mb-2">Ditemukan {orders.length} pesanan untuk pencarian ini:</p>
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {orders.map((ord, idx) => (
+                <button
+                  key={ord.id}
+                  onClick={() => setSelectedIndex(idx)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-display font-bold whitespace-nowrap transition-all ${
+                    selectedIndex === idx
+                      ? 'bg-green-700 text-white shadow-sm'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {ord.order_number}
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
