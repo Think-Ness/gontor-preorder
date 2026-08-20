@@ -50,7 +50,7 @@ export default function ShippingLabelModal({ order, isOpen, onClose }: ShippingL
   }
 
   // Helper to split text into lines for SVG
-  const wrapSvgText = (text: string, maxCharsPerLine = 70) => {
+  const wrapSvgText = (text: string, maxCharsPerLine = 75) => {
     const words = text.split(' ')
     const lines: string[] = []
     let currentLine = ''
@@ -67,67 +67,69 @@ export default function ShippingLabelModal({ order, isOpen, onClose }: ShippingL
     return lines
   }
 
-  // Export Clean Formal SVG File for Canva / Corel / Illustrator (A5 Portrait Format)
+  // Export Clean Formal SVG File for Canva / Corel / Illustrator (A5 Landscape Format)
   const handleExportSVG = () => {
-    const addressLines = wrapSvgText(fullAddressText, 70)
+    const addressLines = wrapSvgText(fullAddressText, 75)
     const addressTspans = addressLines.map((line, idx) => 
       `<tspan x="25" dy="${idx === 0 ? 0 : 18}">${line}</tspan>`
     ).join('')
 
     const formattedItemsSvg = items.length > 0
-      ? items.slice(0, 15).map((item: any, idx: number) => {
+      ? items.slice(0, 10).map((item: any, idx: number) => {
           const qty = item.quantity || 1
           const name = item.product_name || 'Merchandise'
           const variant = item.variant_name ? ` (${item.variant_name})` : ''
-          return `<text x="25" y="${415 + idx * 20}" fill="#111827" font-size="13" font-weight="600">• ${qty}x ${name}${variant}</text>`
+          return `<text x="560" y="${280 + idx * 18}" fill="#111827" font-size="12" font-weight="600">• ${qty}x ${name}${variant}</text>`
         }).join('\n')
-      : `<text x="25" y="415" fill="#111827" font-size="13" font-weight="600">• Merchandise Reunion Kit 100 Tahun Gontor</text>`
+      : `<text x="560" y="280" fill="#111827" font-size="12" font-weight="600">• Merchandise Reunion Kit 100 Tahun Gontor</text>`
 
-    // A5 Portrait Dimensions: 595 x 842
+    // A5 Landscape Dimensions: 842 x 595
     const svgContent = `
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 595 842" width="595" height="842" style="background-color: #ffffff; font-family: 'Helvetica Neue', Arial, sans-serif;">
-  <!-- Formal Shipping Sticker Outer Frame (A5 Portrait) -->
-  <rect x="10" y="10" width="575" height="822" fill="#ffffff" stroke="#000000" stroke-width="4" rx="6" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 842 595" width="842" height="595" style="background-color: #ffffff; font-family: 'Helvetica Neue', Arial, sans-serif;">
+  <!-- Formal Shipping Sticker Outer Frame (A5 Landscape) -->
+  <rect x="10" y="10" width="822" height="575" fill="#ffffff" stroke="#000000" stroke-width="4" rx="6" />
   
   <!-- Header Bar -->
-  <rect x="10" y="10" width="575" height="70" fill="#063D2E" rx="4" />
-  <text x="25" y="42" fill="#D4AF37" font-size="20" font-weight="bold" letter-spacing="1">PANITIA 100 TAHUN GONTOR — REUNION KIT</text>
-  <text x="25" y="62" fill="#ffffff" font-size="12" font-weight="bold" letter-spacing="2">LABEL STIKER RESMI PENGIRIMAN PAKET</text>
+  <rect x="10" y="10" width="822" height="60" fill="#063D2E" rx="4" />
+  <text x="25" y="45" fill="#D4AF37" font-size="22" font-weight="bold" letter-spacing="1">PANITIA 100 TAHUN GONTOR — REUNION KIT</text>
+  <text x="815" y="45" fill="#ffffff" font-size="16" font-weight="bold" letter-spacing="2" text-anchor="end">LABEL STIKER RESMI PENGIRIMAN PAKET</text>
 
   <!-- Resi / Order Number Row & Courier -->
-  <rect x="20" y="90" width="555" height="45" fill="#f3f4f6" stroke="#000000" stroke-width="2" rx="4" />
-  <text x="30" y="118" fill="#000000" font-size="16" font-weight="bold">NO. RESI / ORDER: ${orderNumber}</text>
-  <text x="560" y="118" fill="#4b5563" font-size="14" font-weight="bold" text-anchor="end">TGL: ${new Date(order.created_at || Date.now()).toLocaleDateString('id-ID')}</text>
+  <rect x="20" y="85" width="802" height="45" fill="#f3f4f6" stroke="#000000" stroke-width="2" rx="4" />
+  <text x="30" y="113" fill="#000000" font-size="16" font-weight="bold">NO. RESI / ORDER: ${orderNumber}</text>
+  <text x="400" y="113" fill="#063D2E" font-size="16" font-weight="bold" text-anchor="middle">${courier.toUpperCase()}</text>
+  <text x="805" y="113" fill="#4b5563" font-size="14" font-weight="bold" text-anchor="end">TGL: ${new Date(order.created_at || Date.now()).toLocaleDateString('id-ID')}</text>
 
-  <!-- Recipient & QR Code Box -->
-  <rect x="20" y="145" width="555" height="150" fill="#ffffff" stroke="#000000" stroke-width="2" rx="4" />
+  <!-- Left Column: Recipient Box (Width 520) -->
+  <rect x="20" y="145" width="520" height="425" fill="#ffffff" stroke="#000000" stroke-width="2" rx="4" />
   <text x="30" y="170" fill="#063D2E" font-size="14" font-weight="bold">PENERIMA (RECIPIENT):</text>
-  <text x="30" y="195" fill="#000000" font-size="18" font-weight="bold">${recipientName} (Stambuk: ${stambuk})</text>
-  <text x="30" y="215" fill="#063D2E" font-size="15" font-weight="bold">NO. HP/WA: ${phone}</text>
+  <text x="30" y="195" fill="#000000" font-size="18" font-weight="bold">${recipientName}</text>
+  <text x="30" y="215" fill="#4b5563" font-size="14">(Stambuk: ${stambuk})</text>
+  <text x="30" y="240" fill="#063D2E" font-size="15" font-weight="bold">NO. HP/WA: ${phone}</text>
   
-  <text x="30" y="240" fill="#000000" font-size="14" font-weight="600">
+  <line x1="20" y1="260" x2="540" y2="260" stroke="#e5e7eb" stroke-width="2" />
+  
+  <text x="30" y="285" fill="#000000" font-size="14" font-weight="bold">📍 Alamat Pengiriman Lengkap:</text>
+  <text x="30" y="315" fill="#000000" font-size="15" font-weight="600">
     ${addressTspans}
   </text>
 
   <!-- Small Public Track QR Code (Top Right of Recipient Box) -->
-  <image href="${qrApiUrl}" x="475" y="155" width="90" height="90" />
-  <text x="520" y="260" fill="#000000" font-size="10" font-weight="bold" text-anchor="middle">SCAN TRACK ORDER</text>
-  <line x1="465" y1="145" x2="465" y2="295" stroke="#e5e7eb" stroke-width="2" />
+  <image href="${qrApiUrl}" x="445" y="155" width="85" height="85" />
+  <text x="487" y="250" fill="#000000" font-size="9" font-weight="bold" text-anchor="middle">SCAN TRACK</text>
+  <line x1="435" y1="145" x2="435" y2="260" stroke="#e5e7eb" stroke-width="2" />
 
-  <!-- Sender Box -->
-  <rect x="20" y="305" width="555" height="70" fill="#ffffff" stroke="#000000" stroke-width="2" rx="4" />
-  <text x="30" y="325" fill="#063D2E" font-size="12" font-weight="bold">PENGIRIM (SENDER):</text>
-  <text x="30" y="345" fill="#000000" font-size="14" font-weight="bold">Panitia 100 Tahun Gontor</text>
-  <text x="30" y="362" fill="#4b5563" font-size="12">Pondok Modern Darussalam Gontor, Ponorogo, Jawa Timur (63411)</text>
+  <!-- Right Column: Sender Box (Width 272) -->
+  <rect x="550" y="145" width="272" height="85" fill="#ffffff" stroke="#000000" stroke-width="2" rx="4" />
+  <text x="560" y="165" fill="#063D2E" font-size="12" font-weight="bold">PENGIRIM (SENDER):</text>
+  <text x="560" y="185" fill="#000000" font-size="15" font-weight="bold">Panitia 100 Tahun Gontor</text>
+  <text x="560" y="205" fill="#4b5563" font-size="12">Pondok Modern Darussalam Gontor</text>
+  <text x="560" y="220" fill="#4b5563" font-size="12">Ponorogo, Jawa Timur (63411)</text>
 
-  <!-- Package Items Box (Fills remaining height) -->
-  <rect x="20" y="385" width="555" height="435" fill="#ffffff" stroke="#000000" stroke-width="2" rx="4" />
-  <text x="30" y="415" fill="#063D2E" font-size="14" font-weight="bold">ISI PAKET PESANAN (ITEMS):</text>
-  <line x1="20" y1="430" x2="575" y2="430" stroke="#e5e7eb" stroke-width="2" />
-  
-  <g transform="translate(15, 30)">
-    ${formattedItemsSvg}
-  </g>
+  <!-- Right Column: Package Items Box (Width 272) -->
+  <rect x="550" y="240" width="272" height="330" fill="#ffffff" stroke="#000000" stroke-width="2" rx="4" />
+  <text x="560" y="260" fill="#063D2E" font-size="13" font-weight="bold">ISI PAKET PESANAN (ITEMS):</text>
+  ${formattedItemsSvg}
 </svg>
     `.trim()
 
@@ -162,8 +164,8 @@ export default function ShippingLabelModal({ order, isOpen, onClose }: ShippingL
             position: absolute;
             left: 0;
             top: 0;
-            width: 148mm;
-            height: 210mm;
+            width: 210mm;
+            height: 148mm;
             margin: 0;
             padding: 8mm;
             box-shadow: none !important;
@@ -173,7 +175,7 @@ export default function ShippingLabelModal({ order, isOpen, onClose }: ShippingL
         }
       `}</style>
 
-      <div className="bg-white rounded-xl max-w-2xl w-full flex flex-col overflow-hidden shadow-2xl border border-gray-300 animate-in fade-in zoom-in-95 duration-200">
+      <div className="bg-white rounded-xl max-w-4xl w-full flex flex-col overflow-hidden shadow-2xl border border-gray-300 animate-in fade-in zoom-in-95 duration-200">
         
         {/* Modal Header */}
         <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-gray-50">
@@ -183,7 +185,7 @@ export default function ShippingLabelModal({ order, isOpen, onClose }: ShippingL
             </div>
             <div>
               <h3 className="font-display font-bold text-base text-gray-900">
-                Stiker Paket Pengiriman Resmi (A5 Portrait)
+                Stiker Paket Pengiriman Resmi (A5 Landscape)
               </h3>
               <p className="text-xs text-gray-500">Label cetak thermal A5 / Export SVG untuk Canva & Illustrator</p>
             </div>
@@ -199,91 +201,106 @@ export default function ShippingLabelModal({ order, isOpen, onClose }: ShippingL
         {/* Modal Body / Sticker Canvas Preview */}
         <div className="p-5 bg-gray-200 flex flex-col items-center justify-center">
 
-          {/* Formal Official Shipping Sticker Card (A5 Portrait Proportion) */}
+          {/* Formal Official Shipping Sticker Card (A5 Landscape Proportion) */}
           <div
             id="printable-shipping-sticker"
-            className="w-full max-w-lg bg-white border-2 border-black rounded-xs p-4 shadow-md flex flex-col gap-3 font-sans relative overflow-hidden"
-            style={{ aspectRatio: '1 / 1.414' }} // A5 Portrait Aspect Ratio
+            className="w-full max-w-3xl bg-white border-2 border-black rounded-xs p-4 shadow-md flex flex-col gap-3 font-sans relative overflow-hidden"
+            style={{ aspectRatio: '1.414 / 1' }} // A5 Landscape Aspect Ratio
           >
             {/* Formal Header Bar */}
-            <div className="p-3 rounded-xs text-white flex flex-col" style={{ background: '#063D2E' }}>
-              <p className="text-sm font-bold tracking-wider font-display" style={{ color: '#D4AF37' }}>
-                PANITIA 100 TAHUN GONTOR — REUNION KIT
-              </p>
-              <p className="text-xs text-gray-200 uppercase font-semibold">LABEL STIKER RESMI PENGIRIMAN PAKET</p>
+            <div className="p-3 rounded-xs text-white flex items-center justify-between" style={{ background: '#063D2E' }}>
+              <div>
+                <p className="text-lg sm:text-xl font-bold tracking-wider font-display" style={{ color: '#D4AF37' }}>
+                  PANITIA 100 TAHUN GONTOR — REUNION KIT
+                </p>
+              </div>
+              <p className="text-[10px] sm:text-xs text-gray-200 uppercase font-semibold">LABEL STIKER RESMI PENGIRIMAN PAKET</p>
             </div>
 
             {/* Resi & Order Number Bar */}
             <div className="p-3 rounded-xs border-2 border-black bg-gray-100 flex items-center justify-between font-mono text-sm">
               <div className="flex items-center gap-2 font-bold text-gray-900">
-                <span>NO. RESI: {orderNumber}</span>
+                <span>NO. RESI / ORDER: {orderNumber}</span>
                 <button onClick={copyOrderNo} className="text-gray-500 hover:text-gray-700 print:hidden">
                   {copied ? <Check className="w-4 h-4 text-green-700" /> : <Copy className="w-4 h-4" />}
                 </button>
+              </div>
+              <div className="px-3 py-0.5 rounded-sm bg-green-900 text-amber-400 font-display font-bold text-sm uppercase">
+                {courier}
               </div>
               <span className="text-gray-700 font-semibold font-sans">
                 TGL: {new Date(order.created_at || Date.now()).toLocaleDateString('id-ID')}
               </span>
             </div>
 
-            {/* Recipient Box (Full width) with QR Code on right */}
-            <div className="flex border-2 border-black rounded-xs bg-white">
-              <div className="flex-1 p-3 flex flex-col gap-1.5">
-                <p className="text-[11px] font-bold text-green-900 font-display uppercase tracking-wider">
-                  PENERIMA (RECIPIENT):
-                </p>
-                <p className="text-base font-bold text-gray-900">
-                  {recipientName} <span className="text-xs text-gray-600 font-normal">(Stambuk: {stambuk})</span>
-                </p>
-                <p className="text-sm font-bold text-green-800">
-                  📞 HP / WA: {phone}
-                </p>
-                <div className="text-sm text-gray-900 leading-normal font-sans pt-1">
-                  <p className="font-semibold text-gray-900">📍 Alamat Pengiriman Lengkap:</p>
-                  <p className="font-bold text-gray-900 whitespace-pre-wrap">{fullAddressText}</p>
+            {/* Main Content: 2 Columns */}
+            <div className="flex gap-3 flex-1 min-h-0">
+              
+              {/* Left Column: Recipient (Takes more width) */}
+              <div className="w-2/3 border-2 border-black rounded-xs bg-white flex flex-col overflow-hidden">
+                <div className="flex items-stretch border-b border-gray-300">
+                  <div className="flex-1 p-3 flex flex-col gap-1.5">
+                    <p className="text-[11px] font-bold text-green-900 font-display uppercase tracking-wider">
+                      PENERIMA (RECIPIENT):
+                    </p>
+                    <p className="text-lg font-bold text-gray-900">
+                      {recipientName} <span className="text-sm text-gray-600 font-normal">(Stambuk: {stambuk})</span>
+                    </p>
+                    <p className="text-base font-bold text-green-800">
+                      📞 HP / WA: {phone}
+                    </p>
+                  </div>
+                  {/* Small QR Code Container */}
+                  <div className="w-24 shrink-0 border-l border-gray-300 p-2 flex flex-col items-center justify-center text-center gap-1 bg-gray-50">
+                    <img
+                      src={qrApiUrl}
+                      alt="QR Code"
+                      className="w-14 h-14 object-contain p-0.5 border border-gray-200 bg-white"
+                    />
+                    <span className="text-[7px] font-bold text-gray-900 font-display leading-tight">
+                      SCAN TRACK ORDER
+                    </span>
+                  </div>
+                </div>
+                <div className="p-3 flex-1">
+                  <p className="text-sm font-semibold text-gray-900 mb-1">📍 Alamat Pengiriman Lengkap:</p>
+                  <p className="font-bold text-gray-900 text-base leading-snug whitespace-pre-wrap">{fullAddressText}</p>
                 </div>
               </div>
-              
-              {/* Small QR Code Container */}
-              <div className="w-28 shrink-0 border-l-2 border-gray-300 p-2 flex flex-col items-center justify-center text-center gap-1">
-                <img
-                  src={qrApiUrl}
-                  alt="QR Code"
-                  className="w-16 h-16 object-contain p-0.5 border border-gray-200"
-                />
-                <span className="text-[8px] font-bold text-gray-900 font-display leading-tight">
-                  SCAN TRACK ORDER
-                </span>
+
+              {/* Right Column: Sender & Items */}
+              <div className="w-1/3 flex flex-col gap-3">
+                {/* Sender Box */}
+                <div className="p-3 rounded-xs border-2 border-black bg-white flex flex-col gap-0.5">
+                  <p className="text-[11px] font-bold text-gray-700 uppercase tracking-wider font-display">PENGIRIM (SENDER):</p>
+                  <p className="font-bold text-gray-900 text-sm">Panitia 100 Tahun Gontor</p>
+                  <p className="text-gray-700 text-xs leading-tight">Pondok Modern Darussalam Gontor, Ponorogo, Jawa Timur (63411)</p>
+                </div>
+
+                {/* Package Items */}
+                <div className="flex-1 p-3 rounded-xs border-2 border-black bg-white flex flex-col overflow-hidden">
+                  <p className="text-[11px] font-bold text-gray-700 uppercase tracking-wider font-display mb-1.5">ISI PAKET (ITEMS):</p>
+                  <ul className="space-y-1 text-sm text-gray-900 font-semibold border-t border-gray-200 pt-2 flex-1 overflow-y-auto pr-1 custom-scrollbar">
+                    {items.length > 0 ? (
+                      items.map((it: any, i: number) => {
+                        const qty = it.quantity || 1
+                        const name = it.product_name || 'Merchandise'
+                        const variant = it.variant_name ? ` (${it.variant_name})` : ''
+                        return (
+                          <li key={i} className="leading-tight">
+                            • {qty}x {name}{variant}
+                          </li>
+                        )
+                      })
+                    ) : (
+                      <li>• Merchandise Reunion Kit 100 Tahun Gontor</li>
+                    )}
+                  </ul>
+                </div>
               </div>
+
             </div>
 
-            {/* Sender Box */}
-            <div className="p-3 rounded-xs border-2 border-black bg-white flex flex-col gap-0.5">
-              <p className="text-[11px] font-bold text-gray-700 uppercase tracking-wider font-display">PENGIRIM (SENDER):</p>
-              <p className="font-bold text-gray-900 text-sm">Panitia 100 Tahun Gontor</p>
-              <p className="text-gray-700 text-xs">Pondok Modern Darussalam Gontor, Ponorogo, Jawa Timur (63411)</p>
-            </div>
-
-            {/* Package Items (Takes remaining space) */}
-            <div className="flex-1 p-3 rounded-xs border-2 border-black bg-white flex flex-col">
-              <p className="text-[11px] font-bold text-gray-700 uppercase tracking-wider font-display mb-2">ISI PAKET PESANAN (ITEMS):</p>
-              <ul className="space-y-1 text-sm text-gray-900 font-semibold border-t border-gray-200 pt-2 flex-1">
-                {items.length > 0 ? (
-                  items.map((it: any, i: number) => {
-                    const qty = it.quantity || 1
-                    const name = it.product_name || 'Merchandise'
-                    const variant = it.variant_name ? ` (${it.variant_name})` : ''
-                    return (
-                      <li key={i}>
-                        • {qty}x {name}{variant}
-                      </li>
-                    )
-                  })
-                ) : (
-                  <li>• Merchandise Reunion Kit 100 Tahun Gontor</li>
-                )}
-              </ul>
-            </div>
           </div>
         </div>
 
@@ -310,7 +327,7 @@ export default function ShippingLabelModal({ order, isOpen, onClose }: ShippingL
             style={{ background: '#063D2E' }}
           >
             <Printer className="w-4 h-4 text-amber-400" />
-            Print Stiker (A5)
+            Print Stiker (A5 Landscape)
           </button>
         </div>
 
