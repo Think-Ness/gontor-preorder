@@ -46,8 +46,14 @@ export default function ProductCard({ product, onAdd, cartItems, isOpen }: Produ
 
   const qty = getCartQty()
 
+  const maxStock = product.has_variants && selectedVariant
+    ? selectedVariant.stock
+    : (product.stock_enabled ? product.stock : null)
+
+  const isMaxStockReached = maxStock !== null && maxStock !== undefined && qty >= maxStock
+
   const handleAdd = () => {
-    if (!isOpen || isOutOfStock) return
+    if (!isOpen || isOutOfStock || isMaxStockReached) return
 
     if (product.has_variants && selectedVariant) {
       onAdd({
@@ -59,6 +65,7 @@ export default function ProductCard({ product, onAdd, cartItems, isOpen }: Produ
         unitPrice: selectedVariant.price,
         quantity: 1,
         imageUrl,
+        maxStock,
       })
     } else {
       onAdd({
@@ -68,6 +75,7 @@ export default function ProductCard({ product, onAdd, cartItems, isOpen }: Produ
         unitPrice: product.price,
         quantity: 1,
         imageUrl,
+        maxStock,
       })
     }
   }
@@ -159,11 +167,17 @@ export default function ProductCard({ product, onAdd, cartItems, isOpen }: Produ
               </span>
               <button
                 onClick={handleAdd}
-                disabled={isOutOfStock || !isOpen}
-                className="btn-primary px-3 py-2 text-xs flex items-center gap-1"
+                disabled={isOutOfStock || !isOpen || isMaxStockReached}
+                className={`px-3 py-2 text-xs flex items-center gap-1 font-semibold rounded-lg ${
+                  isMaxStockReached ? 'bg-gray-100 text-gray-400 cursor-not-allowed border' : 'btn-primary'
+                }`}
               >
-                <Plus className="w-3 h-3" />
-                Tambah
+                {isMaxStockReached ? 'Stok Maksimal' : (
+                  <>
+                    <Plus className="w-3 h-3" />
+                    Tambah
+                  </>
+                )}
               </button>
             </div>
           ) : (

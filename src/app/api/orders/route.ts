@@ -102,10 +102,24 @@ export async function POST(req: NextRequest) {
     if (data.email) {
       await supabase.from('orders').update({ email: data.email }).eq('id', result.order_id)
 
+      const { data: orderItems } = await supabase
+        .from('order_items')
+        .select('item_name_snapshot, variant_name_snapshot, unit_price_snapshot, quantity, subtotal')
+        .eq('order_id', result.order_id)
+
+      const emailItems = (orderItems ?? []).map(i => ({
+        name: i.item_name_snapshot,
+        variantName: i.variant_name_snapshot,
+        unitPrice: Number(i.unit_price_snapshot),
+        quantity: i.quantity,
+        subtotal: Number(i.subtotal),
+      }))
+
       sendOrderReceivedEmail(data.email, {
         orderNumber: result.order_number,
         fullName: data.full_name,
         totalAmount: result.total_amount,
+        items: emailItems,
       }).catch(e => console.error('Email dispatch error:', e))
     }
 

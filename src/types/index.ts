@@ -214,6 +214,7 @@ export interface CartItem {
   unitPrice: number
   quantity: number
   imageUrl?: string | null
+  maxStock?: number | null
 }
 
 export interface Cart {

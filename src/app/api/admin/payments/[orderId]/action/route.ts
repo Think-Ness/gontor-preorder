@@ -79,7 +79,7 @@ export async function POST(
   // Fetch order for email notification
   const { data: orderDetails } = await supabase
     .from('orders')
-    .select('order_number, full_name, fulfillment_method, email')
+    .select('order_number, full_name, fulfillment_method, email, total_amount, items:order_items(*)')
     .eq('id', orderId)
     .single()
 
@@ -92,11 +92,21 @@ export async function POST(
 
   // Trigger email notifications
   if (orderDetails && orderDetails.email) {
+    const emailItems = (orderDetails.items ?? []).map((i: any) => ({
+      name: i.item_name_snapshot,
+      variantName: i.variant_name_snapshot,
+      unitPrice: Number(i.unit_price_snapshot),
+      quantity: i.quantity,
+      subtotal: Number(i.subtotal),
+    }))
+
     if (action === 'APPROVE') {
       sendPaymentApprovedEmail(orderDetails.email, {
         orderNumber: orderDetails.order_number,
         fullName: orderDetails.full_name,
         fulfillmentMethod: orderDetails.fulfillment_method,
+        totalAmount: Number(orderDetails.total_amount),
+        items: emailItems,
       }).catch(e => console.error('Email send error:', e))
     } else if (action === 'REJECT' || action === 'REQUEST_REUPLOAD') {
       sendPaymentRejectedEmail(orderDetails.email, {

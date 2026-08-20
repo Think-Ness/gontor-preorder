@@ -130,10 +130,20 @@ export default function CartDrawer({
                     <span className="font-display font-bold text-sm w-6 text-center">{item.quantity}</span>
                     <button
                       onClick={() => onUpdateQty(item.id, item.quantity + 1)}
-                      className="w-6 h-6 rounded flex items-center justify-center bg-white border border-gray-200 hover:border-green-400 text-gray-600 hover:text-green-600 transition-colors"
+                      disabled={item.maxStock !== undefined && item.maxStock !== null && item.quantity >= item.maxStock}
+                      className={`w-6 h-6 rounded flex items-center justify-center border transition-colors ${
+                        item.maxStock !== undefined && item.maxStock !== null && item.quantity >= item.maxStock
+                          ? 'bg-gray-100 border-gray-200 text-gray-300 cursor-not-allowed'
+                          : 'bg-white border-gray-200 hover:border-green-400 text-gray-600 hover:text-green-600'
+                      }`}
                     >
                       <Plus className="w-3 h-3" />
                     </button>
+                    {item.maxStock !== undefined && item.maxStock !== null && (
+                      <span className="text-[10px] text-gray-400 font-semibold">
+                        (Maks: {item.maxStock})
+                      </span>
+                    )}
                     <span className="ml-auto text-xs font-semibold text-gray-700">
                       {formatRupiah(item.unitPrice * item.quantity)}
                     </span>

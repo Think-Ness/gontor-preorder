@@ -52,9 +52,21 @@ export function useCart() {
       })
 
       if (existingIdx >= 0) {
-        items[existingIdx] = { ...items[existingIdx], quantity: items[existingIdx].quantity + 1 }
+        const currentQty = items[existingIdx].quantity
+        const max = newItem.maxStock !== undefined ? newItem.maxStock : items[existingIdx].maxStock
+        if (max !== undefined && max !== null && currentQty >= max) {
+          // Cannot exceed stock
+          return prev
+        }
+        items[existingIdx] = {
+          ...items[existingIdx],
+          quantity: max !== undefined && max !== null ? Math.min(currentQty + 1, max) : currentQty + 1,
+          maxStock: max,
+        }
       } else {
-        items.push({ ...newItem, id: generateCartItemId() })
+        const max = newItem.maxStock
+        const qty = max !== undefined && max !== null ? Math.min(newItem.quantity, Math.max(1, max)) : newItem.quantity
+        items.push({ ...newItem, quantity: qty, id: generateCartItemId() })
       }
 
       saveCart(items)
@@ -72,7 +84,14 @@ export function useCart() {
 
   const updateQuantity = useCallback((id: string, qty: number) => {
     setCart(prev => {
-      const items = prev.items.map(i => i.id === id ? { ...i, quantity: Math.max(1, qty) } : i)
+      const items = prev.items.map(i => {
+        if (i.id !== id) return i
+        let targetQty = Math.max(1, qty)
+        if (i.maxStock !== undefined && i.maxStock !== null) {
+          targetQty = Math.min(targetQty, i.maxStock)
+        }
+        return { ...i, quantity: targetQty }
+      })
       saveCart(items)
       return { items, subtotal: calcSubtotal(items) }
     })

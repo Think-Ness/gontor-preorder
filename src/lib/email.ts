@@ -66,11 +66,52 @@ function wrapEmailHtml(contentHtml: string) {
   `
 }
 
+export interface EmailItemSummary {
+  name: string
+  variantName?: string | null
+  unitPrice: number
+  quantity: number
+  subtotal: number
+}
+
+function renderItemsTable(items?: EmailItemSummary[]) {
+  if (!items || items.length === 0) return ''
+
+  return `
+    <div style="margin-top: 16px;">
+      <p style="margin: 0 0 8px 0; font-size: 13px; font-weight: 700; color: #374151; letter-spacing: 0.5px; text-transform: uppercase;">Rincian Pesanan:</p>
+      <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+        <thead>
+          <tr style="border-bottom: 2px solid #e5e7eb; text-align: left; color: #6b7280; font-size: 11px;">
+            <th style="padding: 6px 4px;">Produk</th>
+            <th style="padding: 6px 4px; text-align: center;">Jumlah</th>
+            <th style="padding: 6px 4px; text-align: right;">Harga</th>
+            <th style="padding: 6px 4px; text-align: right;">Subtotal</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${items.map(item => `
+            <tr style="border-bottom: 1px solid #f3f4f6;">
+              <td style="padding: 8px 4px; font-weight: 600; color: #1f2937;">
+                ${item.name}${item.variantName ? ` <span style="font-weight: normal; color: #6b7280;">(${item.variantName})</span>` : ''}
+              </td>
+              <td style="padding: 8px 4px; text-align: center; color: #4b5563;">${item.quantity}</td>
+              <td style="padding: 8px 4px; text-align: right; color: #4b5563;">${formatRupiah(item.unitPrice)}</td>
+              <td style="padding: 8px 4px; text-align: right; font-weight: 600; color: #0D4A2B;">${formatRupiah(item.subtotal)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `
+}
+
 // 1. Email Order Received & Payment Proof Uploaded
 export async function sendOrderReceivedEmail(toEmail: string, order: {
   orderNumber: string
   fullName: string
   totalAmount: number
+  items?: EmailItemSummary[]
 }) {
   const transporter = getTransporter()
   if (!transporter || !toEmail) {
@@ -86,7 +127,9 @@ export async function sendOrderReceivedEmail(toEmail: string, order: {
       <p style="margin:0 0 8px 0; font-size:12px; color:#6b7280;">NOMOR PESANAN</p>
       <p style="margin:0; font-size:22px; font-weight:800; color:#0D4A2B;">${order.orderNumber}</p>
       <hr style="border:none; border-top:1px dashed #e5e7eb; margin:12px 0;">
-      <p style="margin:0; font-size:14px; font-weight:600;">Total Pembayaran: ${formatRupiah(order.totalAmount)}</p>
+      ${renderItemsTable(order.items)}
+      <hr style="border:none; border-top:1px dashed #e5e7eb; margin:12px 0;">
+      <p style="margin:0; font-size:15px; font-weight:700; color:#0D4A2B;">Total Pembayaran: ${formatRupiah(order.totalAmount)}</p>
       <p style="margin:4px 0 0 0; font-size:12px; color:#6b7280;">Status: <span class="badge badge-amber">Sedang Diverifikasi Panitia</span></p>
     </div>
 
@@ -111,6 +154,8 @@ export async function sendPaymentApprovedEmail(toEmail: string, order: {
   orderNumber: string
   fullName: string
   fulfillmentMethod: 'PICKUP' | 'DELIVERY'
+  totalAmount?: number
+  items?: EmailItemSummary[]
 }) {
   const transporter = getTransporter()
   if (!transporter || !toEmail) {
@@ -129,6 +174,8 @@ export async function sendPaymentApprovedEmail(toEmail: string, order: {
     <div class="card" style="background:#f0fdf4; border-color:#bbf7d0;">
       <p style="margin:0; font-size:14px; font-weight:700; color:#166534;">STATUS PESANAN: DIPROSES</p>
       ${fulfillmentInfo}
+      ${renderItemsTable(order.items)}
+      ${order.totalAmount ? `<p style="margin:12px 0 0 0; font-size:14px; font-weight:700; color:#166534;">Total Pembayaran: ${formatRupiah(order.totalAmount)}</p>` : ''}
     </div>
 
     <p>Pesanan Anda sedang disiapkan. Kami akan mengirimkan notifikasi lagi saat merchandise Anda siap diambil / siap dikirim!</p>
