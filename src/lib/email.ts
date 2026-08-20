@@ -194,7 +194,7 @@ export async function sendPaymentApprovedEmail(toEmail: string, order: {
   }
 }
 
-// 3. Email Payment Rejected / Need Re-upload
+// 3. Email Payment Rejected / Re-upload Required
 export async function sendPaymentRejectedEmail(toEmail: string, order: {
   orderNumber: string
   fullName: string
@@ -205,16 +205,30 @@ export async function sendPaymentRejectedEmail(toEmail: string, order: {
     return
   }
 
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://gontor-preorder-100th.vercel.app'
+  const reuploadUrl = `${appUrl}/track?order=${encodeURIComponent(order.orderNumber)}`
+
   const content = `
     <h2>Upload Ulang Bukti Pembayaran ⚠️</h2>
     <p>Halo, <strong>${order.fullName}</strong>. Bukti pembayaran untuk pesanan <strong>${order.orderNumber}</strong> memerlukan konfirmasi ulang.</p>
 
     <div class="card" style="background:#fef2f2; border-color:#fecaca;">
-      <p style="margin:0; font-size:13px; font-weight:700; color:#991b1b;">Catatan Panitia:</p>
+      <p style="margin:0; font-size:13px; font-weight:700; color:#991b1b;">Catatan Panitia Keuangan:</p>
       <p style="margin:4px 0 0 0; font-size:14px; color:#7f1d1d;">"${reason}"</p>
     </div>
 
-    <p>Mohon pastikan nominal transfer dan foto bukti pembayaran terlihat jelas. Silakan upload ulang bukti transfer Anda melalui formulir pemesanan.</p>
+    <p>Mohon pastikan nominal transfer dan foto bukti pembayaran terlihat jelas. Klik tombol di bawah ini untuk mengupload ulang bukti transfer baru secara langsung:</p>
+
+    <div style="margin: 24px 0; text-align: center;">
+      <a href="${reuploadUrl}" style="background-color: #0D4A2B; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 10px; font-weight: 800; font-size: 14px; display: inline-block; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+        📤 Upload Ulang Bukti Pembayaran Sekarang
+      </a>
+    </div>
+
+    <p style="font-size: 12px; color: #6b7280; text-align: center;">
+      Atau buka link berikut di browser Anda:<br>
+      <a href="${reuploadUrl}" style="color: #0D4A2B;">${reuploadUrl}</a>
+    </p>
   `
 
   try {
