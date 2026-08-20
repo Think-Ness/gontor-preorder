@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 
 export async function POST(req: NextRequest) {
@@ -26,6 +27,14 @@ export async function POST(req: NextRequest) {
     : await supabase.from('event_settings').insert(updates)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // Revalidate public landing page and checkout page so changes take effect immediately
+  try {
+    revalidatePath('/')
+    revalidatePath('/order')
+  } catch (e) {
+    // Ignore cache error
+  }
 
   return NextResponse.json({ success: true })
 }

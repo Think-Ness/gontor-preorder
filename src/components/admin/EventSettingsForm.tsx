@@ -93,12 +93,96 @@ export default function EventSettingsForm({ initialData }: Props) {
     }
   }
 
+  // Calculate simulated preorder status for live feedback
+  const computeLiveStatus = () => {
+    if (!form.is_active) return 'CLOSED'
+    const now = new Date()
+    const start = form.preorder_start ? new Date(form.preorder_start) : null
+    const end = form.preorder_end ? new Date(form.preorder_end) : null
+    if (start && now < start) return 'SCHEDULED'
+    if (end && now > end) return 'CLOSED'
+    return 'OPEN'
+  }
+
+  const liveStatus = computeLiveStatus()
+
+  const handleQuickOpenNow = () => {
+    setForm(p => ({
+      ...p,
+      is_active: true,
+      preorder_start: '', // start immediately
+    }))
+  }
+
+  const handleQuickCloseNow = () => {
+    setForm(p => ({
+      ...p,
+      is_active: false,
+    }))
+  }
+
   const inputCls = 'w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100 transition-all'
 
   return (
     <div className="card-premium p-6 space-y-6">
       {error && <div className="bg-red-50 text-red-700 text-sm px-4 py-3 rounded-xl border border-red-200">{error}</div>}
-      {saved && <div className="bg-green-50 text-green-700 text-sm px-4 py-3 rounded-xl border border-green-200">✓ Pengaturan berhasil disimpan</div>}
+      {saved && <div className="bg-green-50 text-green-700 text-sm px-4 py-3 rounded-xl border border-green-200">✓ Pengaturan berhasil disimpan & tersinkronisasi ke katalog website</div>}
+
+      {/* Live Pre-Order Status Indicator Card */}
+      <div className={`p-5 rounded-2xl border transition-all ${
+        liveStatus === 'OPEN' 
+          ? 'bg-emerald-50 border-emerald-200 text-emerald-950' 
+          : liveStatus === 'CLOSED'
+          ? 'bg-rose-50 border-rose-200 text-rose-950'
+          : 'bg-amber-50 border-amber-200 text-amber-950'
+      }`}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="text-xs font-bold uppercase tracking-widest opacity-70">Status Pre-Order Katalog Website</div>
+            <div className="flex items-center gap-2">
+              <span className={`w-3 h-3 rounded-full ${
+                liveStatus === 'OPEN' ? 'bg-emerald-500 animate-ping' : liveStatus === 'CLOSED' ? 'bg-rose-500' : 'bg-amber-500'
+              }`} />
+              <span className="font-display font-black text-xl">
+                {liveStatus === 'OPEN' && '🟢 OPEN (Pre-Order Dibuka)'}
+                {liveStatus === 'CLOSED' && '🔴 CLOSED (Pre-Order Ditutup)'}
+                {liveStatus === 'SCHEDULED' && '⏰ SCHEDULED (Menunggu Waktu Buka)'}
+              </span>
+            </div>
+            <p className="text-xs opacity-80 pt-1">
+              {liveStatus === 'OPEN' && 'Pengunjung website saat ini DAPAT memilih produk dan melakukan checkout pesanan.'}
+              {liveStatus === 'CLOSED' && 'Pengunjung website TIDAK DAPAT melakukan checkout. Halaman katalog akan menampilkan tanda Ditutup.'}
+              {liveStatus === 'SCHEDULED' && 'Hitung mundur waktu buka sedang berjalan di landing page.'}
+            </p>
+          </div>
+
+          {/* Quick Override Buttons */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              type="button"
+              onClick={handleQuickOpenNow}
+              className={`px-3 py-2 rounded-xl text-xs font-bold font-display transition-all border shadow-2xs ${
+                liveStatus === 'OPEN'
+                  ? 'bg-emerald-600 text-white border-emerald-700'
+                  : 'bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-100'
+              }`}
+            >
+              ⚡ Buka Sekarang
+            </button>
+            <button
+              type="button"
+              onClick={handleQuickCloseNow}
+              className={`px-3 py-2 rounded-xl text-xs font-bold font-display transition-all border shadow-2xs ${
+                liveStatus === 'CLOSED'
+                  ? 'bg-rose-600 text-white border-rose-700'
+                  : 'bg-white text-rose-700 border-rose-300 hover:bg-rose-100'
+              }`}
+            >
+              🔒 Tutup Sekarang
+            </button>
+          </div>
+        </div>
+      </div>
 
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-display">Nama Event</label>
