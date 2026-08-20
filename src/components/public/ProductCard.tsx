@@ -1,0 +1,195 @@
+'use client'
+
+import { useState } from 'react'
+import Image from 'next/image'
+import { Product, ProductVariant, CartItem } from '@/types'
+import { formatRupiah } from '@/lib/utils'
+import { Plus, Minus, ShoppingBag, AlertCircle } from 'lucide-react'
+import { buildDriveImageUrl } from '@/lib/drive-urls'
+
+interface ProductCardProps {
+  product: Product
+  onAdd: (item: Omit<CartItem, 'id'>) => void
+  cartItems: CartItem[]
+  isOpen: boolean
+}
+
+export default function ProductCard({ product, onAdd, cartItems, isOpen }: ProductCardProps) {
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
+    product.variants?.[0] ?? null
+  )
+
+  let fileId = product.image_drive_file_id
+  if (!fileId && product.image_url) {
+    const match = product.image_url.match(/id=([^&]+)/)
+    if (match) fileId = match[1]
+  }
+
+  const imageUrl = fileId
+    ? buildDriveImageUrl(fileId)
+    : product.image_url || null
+
+  const activePrice = product.has_variants && selectedVariant
+    ? selectedVariant.price
+    : product.price
+
+  const isOutOfStock = product.has_variants
+    ? (selectedVariant?.stock !== null && selectedVariant?.stock !== undefined && selectedVariant.stock <= 0)
+    : (product.stock_enabled && product.stock !== null && product.stock <= 0)
+
+  const getCartQty = () => {
+    const key = product.has_variants && selectedVariant ? selectedVariant.id : product.id
+    return cartItems
+      .filter(i => (product.has_variants ? i.variantId === key : i.productId === key))
+      .reduce((s, i) => s + i.quantity, 0)
+  }
+
+  const qty = getCartQty()
+
+  const handleAdd = () => {
+    if (!isOpen || isOutOfStock) return
+
+    if (product.has_variants && selectedVariant) {
+      onAdd({
+        productId: product.id,
+        variantId: selectedVariant.id,
+        itemType: 'VARIANT',
+        name: product.name,
+        variantName: selectedVariant.name,
+        unitPrice: selectedVariant.price,
+        quantity: 1,
+        imageUrl,
+      })
+    } else {
+      onAdd({
+        productId: product.id,
+        itemType: 'PRODUCT',
+        name: product.name,
+        unitPrice: product.price,
+        quantity: 1,
+        imageUrl,
+      })
+    }
+  }
+
+  return (
+    <div className="card-premium flex flex-col overflow-hidden group">
+      {/* Image */}
+      <div className="relative aspect-square bg-gray-50 overflow-hidden">
+        {imageUrl ? (
+          <Image
+            src={imageUrl}
+            alt={product.name}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center"
+            style={{ background: 'linear-gradient(135deg, #f0fdf4, #dcfce7)' }}>
+            <ShoppingBag className="w-12 h-12 text-green-300" />
+          </div>
+        )}
+        {isOutOfStock && (
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+            <span className="bg-red-500 text-white text-xs font-display font-bold px-3 py-1 rounded-full">
+              HABIS
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Content */}
+      <div className="p-4 flex flex-col flex-1">
+        <h3 className="font-display font-bold text-gray-900 mb-1 text-sm leading-tight">
+          {product.name}
+        </h3>
+
+        {product.description && (
+          <p className="text-xs text-gray-500 mb-3 line-clamp-2">{product.description}</p>
+        )}
+
+        {/* Price */}
+        <div className="font-display font-bold mb-3" style={{ color: 'var(--gontor-green)', fontSize: '1rem' }}>
+          {formatRupiah(activePrice)}
+        </div>
+
+        {/* Variant selector */}
+        {product.has_variants && product.variants && product.variants.length > 0 && (
+          <div className="mb-3">
+            <div className="text-xs text-gray-500 mb-1.5 font-semibold">Ukuran</div>
+            <div className="flex flex-wrap gap-1.5">
+              {product.variants.filter(v => v.is_active).map(variant => {
+                const outOfStock = variant.stock !== null && variant.stock !== undefined && variant.stock <= 0
+                return (
+                  <button
+                    key={variant.id}
+                    onClick={() => !outOfStock && setSelectedVariant(variant)}
+                    disabled={outOfStock}
+                    className={`px-2.5 py-1 rounded text-xs font-display font-semibold border transition-all ${
+                      selectedVariant?.id === variant.id
+                        ? 'border-green-600 bg-green-50 text-green-700'
+                        : outOfStock
+                          ? 'border-gray-200 bg-gray-50 text-gray-300 cursor-not-allowed line-through'
+                          : 'border-gray-200 hover:border-green-400 text-gray-600'
+                    }`}
+                  >
+                    {variant.name}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Stock info */}
+        {!product.has_variants && product.stock_enabled && product.stock !== null && (
+          <div className="text-xs text-gray-400 mb-3 flex items-center gap-1">
+            <AlertCircle className="w-3 h-3" />
+            Stok: {product.stock} tersisa
+          </div>
+        )}
+
+        {/* Add button */}
+        <div className="mt-auto">
+          {qty > 0 ? (
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs text-gray-500 font-display font-semibold">
+                {qty}x di keranjang
+              </span>
+              <button
+                onClick={handleAdd}
+                disabled={isOutOfStock || !isOpen}
+                className="btn-primary px-3 py-2 text-xs flex items-center gap-1"
+              >
+                <Plus className="w-3 h-3" />
+                Tambah
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handleAdd}
+              disabled={isOutOfStock || !isOpen}
+              className={`w-full py-2.5 rounded-lg text-sm font-display font-semibold flex items-center justify-center gap-2 transition-all ${
+                isOutOfStock || !isOpen
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'btn-primary'
+              }`}
+            >
+              {isOutOfStock ? (
+                'Tidak Tersedia'
+              ) : !isOpen ? (
+                'Pre-order Tutup'
+              ) : (
+                <>
+                  <Plus className="w-4 h-4" />
+                  Tambah ke Keranjang
+                </>
+              )}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
