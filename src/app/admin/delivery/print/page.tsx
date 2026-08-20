@@ -34,7 +34,6 @@ export default async function PrintDeliveryPage({
       {/* Tombol Print (Sembunyikan saat dicetak) */}
       <div className="print:hidden fixed top-4 right-4 z-50 flex gap-2">
         <button 
-          onClick={() => {}} // Will be handled by client component or inline script
           className="btn-primary"
           id="print-btn"
         >
