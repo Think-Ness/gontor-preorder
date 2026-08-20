@@ -29,12 +29,11 @@ export default function OrderRowActions({ order }: OrderRowActionsProps) {
           href={`/admin/delivery/print?ids=${order.id}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors text-white shadow-2xs hover:opacity-90"
+          className="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors text-white shadow-2xs hover:opacity-90"
           style={{ background: 'var(--gontor-green, #063D2E)' }}
           title="Cetak Stiker Pengiriman A5"
         >
-          <Printer className="w-3.5 h-3.5" style={{ color: 'var(--gontor-gold, #D4AF37)' }} />
-          Stiker Paket
+          <Printer className="w-4 h-4" style={{ color: 'var(--gontor-gold, #D4AF37)' }} />
         </a>
       )}
     </div>

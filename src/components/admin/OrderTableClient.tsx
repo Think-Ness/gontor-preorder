@@ -180,7 +180,7 @@ export default function OrderTableClient({ orders }: { orders: any[] }) {
               <th className="px-4 py-4 whitespace-nowrap">Metode Pengiriman</th>
               <th className="px-4 py-4 whitespace-nowrap text-right">Pembayaran & Total</th>
               <th className="px-4 py-4 whitespace-nowrap text-center">Progress (Status)</th>
-              <th className="px-4 py-4 whitespace-nowrap text-center">Aksi</th>
+              <th className="px-4 py-4 whitespace-nowrap text-right pr-6">Aksi</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 bg-white">
@@ -248,8 +248,8 @@ export default function OrderTableClient({ orders }: { orders: any[] }) {
                       {new Date(order.created_at).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}
                     </div>
                   </td>
-                  <td className="px-4 py-4 text-center">
-                    <div className="flex items-center justify-center gap-2">
+                  <td className="px-4 py-4 text-right pr-6">
+                    <div className="flex items-center justify-end gap-2">
                       <a
                         href={waUrl}
                         target="_blank"
