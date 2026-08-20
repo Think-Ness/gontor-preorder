@@ -2,8 +2,9 @@
 
 import { useState, useMemo } from 'react'
 import { CheckoutDraft, FulfillmentMethod } from '@/types'
-import { MapPin, ShoppingBag, ChevronLeft, ChevronRight, Truck, Navigation, CheckCircle2, ExternalLink, Search, Sparkles } from 'lucide-react'
+import { MapPin, ShoppingBag, ChevronLeft, ChevronRight, Truck, Navigation, CheckCircle2, ExternalLink, Search, Sparkles, Map } from 'lucide-react'
 import { formatRupiah } from '@/lib/utils'
+import MapPickerModal from '../MapPickerModal'
 
 interface Props {
   draft: CheckoutDraft | null
@@ -128,6 +129,7 @@ export default function StepFulfillment({ draft, onSave, onBack }: Props) {
 
   const [gettingLocation, setGettingLocation] = useState(false)
   const [locationSuccess, setLocationSuccess] = useState(false)
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false)
 
   const inputCls = (err?: string) =>
     `w-full px-4 py-3 rounded-xl border text-sm outline-none transition-all font-body ${
@@ -345,22 +347,34 @@ export default function StepFulfillment({ draft, onSave, onBack }: Props) {
 
           {/* Section 1: Detailed Address Form */}
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-2">
               <h3 className="font-display font-bold text-sm text-gray-800 flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-green-700" />
                 Detail Alamat Rumah Pengiriman
               </h3>
 
-              {/* GPS Geolocation Button */}
-              <button
-                type="button"
-                onClick={handleGetLocation}
-                disabled={gettingLocation}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-green-50 hover:bg-green-100 text-green-800 text-xs font-display font-bold border border-green-200 transition-all shadow-xs"
-              >
-                <Navigation className={`w-3.5 h-3.5 ${gettingLocation ? 'animate-spin' : 'text-green-700'}`} />
-                {gettingLocation ? 'Mengambil GPS...' : 'Tag Pin Rumah di Peta GPS'}
-              </button>
+              <div className="flex gap-2">
+                {/* Open Interactive Map Picker Modal Button */}
+                <button
+                  type="button"
+                  onClick={() => setIsMapModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-800 text-xs font-display font-bold border border-blue-200 transition-all shadow-xs"
+                >
+                  <Map className="w-3.5 h-3.5 text-blue-600" />
+                  Buka Peta Cari Lokasi
+                </button>
+
+                {/* GPS Geolocation Button */}
+                <button
+                  type="button"
+                  onClick={handleGetLocation}
+                  disabled={gettingLocation}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-green-50 hover:bg-green-100 text-green-800 text-xs font-display font-bold border border-green-200 transition-all shadow-xs"
+                >
+                  <Navigation className={`w-3.5 h-3.5 ${gettingLocation ? 'animate-spin' : 'text-green-700'}`} />
+                  {gettingLocation ? 'Mengambil GPS...' : 'Tag GPS Rumah'}
+                </button>
+              </div>
             </div>
 
             {locationSuccess && (
@@ -539,6 +553,37 @@ export default function StepFulfillment({ draft, onSave, onBack }: Props) {
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>
+
+      {/* Interactive Map Picker Modal */}
+      <MapPickerModal
+        isOpen={isMapModalOpen}
+        onClose={() => setIsMapModalOpen(false)}
+        onSelectLocation={({ lat, lng, addressName, city, province, mapsUrl }) => {
+          setAddress(p => ({
+            ...p,
+            fullAddress: addressName,
+            googleMapsUrl: mapsUrl,
+            latitude: lat,
+            longitude: lng,
+            city: city || p.city,
+            province: province || p.province,
+          }))
+
+          // If city matches preset zone, calculate rates
+          if (city || province) {
+            const matched = DESTINATION_CITIES.find(
+              c => (city && c.city.toLowerCase().includes(city.toLowerCase())) ||
+                   (province && c.province.toLowerCase().includes(province.toLowerCase()))
+            )
+            if (matched) {
+              handleSelectCity(matched)
+            }
+          }
+
+          setLocationSuccess(true)
+          setTimeout(() => setLocationSuccess(false), 4000)
+        }}
+      />
     </div>
   )
 }
