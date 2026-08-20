@@ -49,21 +49,44 @@ export default function ShippingLabelModal({ order, isOpen, onClose }: ShippingL
     window.print()
   }
 
+  // Helper to split text into lines for SVG
+  const wrapSvgText = (text: string, maxCharsPerLine = 50) => {
+    const words = text.split(' ')
+    const lines: string[] = []
+    let currentLine = ''
+
+    for (const word of words) {
+      if ((currentLine + ' ' + word).length <= maxCharsPerLine) {
+        currentLine += (currentLine ? ' ' : '') + word
+      } else {
+        if (currentLine) lines.push(currentLine)
+        currentLine = word
+      }
+    }
+    if (currentLine) lines.push(currentLine)
+    return lines
+  }
+
   // Export Clean Formal SVG File for Canva / Corel / Illustrator
   const handleExportSVG = () => {
+    const addressLines = wrapSvgText(fullAddressText, 46)
+    const addressTspans = addressLines.map((line, idx) => 
+      `<tspan x="25" dy="${idx === 0 ? 0 : 16}">${line}</tspan>`
+    ).join('')
+
     const formattedItemsSvg = items.length > 0
-      ? items.slice(0, 4).map((item: any, idx: number) => {
+      ? items.slice(0, 5).map((item: any, idx: number) => {
           const qty = item.quantity || 1
           const name = item.product_name || 'Merchandise'
           const variant = item.variant_name ? ` (${item.variant_name})` : ''
-          return `<text x="310" y="${345 + idx * 16}" fill="#111827" font-size="11" font-weight="600">• ${qty}x ${name}${variant}</text>`
+          return `<text x="310" y="${345 + idx * 15}" fill="#111827" font-size="11" font-weight="600">• ${qty}x ${name}${variant}</text>`
         }).join('\n')
       : `<text x="310" y="345" fill="#111827" font-size="11" font-weight="600">• Merchandise Reunion Kit 100 Tahun Gontor</text>`
 
     const svgContent = `
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 595 420" width="595" height="420" style="background-color: #ffffff; font-family: 'Helvetica Neue', Arial, sans-serif;">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 595 440" width="595" height="440" style="background-color: #ffffff; font-family: 'Helvetica Neue', Arial, sans-serif;">
   <!-- Formal Shipping Sticker Outer Frame (A6 / Half-A5) -->
-  <rect x="5" y="5" width="585" height="410" fill="#ffffff" stroke="#000000" stroke-width="3" rx="4" />
+  <rect x="5" y="5" width="585" height="430" fill="#ffffff" stroke="#000000" stroke-width="3" rx="4" />
   
   <!-- Header Bar -->
   <rect x="5" y="5" width="585" height="50" fill="#063D2E" />
@@ -76,33 +99,30 @@ export default function ShippingLabelModal({ order, isOpen, onClose }: ShippingL
   <text x="570" y="88" fill="#4b5563" font-size="12" font-weight="bold" text-anchor="end">TGL: ${new Date(order.created_at || Date.now()).toLocaleDateString('id-ID')}</text>
 
   <!-- Recipient Box -->
-  <rect x="15" y="110" width="380" height="185" fill="#ffffff" stroke="#000000" stroke-width="1.5" rx="3" />
+  <rect x="15" y="110" width="380" height="205" fill="#ffffff" stroke="#000000" stroke-width="1.5" rx="3" />
   <text x="25" y="130" fill="#063D2E" font-size="12" font-weight="bold">PENERIMA (RECIPIENT):</text>
   <text x="25" y="152" fill="#000000" font-size="15" font-weight="bold">${recipientName} (Stambuk: ${stambuk})</text>
   <text x="25" y="172" fill="#063D2E" font-size="13" font-weight="bold">NO. HP/WA: ${phone}</text>
   
-  <text x="25" y="195" fill="#1f2937" font-size="11.5" font-weight="normal">
-    <tspan x="25" dy="0">${fullAddressText.slice(0, 52)}</tspan>
-    <tspan x="25" dy="16">${fullAddressText.slice(52, 104)}</tspan>
-    <tspan x="25" dy="16">${fullAddressText.slice(104, 156)}</tspan>
-    <tspan x="25" dy="16">${fullAddressText.slice(156, 208)}</tspan>
+  <text x="25" y="195" fill="#000000" font-size="11.5" font-weight="600">
+    ${addressTspans}
   </text>
 
   <!-- Public Track QR Code Box -->
-  <rect x="405" y="110" width="175" height="185" fill="#ffffff" stroke="#000000" stroke-width="1.5" rx="3" />
-  <image href="${qrApiUrl}" x="418" y="118" width="150" height="150" />
-  <text x="492" y="282" fill="#000000" font-size="10" font-weight="bold" text-anchor="middle">SCAN TRACK ORDER</text>
+  <rect x="405" y="110" width="175" height="205" fill="#ffffff" stroke="#000000" stroke-width="1.5" rx="3" />
+  <image href="${qrApiUrl}" x="418" y="125" width="150" height="150" />
+  <text x="492" y="295" fill="#000000" font-size="10" font-weight="bold" text-anchor="middle">SCAN TRACK ORDER</text>
 
   <!-- Sender Box -->
-  <rect x="15" y="305" width="275" height="95" fill="#ffffff" stroke="#000000" stroke-width="1.5" rx="3" />
-  <text x="25" y="323" fill="#063D2E" font-size="11" font-weight="bold">PENGIRIM (SENDER):</text>
-  <text x="25" y="342" fill="#000000" font-size="12" font-weight="bold">Panitia 100 Tahun Gontor</text>
-  <text x="25" y="360" fill="#4b5563" font-size="11">Pondok Modern Darussalam Gontor</text>
-  <text x="25" y="376" fill="#4b5563" font-size="11">Ponorogo, Jawa Timur (63411)</text>
+  <rect x="15" y="325" width="275" height="100" fill="#ffffff" stroke="#000000" stroke-width="1.5" rx="3" />
+  <text x="25" y="345" fill="#063D2E" font-size="11" font-weight="bold">PENGIRIM (SENDER):</text>
+  <text x="25" y="364" fill="#000000" font-size="12" font-weight="bold">Panitia 100 Tahun Gontor</text>
+  <text x="25" y="382" fill="#4b5563" font-size="11">Pondok Modern Darussalam Gontor</text>
+  <text x="25" y="398" fill="#4b5563" font-size="11">Ponorogo, Jawa Timur (63411)</text>
 
   <!-- Package Items Box -->
-  <rect x="300" y="305" width="280" height="95" fill="#ffffff" stroke="#000000" stroke-width="1.5" rx="3" />
-  <text x="310" y="323" fill="#063D2E" font-size="11" font-weight="bold">ISI PAKET PESANAN (ITEMS):</text>
+  <rect x="300" y="325" width="280" height="100" fill="#ffffff" stroke="#000000" stroke-width="1.5" rx="3" />
+  <text x="310" y="345" fill="#063D2E" font-size="11" font-weight="bold">ISI PAKET PESANAN (ITEMS):</text>
   ${formattedItemsSvg}
 </svg>
     `.trim()
@@ -141,7 +161,7 @@ export default function ShippingLabelModal({ order, isOpen, onClose }: ShippingL
             width: 148mm;
             height: 105mm;
             margin: 0;
-            padding: 8mm;
+            padding: 6mm;
             box-shadow: none !important;
             border: 2px solid #000000 !important;
             border-radius: 0px !important;
@@ -178,7 +198,7 @@ export default function ShippingLabelModal({ order, isOpen, onClose }: ShippingL
           {/* Formal Official Shipping Sticker Card */}
           <div
             id="printable-shipping-sticker"
-            className="w-full max-w-lg bg-white border-2 border-black rounded-sm p-4 shadow-md space-y-3 font-sans relative overflow-hidden"
+            className="w-full max-w-lg bg-white border-2 border-black rounded-xs p-4 shadow-md space-y-3 font-sans relative overflow-hidden"
           >
             {/* Formal Header Bar */}
             <div className="p-2.5 rounded-xs text-white flex items-center justify-between" style={{ background: '#063D2E' }}>
@@ -207,9 +227,9 @@ export default function ShippingLabelModal({ order, isOpen, onClose }: ShippingL
             </div>
 
             {/* Recipient & Public Track QR Code */}
-            <div className="grid grid-cols-3 gap-2.5">
-              {/* Recipient Info */}
-              <div className="col-span-2 p-2.5 rounded-xs border border-black bg-white space-y-1">
+            <div className="grid grid-cols-3 gap-2.5 items-stretch">
+              {/* Recipient Info (Zero line truncation, full address display) */}
+              <div className="col-span-2 p-3 rounded-xs border border-black bg-white space-y-1">
                 <p className="text-[10px] font-bold text-green-900 font-display uppercase tracking-wider">
                   PENERIMA (RECIPIENT):
                 </p>
@@ -219,14 +239,14 @@ export default function ShippingLabelModal({ order, isOpen, onClose }: ShippingL
                 <p className="text-xs font-bold text-green-800">
                   📞 HP / WA: {phone}
                 </p>
-                <div className="text-xs text-gray-800 leading-relaxed font-sans pt-1 border-t border-gray-300">
+                <div className="text-xs text-gray-900 leading-normal font-sans pt-1 border-t border-gray-300">
                   <p className="font-semibold text-gray-900">📍 Alamat Pengiriman Lengkap:</p>
-                  <p className="font-medium text-gray-900 line-clamp-3">{fullAddressText}</p>
+                  <p className="font-semibold text-gray-900 break-words pt-0.5">{fullAddressText}</p>
                 </div>
               </div>
 
               {/* Public Track Order QR Code */}
-              <div className="col-span-1 p-1.5 rounded-xs border border-black bg-white flex flex-col items-center justify-center text-center space-y-1">
+              <div className="col-span-1 p-2 rounded-xs border border-black bg-white flex flex-col items-center justify-center text-center space-y-1">
                 <img
                   src={qrApiUrl}
                   alt={`QR Track Order ${orderNumber}`}
