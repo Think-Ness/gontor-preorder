@@ -155,14 +155,13 @@ export default async function OrderDetailPage({
       </div>
 
       {/* Admin Actions */}
-      {order.payment_proof_file_id && (
-        <PaymentActions
-          orderId={order.id}
-          orderNumber={order.order_number}
-          currentStatus={order.order_status}
-          currentPaymentStatus={order.payment_status}
-        />
-      )}
+      <PaymentActions
+        orderId={order.id}
+        orderNumber={order.order_number}
+        currentStatus={order.order_status}
+        currentPaymentStatus={order.payment_status}
+        fulfillmentMethod={order.fulfillment_method}
+      />
 
       {order.admin_note && (
         <div className="bg-yellow-50 rounded-xl p-4 border border-yellow-200">
