@@ -75,11 +75,25 @@ export default function ShippingLabelModal({ order, isOpen, onClose }: ShippingL
     return lines
   }
 
+  // XML escape helper
+  const escapeXml = (unsafe: string) => {
+    return unsafe.replace(/[<>&'"]/g, (c) => {
+      switch (c) {
+        case '<': return '&lt;'
+        case '>': return '&gt;'
+        case '&': return '&amp;'
+        case '\'': return '&apos;'
+        case '"': return '&quot;'
+        default: return c
+      }
+    })
+  }
+
   // Export Clean Formal SVG File for Canva / Corel / Illustrator (A5 Landscape Format)
   const handleExportSVG = () => {
     const addressLines = wrapSvgText(cleanAddressText, 75)
     const addressTspans = addressLines.map((line, idx) => 
-      `<tspan x="25" dy="${idx === 0 ? 0 : 18}">${line}</tspan>`
+      `<tspan x="25" dy="${idx === 0 ? 0 : 18}">${escapeXml(line)}</tspan>`
     ).join('')
 
     const formattedItemsSvg = items.length > 0
@@ -87,9 +101,9 @@ export default function ShippingLabelModal({ order, isOpen, onClose }: ShippingL
           const qty = item.quantity || 1
           const name = item.item_name_snapshot || item.product_name || 'Merchandise'
           const variant = item.variant_name_snapshot || item.variant_name ? ` (${item.variant_name_snapshot || item.variant_name})` : ''
-          return `<text x="560" y="${280 + idx * 18}" fill="#111827" font-size="12" font-weight="600">• ${qty}x ${name}${variant}</text>`
+          return `<text x="560" y="${280 + idx * 18}" fill="#111827" font-size="12" font-weight="600">&#x2022; ${qty}x ${escapeXml(name)}${escapeXml(variant)}</text>`
         }).join('\n')
-      : `<text x="560" y="280" fill="#111827" font-size="12" font-weight="600">• Merchandise Reunion Kit 100 Tahun Gontor</text>`
+      : `<text x="560" y="280" fill="#111827" font-size="12" font-weight="600">&#x2022; Merchandise Reunion Kit 100 Tahun Gontor</text>`
 
     // A5 Landscape Dimensions: 842 x 595
     const svgContent = `
@@ -99,31 +113,31 @@ export default function ShippingLabelModal({ order, isOpen, onClose }: ShippingL
   
   <!-- Header Bar -->
   <rect x="10" y="10" width="822" height="60" fill="#063D2E" rx="4" />
-  <text x="25" y="45" fill="#D4AF37" font-size="22" font-weight="bold" letter-spacing="1">PANITIA 100 TAHUN GONTOR — REUNION KIT</text>
+  <text x="25" y="45" fill="#D4AF37" font-size="22" font-weight="bold" letter-spacing="1">PANITIA 100 TAHUN GONTOR &#x2014; REUNION KIT</text>
   <text x="815" y="45" fill="#ffffff" font-size="16" font-weight="bold" letter-spacing="2" text-anchor="end">LABEL STIKER RESMI PENGIRIMAN PAKET</text>
 
   <!-- Resi / Order Number Row & Courier -->
   <rect x="20" y="85" width="802" height="45" fill="#f3f4f6" stroke="#000000" stroke-width="2" rx="4" />
-  <text x="30" y="113" fill="#000000" font-size="16" font-weight="bold">NO. RESI / ORDER: ${orderNumber}</text>
-  <text x="400" y="113" fill="#063D2E" font-size="16" font-weight="bold" text-anchor="middle">${courier.toUpperCase()}</text>
+  <text x="30" y="113" fill="#000000" font-size="16" font-weight="bold">NO. RESI / ORDER: ${escapeXml(orderNumber)}</text>
+  <text x="400" y="113" fill="#063D2E" font-size="16" font-weight="bold" text-anchor="middle">${escapeXml(courier.toUpperCase())}</text>
   <text x="805" y="113" fill="#4b5563" font-size="14" font-weight="bold" text-anchor="end">TGL: ${new Date(order.created_at || Date.now()).toLocaleDateString('id-ID')}</text>
 
   <!-- Left Column: Recipient Box (Width 520) -->
   <rect x="20" y="145" width="520" height="425" fill="#ffffff" stroke="#000000" stroke-width="2" rx="4" />
   <text x="30" y="170" fill="#063D2E" font-size="14" font-weight="bold">PENERIMA (RECIPIENT):</text>
-  <text x="30" y="195" fill="#000000" font-size="18" font-weight="bold">${recipientName}</text>
-  <text x="30" y="215" fill="#4b5563" font-size="14">(Stambuk: ${stambuk})</text>
-  <text x="30" y="240" fill="#063D2E" font-size="15" font-weight="bold">NO. HP/WA: ${phone}</text>
+  <text x="30" y="195" fill="#000000" font-size="18" font-weight="bold">${escapeXml(recipientName)}</text>
+  <text x="30" y="215" fill="#4b5563" font-size="14">(Stambuk: ${escapeXml(stambuk)})</text>
+  <text x="30" y="240" fill="#063D2E" font-size="15" font-weight="bold">NO. HP/WA: ${escapeXml(phone)}</text>
   
   <line x1="20" y1="260" x2="540" y2="260" stroke="#e5e7eb" stroke-width="2" />
   
-  <text x="30" y="285" fill="#000000" font-size="14" font-weight="bold">📍 Alamat Pengiriman Lengkap:</text>
+  <text x="30" y="285" fill="#000000" font-size="14" font-weight="bold">&#x1F4CD; Alamat Pengiriman Lengkap:</text>
   <text x="30" y="315" fill="#000000" font-size="15" font-weight="600">
     ${addressTspans}
   </text>
 
   <!-- Small Public Track QR Code (Top Right of Recipient Box) -->
-  <image href="${qrApiUrl}" x="445" y="155" width="85" height="85" />
+  <image href="${escapeXml(qrApiUrl)}" x="445" y="155" width="85" height="85" />
   <text x="487" y="250" fill="#000000" font-size="9" font-weight="bold" text-anchor="middle">SCAN TRACK</text>
   <line x1="435" y1="145" x2="435" y2="260" stroke="#e5e7eb" stroke-width="2" />
 
