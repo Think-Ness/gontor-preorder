@@ -249,18 +249,7 @@ export default function OrderTableClient({ orders }: { orders: any[] }) {
                     </div>
                   </td>
                   <td className="px-4 py-4 text-right pr-6">
-                    <div className="flex items-center justify-end gap-2">
-                      <a
-                        href={waUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-green-50 hover:bg-green-100 text-green-700 transition-colors"
-                        title="Chat WA"
-                      >
-                        <MessageCircle className="w-4 h-4" />
-                      </a>
-                      <OrderRowActions order={order} />
-                    </div>
+                    <OrderRowActions order={order} waUrl={waUrl} />
                   </td>
                 </tr>
               )
