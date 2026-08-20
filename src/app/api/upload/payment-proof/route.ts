@@ -26,11 +26,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `Ukuran file melebihi ${maxMb} MB` }, { status: 400 })
     }
 
+    const customerName = formData.get('customer_name') as string | null
     const buffer = Buffer.from(await file.arrayBuffer())
     const timestamp = Date.now()
-    const safeName = sanitizeFilename(file.name.replace(/\.[^.]+$/, ''))
+    const baseName = customerName ? sanitizeFilename(customerName) : sanitizeFilename(file.name.replace(/\.[^.]+$/, ''))
     const ext = file.type === 'image/webp' ? 'webp' : file.type === 'image/png' ? 'png' : 'jpg'
-    const filename = `proof_${timestamp}_${safeName}.${ext}`
+    const filename = `BuktiTransfer_${baseName}_${timestamp}.${ext}`
 
     const folderId = process.env.GOOGLE_DRIVE_PAYMENT_FOLDER_ID!
 

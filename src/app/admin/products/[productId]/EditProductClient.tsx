@@ -88,6 +88,10 @@ export default function EditProductClient({ initialProduct }: Props) {
     }
   }
 
+  const computedTotalStock = form.has_variants 
+    ? variants.reduce((acc, v) => acc + (v.stock ? Number(v.stock) : 0), 0)
+    : (form.stock !== '' ? Number(form.stock) : null)
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!form.name || !form.product_code || !form.price) {
@@ -102,7 +106,7 @@ export default function EditProductClient({ initialProduct }: Props) {
       const payload = {
         ...form,
         price: Number(form.price),
-        stock: form.stock !== '' ? Number(form.stock) : null,
+        stock: computedTotalStock,
         variants: form.has_variants ? variants.map(v => ({
           ...v,
           price: v.price ? Number(v.price) : Number(form.price),
@@ -242,10 +246,13 @@ export default function EditProductClient({ initialProduct }: Props) {
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1 font-display">Stok Total</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1 font-display">
+                Stok Total
+                {form.has_variants && <span className="text-xs font-normal text-gray-400 ml-2">(Otomatis dari varian)</span>}
+              </label>
               <input
                 type="number"
-                value={form.stock}
+                value={form.has_variants ? (computedTotalStock ?? '') : form.stock}
                 onChange={e => setForm(p => ({ ...p, stock: e.target.value }))}
                 disabled={form.has_variants}
                 className={inputCls}

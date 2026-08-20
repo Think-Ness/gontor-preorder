@@ -80,6 +80,9 @@ export default function StepPayment({ draft, cart, paymentMethods, sessionId, is
       const formData = new FormData()
       formData.append('file', file)
       formData.append('order_draft_id', draft?.draftId ?? 'unknown')
+      if (draft?.customer?.full_name) {
+        formData.append('customer_name', draft.customer.full_name)
+      }
 
       const res = await fetch('/api/upload/payment-proof', { method: 'POST', body: formData })
       const data = await res.json()
