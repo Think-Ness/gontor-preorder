@@ -20,8 +20,9 @@ const nav = [
     icon: ShoppingCart,
     children: [
       { label: 'Semua Order', href: '/admin/orders' },
+      { label: '📦 Ambil Stand (Pickup)', href: '/admin/orders?method=PICKUP' },
+      { label: '🚚 Kirim Alamat (Delivery)', href: '/admin/orders?method=DELIVERY' },
       { label: 'Payment Review', href: '/admin/orders?status=PAYMENT_REVIEW' },
-      { label: 'Paid', href: '/admin/orders?status=PAID' },
       { label: 'Processing', href: '/admin/orders?status=PROCESSING' },
       { label: 'Ready Pickup', href: '/admin/orders?status=READY_FOR_PICKUP' },
       { label: 'Shipped', href: '/admin/orders?status=SHIPPED' },
