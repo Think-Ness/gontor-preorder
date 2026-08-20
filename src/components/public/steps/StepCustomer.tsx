@@ -1,12 +1,10 @@
-'use client'
-
 import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { customerSchema, CustomerFormData } from '@/lib/validations/schemas'
 import { CheckoutDraft } from '@/types'
 import { normalizeWhatsApp } from '@/lib/utils'
-import { ChevronRight, User } from 'lucide-react'
+import { ChevronRight, User, GraduationCap, Users } from 'lucide-react'
 
 interface Props {
   draft: CheckoutDraft | null
@@ -14,17 +12,20 @@ interface Props {
 }
 
 export default function StepCustomer({ draft, onSave }: Props) {
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<CustomerFormData>({
+  const { register, handleSubmit, setValue, watch, control, formState: { errors } } = useForm<CustomerFormData>({
     resolver: zodResolver(customerSchema),
     defaultValues: {
+      is_alumni: draft?.isAlumni !== undefined ? draft.isAlumni : true,
       stambuk: draft?.stambuk || '',
       full_name: draft?.name || '',
       district: draft?.district || '',
-      generation_year: draft?.generationYear ? Number(draft.generationYear) : undefined,
+      generation_year: draft?.generationYear && draft.generationYear !== '0' ? Number(draft.generationYear) : undefined,
       whatsapp: draft?.whatsapp || '',
       email: draft?.email || '',
     },
   })
+
+  const isAlumni = watch('is_alumni')
 
   // Auto-fill from localStorage if available and form is empty
   useEffect(() => {
@@ -32,6 +33,7 @@ export default function StepCustomer({ draft, onSave }: Props) {
       const savedProfile = localStorage.getItem('gontor_customer_profile')
       if (savedProfile) {
         const profile = JSON.parse(savedProfile)
+        if (draft?.isAlumni === undefined && profile.is_alumni !== undefined) setValue('is_alumni', profile.is_alumni)
         if (!draft?.stambuk && profile.stambuk) setValue('stambuk', profile.stambuk)
         if (!draft?.name && profile.full_name) setValue('full_name', profile.full_name)
         if (!draft?.district && profile.district) setValue('district', profile.district)
@@ -53,10 +55,11 @@ export default function StepCustomer({ draft, onSave }: Props) {
     }
 
     onSave({
-      stambuk: data.stambuk,
+      isAlumni: data.is_alumni,
+      stambuk: data.is_alumni ? (data.stambuk || '-') : '-',
       name: data.full_name,
       district: data.district,
-      generationYear: String(data.generation_year),
+      generationYear: data.is_alumni ? String(data.generation_year || 0) : '0',
       whatsapp: normalized,
       email: data.email,
     })
@@ -77,18 +80,64 @@ export default function StepCustomer({ draft, onSave }: Props) {
           <User className="w-6 h-6" style={{ color: 'var(--gontor-green)' }} />
         </div>
         <h2 className="font-display font-bold text-xl" style={{ color: 'var(--gontor-green-dark)' }}>Data Pemesan</h2>
-        <p className="text-sm text-gray-500 mt-1">Isi data diri Anda sebagai alumni Gontor</p>
+        <p className="text-sm text-gray-500 mt-1">Isi data diri Anda untuk keperluan pengiriman</p>
       </div>
 
-      <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-4">
-        {/* Stambuk */}
+      <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-5">
+        
+        {/* Pilihan Alumni / Umum */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-display">
-            Stambuk <span className="text-red-400">*</span>
+          <label className="block text-sm font-semibold text-gray-700 mb-2 font-display">
+            Status Pemesan <span className="text-red-400">*</span>
           </label>
-          <input {...register('stambuk')} placeholder="Nomor stambuk Anda" className={inputCls(errors.stambuk)} />
-          {errors.stambuk && <p className="text-xs text-red-500 mt-1">{errors.stambuk.message}</p>}
+          <div className="grid grid-cols-2 gap-3">
+            <label className={`cursor-pointer flex flex-col items-center justify-center gap-2 p-3 border-2 rounded-xl transition-all ${isAlumni ? 'border-green-800 bg-green-50' : 'border-gray-200 hover:border-green-200 bg-white'}`}>
+              <input type="radio" {...register('is_alumni')} value="true" className="hidden" 
+                onChange={() => setValue('is_alumni', true, { shouldValidate: true })} 
+              />
+              <GraduationCap className={`w-6 h-6 ${isAlumni ? 'text-green-800' : 'text-gray-400'}`} />
+              <span className={`font-display font-bold text-sm ${isAlumni ? 'text-green-900' : 'text-gray-600'}`}>Alumni Gontor</span>
+            </label>
+            <label className={`cursor-pointer flex flex-col items-center justify-center gap-2 p-3 border-2 rounded-xl transition-all ${!isAlumni ? 'border-green-800 bg-green-50' : 'border-gray-200 hover:border-green-200 bg-white'}`}>
+              <input type="radio" {...register('is_alumni')} value="false" className="hidden" 
+                onChange={() => setValue('is_alumni', false, { shouldValidate: true })} 
+              />
+              <Users className={`w-6 h-6 ${!isAlumni ? 'text-green-800' : 'text-gray-400'}`} />
+              <span className={`font-display font-bold text-sm ${!isAlumni ? 'text-green-900' : 'text-gray-600'}`}>Bukan Alumni / Umum</span>
+            </label>
+          </div>
         </div>
+
+        <hr className="border-gray-100" />
+
+        {isAlumni && (
+          <>
+            {/* Stambuk */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-display">
+                Stambuk <span className="text-red-400">*</span>
+              </label>
+              <input {...register('stambuk')} placeholder="Nomor stambuk Anda" className={inputCls(errors.stambuk)} />
+              {errors.stambuk && <p className="text-xs text-red-500 mt-1">{errors.stambuk.message}</p>}
+            </div>
+
+            {/* Angkatan */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-display">
+                Angkatan <span className="text-red-400">*</span>
+              </label>
+              <input
+                {...register('generation_year', { valueAsNumber: true })}
+                type="number"
+                placeholder="Tahun kelulusan, contoh: 2005"
+                min={1926}
+                max={2026}
+                className={inputCls(errors.generation_year)}
+              />
+              {errors.generation_year && <p className="text-xs text-red-500 mt-1">{errors.generation_year.message}</p>}
+            </div>
+          </>
+        )}
 
         {/* Nama */}
         <div>
@@ -102,26 +151,10 @@ export default function StepCustomer({ draft, onSave }: Props) {
         {/* Daerah */}
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-display">
-            Daerah <span className="text-red-400">*</span>
+            Daerah Asal / Tinggal <span className="text-red-400">*</span>
           </label>
           <input {...register('district')} placeholder="Kota/Kabupaten tempat tinggal saat ini" className={inputCls(errors.district)} />
           {errors.district && <p className="text-xs text-red-500 mt-1">{errors.district.message}</p>}
-        </div>
-
-        {/* Angkatan */}
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-display">
-            Angkatan <span className="text-red-400">*</span>
-          </label>
-          <input
-            {...register('generation_year', { valueAsNumber: true })}
-            type="number"
-            placeholder="Tahun kelulusan, contoh: 2005"
-            min={1926}
-            max={2026}
-            className={inputCls(errors.generation_year)}
-          />
-          {errors.generation_year && <p className="text-xs text-red-500 mt-1">{errors.generation_year.message}</p>}
         </div>
 
         {/* WhatsApp */}
@@ -136,21 +169,22 @@ export default function StepCustomer({ draft, onSave }: Props) {
             className={inputCls(errors.whatsapp)}
           />
           {errors.whatsapp && <p className="text-xs text-red-500 mt-1">{errors.whatsapp.message}</p>}
-          <p className="text-xs text-gray-400 mt-1">Konfirmasi pembayaran akan dikirim ke nomor ini</p>
+          <p className="text-xs text-gray-400 mt-1">Untuk komunikasi jika ada kendala pengiriman</p>
         </div>
 
         {/* Email */}
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-display">
-            Email <span className="text-xs font-normal text-gray-400">(Opsional - untuk menerima bukti & status via email)</span>
+            Email Aktif <span className="text-red-400">*</span>
           </label>
           <input
             {...register('email')}
             type="email"
-            placeholder="contoh: alumni@gontor.ac.id"
+            placeholder="contoh: email@domain.com"
             className={inputCls(errors.email)}
           />
           {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>}
+          <p className="text-xs text-gray-400 mt-1">Digunakan untuk menerima bukti pembayaran & invoice</p>
         </div>
       </div>
 

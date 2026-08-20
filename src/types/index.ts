@@ -228,6 +228,7 @@ export interface Cart {
 
 export interface CheckoutDraft {
   draftId: string
+  isAlumni?: boolean
   stambuk: string
   name: string
   district: string

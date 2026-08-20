@@ -4,19 +4,25 @@ import { z } from 'zod'
 // Customer Data Schema
 // ============================================================
 export const customerSchema = z.object({
-  stambuk: z.string().min(1, 'Stambuk wajib diisi'),
+  is_alumni: z.boolean(),
+  stambuk: z.string().optional(),
   full_name: z.string().min(2, 'Nama lengkap wajib diisi'),
   district: z.string().min(1, 'Daerah wajib diisi'),
-  generation_year: z
-    .number({ message: 'Angkatan harus berupa angka' })
-    .int()
-    .min(1926, 'Angkatan tidak valid')
-    .max(new Date().getFullYear(), 'Angkatan tidak valid'),
+  generation_year: z.number({ message: 'Angkatan harus berupa angka' }).int().min(1926, 'Angkatan tidak valid').max(new Date().getFullYear(), 'Angkatan tidak valid').optional().nullable(),
   whatsapp: z
     .string()
     .min(1, 'Nomor WhatsApp wajib diisi')
     .regex(/^(\+62|62|0)8[1-9][0-9]{6,11}$/, 'Format nomor HP Indonesia tidak valid'),
-  email: z.string().email('Format email tidak valid').optional().or(z.literal('')),
+  email: z.string().email('Format email wajib dan harus valid'),
+}).superRefine((data, ctx) => {
+  if (data.is_alumni) {
+    if (!data.stambuk || data.stambuk.trim() === '') {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Stambuk wajib diisi untuk alumni', path: ['stambuk'] });
+    }
+    if (!data.generation_year) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Angkatan wajib diisi untuk alumni', path: ['generation_year'] });
+    }
+  }
 })
 
 export type CustomerFormData = z.infer<typeof customerSchema>
@@ -47,7 +53,7 @@ export const createOrderSchema = z.object({
   district: z.string().min(1),
   generation_year: z.number().int(),
   whatsapp: z.string().min(1),
-  email: z.string().optional(),
+  email: z.string().email(),
 
   // Fulfillment
   fulfillment_method: z.enum(['PICKUP', 'DELIVERY']),
