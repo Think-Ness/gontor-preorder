@@ -2,14 +2,19 @@
 
 import { useState, useEffect } from 'react'
 import { EventSettings, PreorderStatus, Product, Package, PaymentMethod } from '@/types'
-import CountdownTimer from './CountdownTimer'
+import CompetzyHeader from './CompetzyHeader'
+import CompetzyCategoryGrid from './CompetzyCategoryGrid'
 import ProductCatalog from './ProductCatalog'
+import CompetzyFeatures from './CompetzyFeatures'
+import CompetzyStats from './CompetzyStats'
+import CompetzyTestimonial from './CompetzyTestimonial'
+import CompetzyCallToAction from './CompetzyCallToAction'
+import CompetzyFooter from './CompetzyFooter'
 import CartDrawer from './CartDrawer'
-import PromoBannerSlider from './PromoBannerSlider'
+import CountdownTimer from './CountdownTimer'
 import { useCart } from '@/hooks/useCart'
 import { formatRupiah } from '@/lib/utils'
-import { ShoppingBag, ChevronRight, Star, Clock, Search, ArrowRight, ShieldCheck, Sparkles, Award, CheckCircle2 } from 'lucide-react'
-import Link from 'next/link'
+import { ShoppingBag, ArrowRight, Clock, ShieldCheck, Sparkles, Award, CheckCircle2 } from 'lucide-react'
 
 interface LandingPageProps {
   settings: EventSettings | null
@@ -49,89 +54,21 @@ export default function LandingPage({
   const faviconUrl = settings?.favicon_url
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f8faf9] text-gray-900 antialiased selection:bg-emerald-100 selection:text-emerald-900">
+    <div className="min-h-screen flex flex-col bg-[#f8faf9] text-gray-900 antialiased selection:bg-purple-100 selection:text-[#5627ff]">
       
-      {/* ============================================================
-          COMPETZY FLOATING TOP HEADER
-          ============================================================ */}
-      <header className="fixed inset-x-0 top-0 z-50 px-4 pt-4 lg:px-8 lg:pt-5">
-        <div className="relative mx-auto flex max-w-[80rem] items-center justify-between">
-          
-          {/* Logo & Event Name */}
-          <Link href="/" className="flex items-center gap-3 shrink-0">
-            {faviconUrl ? (
-              <img 
-                src={faviconUrl} 
-                alt="Gontor Logo" 
-                className="w-9 h-9 object-contain rounded-full shadow-sm ring-2 ring-emerald-500/20"
-              />
-            ) : (
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#063D2E] to-emerald-700 text-white font-black flex items-center justify-center text-sm shadow-md">
-                G
-              </div>
-            )}
-            <div>
-              <div className="font-display font-black text-sm text-[#063D2E] leading-none">
-                {settings?.event_name || 'Gontor 100 Tahun'}
-              </div>
-              <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-0.5">
-                Official Merchandise
-              </div>
-            </div>
-          </Link>
+      {/* 1. COMPETZY FLOATING TOP HEADER */}
+      <CompetzyHeader
+        faviconUrl={faviconUrl}
+        eventName={settings?.event_name}
+        totalItems={totalItems}
+        isPreorderOpen={preorderStatus === 'OPEN'}
+        onOpenCart={() => setIsCartOpen(true)}
+      />
 
-          {/* Centered Floating Pill Navigation Bar (Competzy Style) */}
-          <nav aria-label="Main Navigation" className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 lg:block">
-            <div className="relative flex items-center gap-1 rounded-full px-2 py-1.5 bg-white/90 ring-1 ring-black/5 shadow-[0_16px_46px_-18px_rgba(6,61,46,0.2)] backdrop-blur-2xl">
-              <a href="#" className="px-4 py-2 rounded-full text-xs font-bold text-emerald-900 bg-emerald-50 transition-colors">
-                Beranda
-              </a>
-              <a href="#catalog" className="px-4 py-2 rounded-full text-xs font-semibold text-gray-600 hover:text-emerald-900 transition-colors">
-                Katalog
-              </a>
-              <a href="#banners" className="px-4 py-2 rounded-full text-xs font-semibold text-gray-600 hover:text-emerald-900 transition-colors">
-                Promo & Info
-              </a>
-              <Link href="/track" className="px-4 py-2 rounded-full text-xs font-semibold text-gray-600 hover:text-emerald-900 transition-colors">
-                Lacak Order
-              </Link>
-            </div>
-          </nav>
-
-          {/* Right Action Buttons */}
-          <div className="flex items-center gap-3 shrink-0">
-            <Link
-              href="/track"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white border border-gray-200 text-xs font-bold text-gray-700 hover:bg-gray-50 shadow-2xs transition-all"
-            >
-              <Search className="w-3.5 h-3.5 text-emerald-700" />
-              Lacak Pesanan
-            </Link>
-
-            {preorderStatus === 'OPEN' && (
-              <button
-                onClick={() => setIsCartOpen(true)}
-                className="group relative inline-flex items-center gap-2 rounded-full bg-[#063D2E] hover:bg-[#08523e] text-white px-4 py-2 text-xs font-bold shadow-lg shadow-emerald-900/20 transition-all transform hover:scale-105 active:scale-95"
-              >
-                <ShoppingBag className="w-4 h-4 text-amber-300" />
-                <span className="hidden sm:inline">Keranjang</span>
-                {totalItems > 0 && (
-                  <span className="w-5 h-5 rounded-full bg-amber-400 text-gray-950 text-[11px] font-black flex items-center justify-center shadow-xs">
-                    {totalItems}
-                  </span>
-                )}
-              </button>
-            )}
-          </div>
-        </div>
-      </header>
-
-      {/* ============================================================
-          COMPETZY STYLE HERO SECTION
-          ============================================================ */}
+      {/* 2. COMPETZY HERO SECTION */}
       <section className="competzy-hero-bg relative isolate overflow-hidden pt-28 pb-16 lg:pt-36 lg:pb-24 border-b border-gray-200/60">
         
-        {/* Floating Animated Symbols Background */}
+        {/* Animated Falling Symbols Background */}
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
           {FALLING_GLYPHS.map((g, idx) => (
             <span
@@ -150,7 +87,7 @@ export default function LandingPage({
           ))}
         </div>
 
-        {/* Soft Radial Glow Mask Overlay */}
+        {/* Soft Mask Overlay */}
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-radial from-white/80 via-white/40 to-transparent" />
 
         <div className="relative z-10 mx-auto max-w-[80rem] px-6 lg:px-10 grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] items-center gap-12 lg:gap-14">
@@ -159,19 +96,19 @@ export default function LandingPage({
           <div className="text-center lg:text-left space-y-6">
             
             {/* Tag Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 border border-emerald-200/80 shadow-2xs backdrop-blur-md">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[11px] font-extrabold font-display tracking-widest uppercase text-emerald-900">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 border border-purple-200/80 shadow-2xs backdrop-blur-md">
+              <span className="w-2 h-2 rounded-full bg-[#5627ff] animate-pulse" />
+              <span className="text-[11px] font-extrabold font-display tracking-widest uppercase text-[#5627ff]">
                 Official Merchandise 100 Tahun Gontor
               </span>
             </div>
 
             {/* Giant Headline (Competzy Style) */}
             <h1 className="font-display font-black leading-[1.08] tracking-tight text-gray-950" style={{ fontSize: 'clamp(2.3rem, 4.8vw, 3.8rem)' }}>
-              <span className="block bg-gradient-to-r from-[#063D2E] via-emerald-800 to-green-700 bg-clip-text text-transparent">
+              <span className="block bg-gradient-to-r from-[#5627ff] via-purple-700 to-indigo-800 bg-clip-text text-transparent">
                 Satu Platform untuk
               </span>
-              <span className="block text-[#063D2E] mt-1">
+              <span className="block text-[#181219] mt-1">
                 Pemesanan Reunion Kit
               </span>
             </h1>
@@ -181,21 +118,21 @@ export default function LandingPage({
               <span>Merchandise resmi peringatan 1 Abad Pondok Modern Darussalam Gontor. </span>
               <span className="font-bold text-gray-900">100 Tahun Mengabdi, </span>
               <span>menjalin </span>
-              <span className="relative inline-block font-black italic text-emerald-800 mx-1">
+              <span className="relative inline-block font-black italic text-[#d9277b] mx-1">
                 UKHUWAH ABADI
                 {/* SVG Curve Underline */}
                 <svg aria-hidden="true" viewBox="0 0 200 14" preserveAspectRatio="none" className="pointer-events-none absolute left-0 right-0 -bottom-1.5 h-2 w-full">
-                  <path d="M4,11 Q90,2 196,6" fill="none" stroke="#d97706" strokeWidth="4" strokeLinecap="round" />
+                  <path d="M4,11 Q90,2 196,6" fill="none" stroke="#d9277b" strokeWidth="4" strokeLinecap="round" />
                 </svg>
               </span>
-              <span>seluruh alumni & santri.</span>
+              <span>seluruh alumni &amp; santri.</span>
             </p>
 
             {/* Countdown or Status Alert */}
             {preorderStatus === 'OPEN' && settings?.preorder_end && (
               <div className="pt-2 max-w-md mx-auto lg:mx-0">
-                <div className="p-4 rounded-2xl bg-white/90 border border-emerald-100 shadow-xl backdrop-blur-md">
-                  <div className="text-xs font-bold text-emerald-900 uppercase tracking-wider mb-3 flex items-center justify-center lg:justify-start gap-1.5">
+                <div className="p-4 rounded-2xl bg-white/90 border border-purple-100 shadow-xl backdrop-blur-md">
+                  <div className="text-xs font-bold text-[#5627ff] uppercase tracking-wider mb-3 flex items-center justify-center lg:justify-start gap-1.5">
                     <Clock className="w-4 h-4 text-amber-500" />
                     <span>PRE-ORDER BERAKHIR DALAM:</span>
                   </div>
@@ -209,9 +146,9 @@ export default function LandingPage({
               {preorderStatus === 'OPEN' ? (
                 <a
                   href="#catalog"
-                  className="group relative inline-flex items-center gap-3 rounded-full font-bold font-display tracking-tight text-base pl-7 pr-2.5 py-3.5 bg-[#063D2E] hover:bg-[#08523e] text-white shadow-[0_16px_36px_-12px_rgba(6,61,46,0.6)] transition-all transform hover:scale-[1.02] active:scale-[0.98]"
+                  className="group relative inline-flex items-center gap-3 rounded-full font-bold font-display tracking-tight text-base pl-7 pr-2.5 py-3.5 bg-[#d9277b] hover:bg-[#c01d6a] text-white shadow-[0_16px_36px_-12px_rgba(217,39,123,0.5)] transition-all transform hover:scale-[1.02] active:scale-[0.98]"
                 >
-                  <span>Pesan Merchandise Sekarang</span>
+                  <span>Jelajahi Katalog Merchandise</span>
                   <span className="grid h-9 w-9 place-items-center rounded-full bg-white/20 text-white transition-transform duration-300 group-hover:translate-x-1">
                     <ArrowRight className="w-4 h-4" />
                   </span>
@@ -222,14 +159,6 @@ export default function LandingPage({
                   <span className="text-sm font-bold text-gray-800">Pre-Order Saat Ini Ditutup</span>
                 </div>
               )}
-
-              <a
-                href="#banners"
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-600 hover:text-emerald-900 px-4 py-2 rounded-full transition-colors"
-              >
-                <span>Lihat Promo & Event</span>
-                <ChevronRight className="w-4 h-4" />
-              </a>
             </div>
 
             {/* Feature Highlights Bar */}
@@ -252,15 +181,15 @@ export default function LandingPage({
 
           {/* Right Hero Visual Showcase (Competzy Inspired Floating Card Frame) */}
           <div className="relative mx-auto w-full max-w-[36rem] lg:max-w-none">
-            <div className="relative rounded-[2.2rem] bg-white p-4 sm:p-6 shadow-[0_24px_60px_-20px_rgba(6,61,46,0.25)] border border-emerald-100/80">
+            <div className="relative rounded-[2.2rem] bg-white p-4 sm:p-6 shadow-[0_24px_60px_-20px_rgba(86,39,255,0.25)] border border-purple-100/80">
               
               {/* Top Banner Tag */}
               <div className="flex items-center justify-between pb-4 border-b border-gray-100">
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-amber-500" />
-                  <span className="font-display font-black text-sm text-[#063D2E]">REUNION KIT 100 THN</span>
+                  <span className="font-display font-black text-sm text-gray-900">REUNION KIT 100 THN</span>
                 </div>
-                <span className="px-3 py-1 rounded-full text-[10px] font-extrabold uppercase bg-amber-100 text-amber-800 border border-amber-300/60">
+                <span className="px-3 py-1 rounded-full text-[10px] font-extrabold uppercase bg-purple-100 text-[#5627ff] border border-purple-200">
                   OFFICIAL KIT
                 </span>
               </div>
@@ -293,13 +222,13 @@ export default function LandingPage({
               </div>
 
               {/* Bottom Feature Card */}
-              <div className="bg-emerald-50 rounded-2xl p-3.5 border border-emerald-100 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#063D2E] flex items-center justify-center text-amber-300 font-bold shrink-0">
+              <div className="bg-purple-50/60 rounded-2xl p-3.5 border border-purple-100 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#5627ff] flex items-center justify-center text-white font-bold shrink-0">
                   <Award className="w-5 h-5" />
                 </div>
                 <div>
-                  <div className="text-xs font-bold text-emerald-950 font-display">Peringatan 100 Tahun Gontor</div>
-                  <div className="text-[11px] text-emerald-800">Cenderamata kenangan Reuni Akbar 19-20 September 2026.</div>
+                  <div className="text-xs font-bold text-gray-950 font-display">Peringatan 100 Tahun Gontor</div>
+                  <div className="text-[11px] text-gray-600">Cenderamata kenangan Reuni Akbar 19-20 September 2026.</div>
                 </div>
               </div>
 
@@ -309,16 +238,15 @@ export default function LandingPage({
         </div>
       </section>
 
-      {/* ============================================================
-          PROMO BANNER SLIDER SECTION
-          ============================================================ */}
-      <section id="banners" className="py-6">
-        <PromoBannerSlider />
-      </section>
+      {/* 3. COMPETZY CATEGORY GRID ("Baru & Populer" 3-Card Group List) */}
+      <CompetzyCategoryGrid
+        products={products}
+        packages={packages}
+        onAddItem={addItem}
+        cartItems={cart.items}
+      />
 
-      {/* ============================================================
-          PRODUCT CATALOG SECTION
-          ============================================================ */}
+      {/* 4. COMPETZY CATALOG SECTION ("Jelajahi Semua Merchandise") */}
       {preorderStatus !== 'CLOSED' && (
         <section id="catalog" className="flex-1 py-12 lg:py-16">
           <ProductCatalog
@@ -331,22 +259,26 @@ export default function LandingPage({
         </section>
       )}
 
-      {/* ============================================================
-          FOOTER
-          ============================================================ */}
-      <footer className="bg-gray-950 text-gray-400 py-10 text-center text-sm border-t border-gray-900">
-        <div className="max-w-4xl mx-auto px-4 space-y-3">
-          {faviconUrl && (
-            <img src={faviconUrl} alt="Logo" className="w-8 h-8 object-contain mx-auto opacity-80" />
-          )}
-          <div className="font-display font-bold text-white text-base">
-            {settings?.event_name || 'Reunion Kit 100 Tahun Gontor'}
-          </div>
-          <p className="text-gray-500 text-xs max-w-md mx-auto leading-relaxed">
-            System Pre-Order Official Merchandise Peringatan 100 Tahun Gontor &mdash; Reuni Akbar 19–20 September 2026.
-          </p>
-        </div>
-      </footer>
+      {/* 5. COMPETZY FEATURES ("Platform Lengkap") */}
+      <CompetzyFeatures />
+
+      {/* 6. COMPETZY STATS COUNTER ("Lebih Dari Satu Abad") */}
+      <CompetzyStats />
+
+      {/* 7. COMPETZY ALUMNI TESTIMONIAL SHOWCASE */}
+      <CompetzyTestimonial />
+
+      {/* 8. COMPETZY CALL TO ACTION ("Koleksimu Menunggu." Full-Width Gold Banner) */}
+      <CompetzyCallToAction
+        isPreorderOpen={preorderStatus === 'OPEN'}
+        onOpenCart={() => setIsCartOpen(true)}
+      />
+
+      {/* 9. COMPETZY DARK FOOTER */}
+      <CompetzyFooter
+        faviconUrl={faviconUrl}
+        eventName={settings?.event_name}
+      />
 
       {/* Cart Drawer */}
       <CartDrawer
@@ -364,7 +296,7 @@ export default function LandingPage({
         <div className="fixed bottom-4 left-4 right-4 z-40 sm:hidden">
           <button
             onClick={() => setIsCartOpen(true)}
-            className="w-full py-4 bg-[#063D2E] text-white rounded-full flex items-center justify-between px-6 shadow-2xl font-display"
+            className="w-full py-4 bg-[#5627ff] text-white rounded-full flex items-center justify-between px-6 shadow-2xl font-display"
           >
             <div className="flex items-center gap-2">
               <ShoppingBag className="w-5 h-5 text-amber-300" />
