@@ -1,7 +1,7 @@
 -- Add is_alumni and email columns to orders table
 ALTER TABLE orders
-ADD COLUMN is_alumni BOOLEAN NOT NULL DEFAULT true,
-ADD COLUMN email TEXT;
+ADD COLUMN IF NOT EXISTS is_alumni BOOLEAN NOT NULL DEFAULT true,
+ADD COLUMN IF NOT EXISTS email TEXT;
 
 -- Update the create_order_idempotent function to include these new columns
 CREATE OR REPLACE FUNCTION create_order_idempotent(

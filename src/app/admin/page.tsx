@@ -3,7 +3,7 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { formatRupiah } from '@/lib/utils'
 import {
   ShoppingCart, CreditCard, CheckCircle, Loader2,
-  Package, Truck, TrendingUp, AlertCircle
+  Package, Truck, TrendingUp, AlertCircle, Users, GraduationCap
 } from 'lucide-react'
 import RealtimeOrderFeed from '@/components/admin/RealtimeOrderFeed'
 import Link from 'next/link'
@@ -16,6 +16,8 @@ async function getDashboardStats() {
 
   const [
     { count: totalOrders },
+    { count: alumniOrders },
+    { count: umumOrders },
     { count: paymentReview },
     { count: paid },
     { count: processing },
@@ -25,6 +27,8 @@ async function getDashboardStats() {
     { data: recentOrders },
   ] = await Promise.all([
     supabase.from('orders').select('*', { count: 'exact', head: true }),
+    supabase.from('orders').select('*', { count: 'exact', head: true }).eq('is_alumni', true),
+    supabase.from('orders').select('*', { count: 'exact', head: true }).eq('is_alumni', false),
     supabase.from('orders').select('*', { count: 'exact', head: true }).eq('order_status', 'PAYMENT_REVIEW'),
     supabase.from('orders').select('*', { count: 'exact', head: true }).eq('payment_status', 'PAID'),
     supabase.from('orders').select('*', { count: 'exact', head: true }).eq('order_status', 'PROCESSING'),
@@ -36,7 +40,18 @@ async function getDashboardStats() {
 
   const totalRevenue = revenueData?.reduce((sum, o) => sum + Number(o.total_amount), 0) ?? 0
 
-  return { totalOrders: totalOrders ?? 0, paymentReview: paymentReview ?? 0, paid: paid ?? 0, processing: processing ?? 0, readyPickup: readyPickup ?? 0, shipped: shipped ?? 0, totalRevenue, recentOrders: recentOrders ?? [] }
+  return {
+    totalOrders: totalOrders ?? 0,
+    alumniOrders: alumniOrders ?? 0,
+    umumOrders: umumOrders ?? 0,
+    paymentReview: paymentReview ?? 0,
+    paid: paid ?? 0,
+    processing: processing ?? 0,
+    readyPickup: readyPickup ?? 0,
+    shipped: shipped ?? 0,
+    totalRevenue,
+    recentOrders: recentOrders ?? []
+  }
 }
 
 const statusColor: Record<string, string> = {
@@ -63,6 +78,9 @@ export default async function AdminDashboardPage() {
     { label: 'Shipped', value: stats.shipped.toLocaleString('id-ID'), icon: Truck, color: 'bg-cyan-50 text-cyan-600', href: '/admin/orders?status=SHIPPED' },
   ]
 
+  const alumniPercent = stats.totalOrders > 0 ? Math.round((stats.alumniOrders / stats.totalOrders) * 100) : 0
+  const umumPercent = stats.totalOrders > 0 ? 100 - alumniPercent : 0
+
   return (
     <div className="space-y-6 max-w-7xl">
       <div>
@@ -70,14 +88,51 @@ export default async function AdminDashboardPage() {
         <p className="text-gray-500 text-sm mt-1">Reunion Kit 100 Tahun Gontor — Pre-Order Management</p>
       </div>
 
-      {/* Revenue Card */}
-      <div className="card-premium p-6 flex items-center justify-between"
-        style={{ background: 'linear-gradient(135deg, var(--gontor-green-dark), var(--gontor-green))' }}>
-        <div>
-          <p className="text-green-200 text-sm font-semibold mb-1">Total Pendapatan (Paid)</p>
-          <p className="font-display font-black text-white text-3xl">{formatRupiah(stats.totalRevenue)}</p>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Revenue Card */}
+        <div className="lg:col-span-2 card-premium p-6 flex items-center justify-between"
+          style={{ background: 'linear-gradient(135deg, var(--gontor-green-dark), var(--gontor-green))' }}>
+          <div>
+            <p className="text-green-200 text-sm font-semibold mb-1">Total Pendapatan (Paid)</p>
+            <p className="font-display font-black text-white text-3xl">{formatRupiah(stats.totalRevenue)}</p>
+          </div>
+          <TrendingUp className="w-12 h-12 text-white/20" />
         </div>
-        <TrendingUp className="w-12 h-12 text-white/20" />
+
+        {/* Demografi Pemesan */}
+        <div className="card-premium p-5 border border-gray-100 flex flex-col justify-center">
+          <div className="text-sm font-bold text-gray-700 mb-3 font-display">Demografi Pemesan</div>
+          <div className="flex items-center gap-4">
+            <div className="flex-1">
+              <div className="flex justify-between items-end mb-1">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-green-700">
+                  <GraduationCap className="w-3.5 h-3.5" /> Alumni
+                </div>
+                <div className="font-bold text-gray-900 text-sm">{stats.alumniOrders}</div>
+              </div>
+              <div className="w-full bg-gray-100 rounded-full h-1.5 mb-3">
+                <div className="bg-green-600 h-1.5 rounded-full" style={{ width: `${alumniPercent}%` }}></div>
+              </div>
+
+              <div className="flex justify-between items-end mb-1">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-600">
+                  <Users className="w-3.5 h-3.5" /> Umum
+                </div>
+                <div className="font-bold text-gray-900 text-sm">{stats.umumOrders}</div>
+              </div>
+              <div className="w-full bg-gray-100 rounded-full h-1.5">
+                <div className="bg-gray-400 h-1.5 rounded-full" style={{ width: `${umumPercent}%` }}></div>
+              </div>
+            </div>
+            
+            <div className="w-16 h-16 rounded-full border-4 border-gray-50 flex items-center justify-center bg-white shadow-sm flex-shrink-0">
+              <div className="text-center">
+                <div className="text-[10px] font-semibold text-gray-400">Total</div>
+                <div className="text-sm font-bold text-gray-800 leading-none">{stats.totalOrders}</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Stats Grid */}

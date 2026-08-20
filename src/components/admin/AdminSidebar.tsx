@@ -37,6 +37,11 @@ const nav: NavGroup[] = [
     ],
   },
   {
+    label: 'Manajemen Pengiriman',
+    href: '/admin/delivery',
+    icon: Truck,
+  },
+  {
     label: 'Produk',
     icon: Shirt,
     children: [
