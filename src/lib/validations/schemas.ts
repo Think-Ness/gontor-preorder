@@ -48,6 +48,7 @@ export type AddressFormData = z.infer<typeof addressSchema>
 // ============================================================
 export const createOrderSchema = z.object({
   // Customer
+  is_alumni: z.boolean().optional(),
   stambuk: z.string().min(1),
   full_name: z.string().min(2),
   district: z.string().min(1),

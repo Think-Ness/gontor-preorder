@@ -343,6 +343,7 @@ export default function OrderFlow({
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({
+                    is_alumni: draft?.isAlumni ?? true,
                     stambuk: draft?.stambuk,
                     full_name: draft?.name,
                     district: draft?.district,

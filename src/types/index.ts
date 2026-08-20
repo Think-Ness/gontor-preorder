@@ -102,6 +102,8 @@ export interface PackageItem {
 export interface Order {
   id: string
   order_number: string
+  is_alumni: boolean
+  email: string | null
   stambuk: string
   full_name: string
   district: string

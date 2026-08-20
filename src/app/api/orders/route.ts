@@ -52,6 +52,8 @@ export async function POST(req: NextRequest) {
 
     // Prepare data for idempotent function
     const orderData = {
+      is_alumni: data.is_alumni ?? true,
+      email: data.email,
       stambuk: data.stambuk,
       full_name: data.full_name,
       district: data.district,
