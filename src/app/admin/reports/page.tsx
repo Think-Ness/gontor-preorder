@@ -117,7 +117,7 @@ export default async function ReportsPage() {
           <div className="mt-6 pt-4 border-t border-gray-100">
             <Link href="/admin/reports/export"
               className="btn-primary w-full py-3 text-sm font-display font-bold flex items-center justify-center gap-2">
-              Export Data CSV/XLSX →
+              Export Laporan Excel (.xlsx) →
             </Link>
           </div>
         </div>

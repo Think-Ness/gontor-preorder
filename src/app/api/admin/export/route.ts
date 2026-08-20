@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
+import * as XLSX from 'xlsx'
 
 export async function GET(req: NextRequest) {
   try {
@@ -25,54 +26,60 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: error.message }, { status: 500 })
       }
 
-      const headers = [
-        'Nomor Order',
-        'Stambuk',
-        'Nama Lengkap',
-        'Konsulat / Daerah',
-        'Tahun Angkatan',
-        'WhatsApp',
-        'Email',
-        'Metode Fulfillment',
-        'Alamat Pengiriman',
-        'Kota',
-        'Provinsi',
-        'Kode Pos',
-        'Subtotal (Rp)',
-        'Ongkir (Rp)',
-        'Total Pembayaran (Rp)',
-        'Status Pembayaran',
-        'Status Pesanan',
-        'Tanggal Order',
+      const excelRows = (orders ?? []).map((o, idx) => ({
+        'No': idx + 1,
+        'Nomor Order': o.order_number,
+        'Stambuk': o.stambuk,
+        'Nama Lengkap': o.full_name,
+        'Daerah / Konsulat': o.district || '-',
+        'Tahun Angkatan': o.generation_year || '-',
+        'No WhatsApp': o.whatsapp || '-',
+        'Email': o.email || '-',
+        'Fulfillment': o.fulfillment_method === 'PICKUP' ? 'Ambil di Stand' : 'Kirim Alamat',
+        'Alamat Lengkap': o.shipping_address || '-',
+        'Kota': o.shipping_city || '-',
+        'Provinsi': o.shipping_province || '-',
+        'Subtotal (Rp)': Number(o.subtotal || 0),
+        'Ongkir (Rp)': Number(o.shipping_cost || 0),
+        'Total Bayar (Rp)': Number(o.total_amount || 0),
+        'Status Bayar': o.payment_status,
+        'Status Pesanan': o.order_status,
+        'Tanggal Order': new Date(o.created_at).toLocaleString('id-ID'),
+      }))
+
+      const worksheet = XLSX.utils.json_to_sheet(excelRows)
+
+      // Set column widths for neat Excel layout
+      worksheet['!cols'] = [
+        { wch: 6 },   // No
+        { wch: 18 },  // Order Number
+        { wch: 12 },  // Stambuk
+        { wch: 25 },  // Name
+        { wch: 18 },  // District
+        { wch: 14 },  // Generation
+        { wch: 16 },  // WA
+        { wch: 24 },  // Email
+        { wch: 16 },  // Fulfillment
+        { wch: 35 },  // Address
+        { wch: 18 },  // City
+        { wch: 18 },  // Province
+        { wch: 16 },  // Subtotal
+        { wch: 14 },  // Shipping
+        { wch: 18 },  // Total
+        { wch: 16 },  // Payment Status
+        { wch: 18 },  // Order Status
+        { wch: 22 },  // Date
       ]
 
-      const rows = (orders ?? []).map(o => [
-        `"${o.order_number}"`,
-        `"${o.stambuk}"`,
-        `"${o.full_name}"`,
-        `"${o.district || ''}"`,
-        `"${o.generation_year || ''}"`,
-        `"${o.whatsapp || ''}"`,
-        `"${o.email || ''}"`,
-        `"${o.fulfillment_method === 'PICKUP' ? 'Ambil di Stand' : 'Kirim Alamat'}"`,
-        `"${(o.shipping_address || '').replace(/"/g, '""')}"`,
-        `"${o.shipping_city || ''}"`,
-        `"${o.shipping_province || ''}"`,
-        `"${o.shipping_postal_code || ''}"`,
-        o.subtotal,
-        o.shipping_cost,
-        o.total_amount,
-        `"${o.payment_status}"`,
-        `"${o.order_status}"`,
-        `"${new Date(o.created_at).toLocaleString('id-ID')}"`,
-      ])
+      const workbook = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Laporan Pesanan')
 
-      const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
+      const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'buffer' })
 
-      return new NextResponse(csvContent, {
+      return new NextResponse(excelBuffer, {
         headers: {
-          'Content-Type': 'text/csv; charset=utf-8',
-          'Content-Disposition': `attachment; filename="Laporan_Pesanan_Gontor_100_${statusFilter}_${Date.now()}.csv"`,
+          'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'Content-Disposition': `attachment; filename="Laporan_Pesanan_Gontor100_${statusFilter}_${Date.now()}.xlsx"`,
         },
       })
     } else {
@@ -86,45 +93,52 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: error.message }, { status: 500 })
       }
 
-      const headers = [
-        'Nomor Order',
-        'Nama Pemesan',
-        'Stambuk',
-        'WhatsApp',
-        'Tipe Item',
-        'Nama Produk / Paket',
-        'Varian',
-        'Jumlah (Qty)',
-        'Harga Satuan (Rp)',
-        'Subtotal (Rp)',
-        'Status Order',
+      const itemRows = (items ?? []).map((i: any, idx: number) => ({
+        'No': idx + 1,
+        'Nomor Order': i.order?.order_number || '-',
+        'Nama Pemesan': i.order?.full_name || '-',
+        'Stambuk': i.order?.stambuk || '-',
+        'WhatsApp': i.order?.whatsapp || '-',
+        'Tipe Item': i.item_type,
+        'Nama Produk / Paket': i.item_name_snapshot,
+        'Ukuran / Varian': i.variant_name_snapshot || '-',
+        'Jumlah Qty': i.quantity,
+        'Harga Satuan (Rp)': Number(i.unit_price_snapshot || 0),
+        'Subtotal (Rp)': Number(i.subtotal || 0),
+        'Status Pesanan': i.order?.order_status || '-',
+      }))
+
+      const worksheet = XLSX.utils.json_to_sheet(itemRows)
+
+      worksheet['!cols'] = [
+        { wch: 6 },   // No
+        { wch: 18 },  // Order Number
+        { wch: 24 },  // Name
+        { wch: 12 },  // Stambuk
+        { wch: 16 },  // WA
+        { wch: 10 },  // Type
+        { wch: 30 },  // Product
+        { wch: 18 },  // Variant
+        { wch: 12 },  // Qty
+        { wch: 16 },  // Price
+        { wch: 16 },  // Subtotal
+        { wch: 18 },  // Status
       ]
 
-      const rows = (items ?? []).map((i: any) => [
-        `"${i.order?.order_number || ''}"`,
-        `"${i.order?.full_name || ''}"`,
-        `"${i.order?.stambuk || ''}"`,
-        `"${i.order?.whatsapp || ''}"`,
-        `"${i.item_type}"`,
-        `"${i.item_name_snapshot}"`,
-        `"${i.variant_name_snapshot || '-'}"`,
-        i.quantity,
-        i.unit_price_snapshot,
-        i.subtotal,
-        `"${i.order?.order_status || ''}"`,
-      ])
+      const workbook = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Rincian Item Produk')
 
-      const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
+      const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'buffer' })
 
-      return new NextResponse(csvContent, {
+      return new NextResponse(excelBuffer, {
         headers: {
-          'Content-Type': 'text/csv; charset=utf-8',
-          'Content-Disposition': `attachment; filename="Rincian_Item_Terjual_Gontor_100_${Date.now()}.csv"`,
+          'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'Content-Disposition': `attachment; filename="Rincian_Item_Gontor100_${Date.now()}.xlsx"`,
         },
       })
     }
   } catch (err) {
     console.error('[GET /api/admin/export]', err)
-    return NextResponse.json({ error: 'Gagal merender data CSV' }, { status: 500 })
+    return NextResponse.json({ error: 'Gagal merender file Excel (.xlsx)' }, { status: 500 })
   }
 }

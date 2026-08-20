@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { FileDown, FileText, Filter, CheckCircle, ShieldCheck } from 'lucide-react'
+import { FileSpreadsheet, FileText, Filter, CheckCircle, ShieldCheck } from 'lucide-react'
 
 export default function ExportDataPage() {
   const [status, setStatus] = useState('ALL')
@@ -14,8 +14,8 @@ export default function ExportDataPage() {
   return (
     <div className="space-y-6 max-w-4xl">
       <div>
-        <h1 className="font-display font-bold text-2xl text-gray-900">Export Data Laporan</h1>
-        <p className="text-gray-500 text-sm">Unduh data pesanan & item rekapitulasi dalam format CSV (bisa dibuka di Excel / Google Sheets)</p>
+        <h1 className="font-display font-bold text-2xl text-gray-900">Export Data Laporan (Excel .xlsx)</h1>
+        <p className="text-gray-500 text-sm">Unduh data pesanan & item rekapitulasi langsung dalam format Spreadsheet Microsoft Excel (.xlsx) yang rapi</p>
       </div>
 
       <div className="card-premium p-6 space-y-6">
@@ -56,10 +56,10 @@ export default function ExportDataPage() {
           {/* Action 1: Export Orders */}
           <div className="p-5 rounded-2xl bg-green-50/70 border border-green-100 flex flex-col justify-between space-y-4">
             <div>
-              <FileText className="w-8 h-8 text-green-700 mb-2" />
-              <h2 className="font-display font-bold text-base text-gray-900">Laporan Pesanan Lengkap</h2>
+              <FileSpreadsheet className="w-8 h-8 text-green-700 mb-2" />
+              <h2 className="font-display font-bold text-base text-gray-900">Laporan Pesanan Lengkap (.xlsx)</h2>
               <p className="text-xs text-gray-600 mt-1">
-                Berisi data lengkap pemesan: Nomor Order, Stambuk, Nama, WhatsApp, Email, Alamat Pengiriman, Total Pembayaran, dan Status.
+                Format Excel rapi berisi: Nomor Order, Stambuk, Nama, WhatsApp, Email, Alamat Pengiriman, Total Pembayaran, dan Status.
               </p>
             </div>
 
@@ -67,18 +67,18 @@ export default function ExportDataPage() {
               onClick={() => handleDownload('orders')}
               className="btn-primary w-full py-3 text-xs font-display font-bold flex items-center justify-center gap-2"
             >
-              <FileDown className="w-4 h-4" />
-              Download CSV Pesanan ({status})
+              <FileSpreadsheet className="w-4 h-4" />
+              Download Excel Pesanan ({status})
             </button>
           </div>
 
           {/* Action 2: Export Order Items */}
           <div className="p-5 rounded-2xl bg-blue-50/70 border border-blue-100 flex flex-col justify-between space-y-4">
             <div>
-              <FileDown className="w-8 h-8 text-blue-600 mb-2" />
-              <h2 className="font-display font-bold text-base text-gray-900">Rekap Rincian Produk & Varian</h2>
+              <FileSpreadsheet className="w-8 h-8 text-blue-600 mb-2" />
+              <h2 className="font-display font-bold text-base text-gray-900">Rekap Rincian Produk (.xlsx)</h2>
               <p className="text-xs text-gray-600 mt-1">
-                Berisi rincian barang per baris: Nama Produk, Ukuran / Varian, Jumlah Qty, Harga Satuan, dan Subtotal. Cocok untuk tim produksi.
+                Format Excel rapi berisi: Nama Produk, Ukuran / Varian, Jumlah Qty, Harga Satuan, dan Subtotal. Cocok untuk tim produksi.
               </p>
             </div>
 
@@ -86,8 +86,8 @@ export default function ExportDataPage() {
               onClick={() => handleDownload('items')}
               className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-display font-bold flex items-center justify-center gap-2 transition-all shadow-md"
             >
-              <FileDown className="w-4 h-4" />
-              Download CSV Item Produk
+              <FileSpreadsheet className="w-4 h-4" />
+              Download Excel Item Produk
             </button>
           </div>
         </div>
