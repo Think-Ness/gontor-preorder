@@ -22,17 +22,43 @@ export default function StepCustomer({ draft, onSave }: Props) {
       district: draft?.district || '',
       generation_year: draft?.generationYear ? Number(draft.generationYear) : undefined,
       whatsapp: draft?.whatsapp || '',
+      email: draft?.email || '',
     },
   })
 
+  // Auto-fill from localStorage if available and form is empty
+  useEffect(() => {
+    try {
+      const savedProfile = localStorage.getItem('gontor_customer_profile')
+      if (savedProfile) {
+        const profile = JSON.parse(savedProfile)
+        if (!draft?.stambuk && profile.stambuk) setValue('stambuk', profile.stambuk)
+        if (!draft?.name && profile.full_name) setValue('full_name', profile.full_name)
+        if (!draft?.district && profile.district) setValue('district', profile.district)
+        if (!draft?.generationYear && profile.generation_year) setValue('generation_year', Number(profile.generation_year))
+        if (!draft?.whatsapp && profile.whatsapp) setValue('whatsapp', profile.whatsapp)
+        if (!draft?.email && profile.email) setValue('email', profile.email)
+      }
+    } catch (e) {
+      console.warn('Failed to parse saved customer profile')
+    }
+  }, [draft, setValue])
+
   const onSubmit = (data: CustomerFormData) => {
     const normalized = normalizeWhatsApp(data.whatsapp)
+    try {
+      localStorage.setItem('gontor_customer_profile', JSON.stringify(data))
+    } catch (e) {
+      console.warn('Failed to save profile to localStorage')
+    }
+
     onSave({
       stambuk: data.stambuk,
       name: data.full_name,
       district: data.district,
       generationYear: String(data.generation_year),
       whatsapp: normalized,
+      email: data.email,
     })
   }
 
@@ -111,6 +137,20 @@ export default function StepCustomer({ draft, onSave }: Props) {
           />
           {errors.whatsapp && <p className="text-xs text-red-500 mt-1">{errors.whatsapp.message}</p>}
           <p className="text-xs text-gray-400 mt-1">Konfirmasi pembayaran akan dikirim ke nomor ini</p>
+        </div>
+
+        {/* Email */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-display">
+            Email <span className="text-xs font-normal text-gray-400">(Opsional - untuk menerima bukti & status via email)</span>
+          </label>
+          <input
+            {...register('email')}
+            type="email"
+            placeholder="contoh: alumni@gontor.ac.id"
+            className={inputCls(errors.email)}
+          />
+          {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>}
         </div>
       </div>
 

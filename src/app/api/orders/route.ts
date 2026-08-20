@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { createOrderSchema } from '@/lib/validations/schemas'
 import { normalizeWhatsApp } from '@/lib/utils'
+import { sendOrderReceivedEmail } from '@/lib/email'
 
 export const maxDuration = 30
 
@@ -95,6 +96,15 @@ export async function POST(req: NextRequest) {
           ? 'Beberapa produk tidak lagi tersedia. Silakan cek kembali keranjang Anda.'
           : 'Pesanan belum berhasil dikirim. Data pesanan tetap tersimpan di perangkat Anda. Silakan coba lagi.'
       return NextResponse.json({ error: msg }, { status: 400 })
+    }
+
+    // Trigger async email notification
+    if (data.email) {
+      sendOrderReceivedEmail(data.email, {
+        orderNumber: result.order_number,
+        fullName: data.full_name,
+        totalAmount: result.total_amount,
+      }).catch(e => console.error('Email dispatch error:', e))
     }
 
     return NextResponse.json({

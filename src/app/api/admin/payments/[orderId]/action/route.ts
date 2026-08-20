@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { z } from 'zod'
+import { sendPaymentApprovedEmail, sendPaymentRejectedEmail } from '@/lib/email'
 
 const schema = z.object({
   action: z.enum(['APPROVE', 'REJECT', 'NEEDS_REVIEW', 'REQUEST_REUPLOAD']),
@@ -75,11 +76,34 @@ export async function POST(
       break
   }
 
+  // Fetch order for email notification
+  const { data: orderDetails } = await supabase
+    .from('orders')
+    .select('order_number, full_name, fulfillment_method')
+    .eq('id', orderId)
+    .single()
+
   const { error } = await supabase.from('orders').update(updates).eq('id', orderId)
 
   if (error) {
     console.error('[admin/payments/action]', error)
     return NextResponse.json({ error: 'Gagal update order' }, { status: 500 })
+  }
+
+  // Trigger email notifications
+  if (orderDetails) {
+    if (action === 'APPROVE') {
+      sendPaymentApprovedEmail(user.email ?? '', {
+        orderNumber: orderDetails.order_number,
+        fullName: orderDetails.full_name,
+        fulfillmentMethod: orderDetails.fulfillment_method,
+      }).catch(e => console.error('Email send error:', e))
+    } else if (action === 'REJECT' || action === 'REQUEST_REUPLOAD') {
+      sendPaymentRejectedEmail(user.email ?? '', {
+        orderNumber: orderDetails.order_number,
+        fullName: orderDetails.full_name,
+      }, admin_note || 'Bukti transfer memerlukan konfirmasi ulang').catch(e => console.error('Email send error:', e))
+    }
   }
 
   // Audit log

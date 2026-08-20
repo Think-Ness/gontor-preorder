@@ -16,6 +16,7 @@ export const customerSchema = z.object({
     .string()
     .min(1, 'Nomor WhatsApp wajib diisi')
     .regex(/^(\+62|62|0)8[1-9][0-9]{6,11}$/, 'Format nomor HP Indonesia tidak valid'),
+  email: z.string().email('Format email tidak valid').optional().or(z.literal('')),
 })
 
 export type CustomerFormData = z.infer<typeof customerSchema>
@@ -46,6 +47,7 @@ export const createOrderSchema = z.object({
   district: z.string().min(1),
   generation_year: z.number().int(),
   whatsapp: z.string().min(1),
+  email: z.string().optional(),
 
   // Fulfillment
   fulfillment_method: z.enum(['PICKUP', 'DELIVERY']),

@@ -232,6 +232,7 @@ export interface CheckoutDraft {
   district: string
   generationYear: string
   whatsapp: string
+  email?: string
   fulfillmentMethod: FulfillmentMethod | null
   address: {
     fullAddress: string

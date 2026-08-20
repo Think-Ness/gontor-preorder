@@ -9,6 +9,7 @@ import {
   User, ShoppingBag, Truck, CreditCard, CheckCircle,
   ChevronLeft, ChevronRight, AlertTriangle
 } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -35,9 +36,10 @@ const STEPS = [
 ]
 
 export default function OrderFlow({
-  settings, preorderStatus, products, packages, paymentMethods
+  settings, preorderStatus, products: initialProducts, packages, paymentMethods
 }: OrderFlowProps) {
   const [step, setStep] = useState(1)
+  const [localProducts, setLocalProducts] = useState<Product[]>(initialProducts)
   const [orderNumber, setOrderNumber] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -47,6 +49,49 @@ export default function OrderFlow({
   const router = useRouter()
 
   const hasCheckedResume = useRef(false)
+
+  // Realtime Stock Updates
+  useEffect(() => {
+    setLocalProducts(initialProducts)
+  }, [initialProducts])
+
+  useEffect(() => {
+    const supabase = createClient()
+    const channel = supabase
+      .channel('public-stock-updates')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'products' },
+        (payload) => {
+          const updated = payload.new as Product
+          setLocalProducts(prev => prev.map(p => p.id === updated.id ? { ...p, stock: updated.stock, stock_enabled: updated.stock_enabled } : p))
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'product_variants' },
+        (payload) => {
+          const updatedVar = payload.new as any
+          setLocalProducts(prev => prev.map(p => {
+            if (!p.variants) return p
+            const hasVar = p.variants.some(v => v.id === updatedVar.id)
+            if (!hasVar) return p
+            const updatedVariants = p.variants.map(v => v.id === updatedVar.id ? { ...v, stock: updatedVar.stock } : v)
+            const sumStock = updatedVariants.reduce((sum, v) => sum + (v.stock ?? 0), 0)
+            return {
+              ...p,
+              stock: sumStock,
+              variants: updatedVariants,
+            }
+          }))
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [])
 
   // Check for existing draft on load
   useEffect(() => {
@@ -226,7 +271,7 @@ export default function OrderFlow({
         )}
         {step === 2 && (
           <StepMerchandise
-            products={products}
+            products={localProducts}
             packages={packages}
             cart={cart}
             onAddItem={addItem}
@@ -269,6 +314,7 @@ export default function OrderFlow({
                     district: draft?.district,
                     generation_year: Number(draft?.generationYear),
                     whatsapp: draft?.whatsapp,
+                    email: draft?.email,
                     fulfillment_method: draft?.fulfillmentMethod,
                     shipping_address: draft?.address?.fullAddress,
                     shipping_village: draft?.address?.village,
