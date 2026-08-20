@@ -327,3 +327,36 @@ a, button {
     border-radius: var(--radius-lg);
   }
 }
+
+/* Competzy Style Hero Background & Animations */
+.competzy-hero-bg {
+  background: radial-gradient(120% 100% at 50% 0%, #fdfdfd 0%, #f0f7f3 55%, #e2efe8 100%);
+}
+
+@keyframes fallGlyph {
+  0% {
+    transform: translateY(-100px) rotate(0deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.25;
+  }
+  85% {
+    opacity: 0.25;
+  }
+  100% {
+    transform: translateY(900px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.cz-fall-glyph {
+  position: absolute;
+  top: -50px;
+  animation-name: fallGlyph;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  pointer-events: none;
+  user-select: none;
+}
+
