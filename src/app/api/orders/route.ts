@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
       shipping_city: data.shipping_city ?? null,
       shipping_province: data.shipping_province ?? null,
       shipping_postal_code: data.shipping_postal_code ?? null,
-      shipping_cost: 0, // Admin-configured; currently 0
+      shipping_cost: Number(data.shipping_cost || 0),
       payment_proof_file_id: data.payment_proof_file_id,
       payment_proof_url: `/api/drive/preview/${data.payment_proof_file_id}`,
       payment_proof_filename: data.payment_proof_filename,

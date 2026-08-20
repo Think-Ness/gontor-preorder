@@ -242,6 +242,11 @@ export interface CheckoutDraft {
     city: string
     province: string
     postalCode: string
+    courierName?: string
+    shippingCost?: number
+    googleMapsUrl?: string
+    latitude?: number
+    longitude?: number
   }
   cart: CartItem[]
   paymentStep: number

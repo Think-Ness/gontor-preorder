@@ -59,6 +59,7 @@ export const createOrderSchema = z.object({
   shipping_city: z.string().optional(),
   shipping_province: z.string().optional(),
   shipping_postal_code: z.string().optional(),
+  shipping_cost: z.number().optional(),
 
   // Cart items
   items: z

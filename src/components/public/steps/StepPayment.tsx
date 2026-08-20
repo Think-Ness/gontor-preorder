@@ -42,7 +42,7 @@ export default function StepPayment({ draft, cart, paymentMethods, sessionId, is
   const [uploadedProof, setUploadedProof] = useState<ProofData | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
-  const shipping = draft?.fulfillmentMethod === 'DELIVERY' ? 0 : 0 // Admin-configured; currently 0
+  const shipping = draft?.fulfillmentMethod === 'DELIVERY' ? Number(draft?.address?.shippingCost || 0) : 0
   const total = cart.subtotal + shipping
 
   const copyAccount = () => {
