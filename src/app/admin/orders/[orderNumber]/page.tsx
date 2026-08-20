@@ -4,7 +4,8 @@ import { formatRupiah } from '@/lib/utils'
 import PaymentActions from '@/components/admin/PaymentActions'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, User, MapPin, Package, CreditCard, MessageCircle, Truck } from 'lucide-react'
+import { ChevronLeft, MapPin, Package, Truck, User, MessageCircle, CreditCard } from 'lucide-react'
+import OrderRowActions from '@/components/admin/OrderRowActions'
 import Image from 'next/image'
 
 export const metadata: Metadata = { title: 'Detail Order' }
@@ -117,6 +118,10 @@ export default async function OrderDetailPage({
                 <p>{order.shipping_address}</p>
                 <p>{order.shipping_village}, {order.shipping_district}</p>
                 <p>{order.shipping_city}, {order.shipping_province} {order.shipping_postal_code}</p>
+
+                <div className="pt-3 border-t border-gray-100">
+                  <OrderRowActions order={order} />
+                </div>
               </div>
             )}
           </div>

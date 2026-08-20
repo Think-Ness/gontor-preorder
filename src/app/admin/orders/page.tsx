@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { formatRupiah } from '@/lib/utils'
 import Link from 'next/link'
 import { Search, Filter, Download, Eye, ChevronLeft, ChevronRight, Package, Truck, MessageCircle } from 'lucide-react'
+import OrderRowActions from '@/components/admin/OrderRowActions'
 
 export const metadata: Metadata = { title: 'Orders' }
 export const revalidate = 0
@@ -207,11 +208,7 @@ export default async function OrdersPage({
                       {new Date(order.created_at).toLocaleDateString('id-ID')}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <Link href={`/admin/orders/${order.order_number}`}
-                        className="flex items-center gap-1 text-xs font-semibold text-green-700 hover:underline">
-                        <Eye className="w-3.5 h-3.5" />
-                        Detail
-                      </Link>
+                      <OrderRowActions order={order} />
                     </td>
                   </tr>
                 )
