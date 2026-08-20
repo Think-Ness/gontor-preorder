@@ -5,6 +5,7 @@ import { Search, MapPin, X, Check, Loader2, Navigation, AlertCircle } from 'luci
 
 declare global {
   interface Window {
+    google: any
     L: any
   }
 }
@@ -27,7 +28,7 @@ interface MapPickerModalProps {
 }
 
 interface SearchResult {
-  place_id: number
+  place_id: number | string
   lat: string
   lon: string
   display_name: string
@@ -61,86 +62,182 @@ export default function MapPickerModal({ isOpen, onClose, onSelectLocation }: Ma
   const [gettingGPS, setGettingGPS] = useState(false)
   const [hasInteracted, setHasInteracted] = useState(false)
   const [gpsError, setGpsError] = useState<string | null>(null)
+  const [mapEngine, setMapEngine] = useState<'google' | 'leaflet'>('google')
 
-  // Refs for Leaflet instance
+  // Refs for Map Instance
   const mapContainerRef = useRef<HTMLDivElement>(null)
+  const googleMapRef = useRef<any>(null)
+  const googleMarkerRef = useRef<any>(null)
   const leafletMapRef = useRef<any>(null)
-  const markerRef = useRef<any>(null)
+  const leafletMarkerRef = useRef<any>(null)
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Reverse Geocoding with Debounce
+  // Reverse Geocoding Handler
   const handleReverseGeocode = useCallback(async (lat: number, lng: number) => {
     setSelectedPos({ lat, lng })
     setIsGeocoding(true)
 
-    try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
-      const data = await res.json()
-      
-      if (data && data.display_name) {
-        setSelectedAddress(data.display_name)
-        const addr = data.address || {}
-        
-        setExtractedVillage(addr.village || addr.suburb || '')
-        setExtractedDistrict(addr.subdistrict || addr.county || '')
-        setExtractedCity(addr.city || addr.town || addr.city_district || addr.county || '')
-        setExtractedProvince(addr.state || '')
-        setExtractedPostalCode(addr.postcode || '')
-      } else {
-        setSelectedAddress(`Koordinat: ${lat.toFixed(5)}, ${lng.toFixed(5)}`)
+    // Try Google Maps Geocoder if Google JS API loaded
+    if (window.google?.maps?.Geocoder) {
+      try {
+        const geocoder = new window.google.maps.Geocoder()
+        geocoder.geocode({ location: { lat, lng } }, (results: any[], status: string) => {
+          if (status === 'OK' && results && results[0]) {
+            setSelectedAddress(results[0].formatted_address)
+            
+            // Extract components
+            const comps = results[0].address_components || []
+            let village = '', district = '', city = '', province = '', postcode = ''
+            
+            for (const c of comps) {
+              if (c.types.includes('administrative_area_level_4') || c.types.includes('locality')) village = c.long_name
+              if (c.types.includes('administrative_area_level_3')) district = c.long_name
+              if (c.types.includes('administrative_area_level_2')) city = c.long_name
+              if (c.types.includes('administrative_area_level_1')) province = c.long_name
+              if (c.types.includes('postal_code')) postcode = c.long_name
+            }
+
+            setExtractedVillage(village)
+            setExtractedDistrict(district)
+            setExtractedCity(city)
+            setExtractedProvince(province)
+            setExtractedPostalCode(postcode)
+            setIsGeocoding(false)
+            return
+          }
+          fallbackGeocode(lat, lng)
+        })
+        return
+      } catch {
+        // Fallback to OpenStreetMap Reverse Geocode
       }
-    } catch {
-      setSelectedAddress(`Koordinat: ${lat.toFixed(5)}, ${lng.toFixed(5)}`)
-    } finally {
-      setIsGeocoding(false)
+    }
+
+    fallbackGeocode(lat, lng)
+
+    async function fallbackGeocode(l1: number, l2: number) {
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${l1}&lon=${l2}`)
+        const data = await res.json()
+        if (data && data.display_name) {
+          setSelectedAddress(data.display_name)
+          const addr = data.address || {}
+          setExtractedVillage(addr.village || addr.suburb || '')
+          setExtractedDistrict(addr.subdistrict || addr.county || '')
+          setExtractedCity(addr.city || addr.town || addr.city_district || addr.county || '')
+          setExtractedProvince(addr.state || '')
+          setExtractedPostalCode(addr.postcode || '')
+        } else {
+          setSelectedAddress(`Koordinat Pin Google Maps: ${l1.toFixed(5)}, ${l2.toFixed(5)}`)
+        }
+      } catch {
+        setSelectedAddress(`Koordinat Pin Google Maps: ${l1.toFixed(5)}, ${l2.toFixed(5)}`)
+      } finally {
+        setIsGeocoding(false)
+      }
     }
   }, [])
 
-  // Initialize Leaflet Map
+  // Initialize Map (Google Maps Primary, Leaflet Secondary)
   useEffect(() => {
     if (!isOpen) return
 
-    // Inject Leaflet CSS
-    if (!document.getElementById('leaflet-css')) {
-      const link = document.createElement('link')
-      link.id = 'leaflet-css'
-      link.rel = 'stylesheet'
-      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
-      document.head.appendChild(link)
-    }
+    const defaultLat = selectedPos?.lat || -7.8712
+    const defaultLng = selectedPos?.lng || 111.4621
 
-    // Inject Leaflet JS
-    if (!window.L) {
-      const script = document.createElement('script')
-      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
-      script.onload = () => initMap()
-      document.body.appendChild(script)
+    const googleApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+
+    if (googleApiKey) {
+      // Load Google Maps JS API Script
+      if (!window.google?.maps) {
+        const script = document.createElement('script')
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${googleApiKey}&libraries=places`
+        script.async = true
+        script.onload = () => initGoogleMap()
+        script.onerror = () => initLeafletMap()
+        document.body.appendChild(script)
+      } else {
+        setTimeout(initGoogleMap, 100)
+      }
     } else {
-      setTimeout(initMap, 100)
+      // Fallback: If no API key, load Leaflet Mapstyled with Google Map tiles / OpenStreetMap tiles
+      initLeafletMap()
     }
 
-    function initMap() {
+    function initGoogleMap() {
+      if (!mapContainerRef.current || googleMapRef.current || !window.google?.maps) return
+      setMapEngine('google')
+
+      const map = new window.google.maps.Map(mapContainerRef.current, {
+        center: { lat: defaultLat, lng: defaultLng },
+        zoom: 15,
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: false,
+      })
+
+      const marker = new window.google.maps.Marker({
+        position: { lat: defaultLat, lng: defaultLng },
+        map: map,
+        draggable: true,
+        animation: window.google.maps.Animation.DROP,
+        title: 'Pin Lokasi Pengiriman Rumah',
+      })
+
+      marker.addListener('dragend', (e: any) => {
+        setHasInteracted(true)
+        const lat = e.latLng.lat()
+        const lng = e.latLng.lng()
+        handleReverseGeocode(lat, lng)
+      })
+
+      map.addListener('click', (e: any) => {
+        setHasInteracted(true)
+        const lat = e.latLng.lat()
+        const lng = e.latLng.lng()
+        marker.setPosition({ lat, lng })
+        handleReverseGeocode(lat, lng)
+      })
+
+      googleMapRef.current = map
+      googleMarkerRef.current = marker
+
+      if (!selectedPos) handleReverseGeocode(defaultLat, defaultLng)
+    }
+
+    function initLeafletMap() {
+      if (!mapContainerRef.current || leafletMapRef.current || googleMapRef.current) return
+      setMapEngine('leaflet')
+
+      if (!document.getElementById('leaflet-css')) {
+        const link = document.createElement('link')
+        link.id = 'leaflet-css'
+        link.rel = 'stylesheet'
+        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
+        document.head.appendChild(link)
+      }
+
+      if (!window.L) {
+        const script = document.createElement('script')
+        script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
+        script.onload = () => createLeafletInstance()
+        document.body.appendChild(script)
+      } else {
+        setTimeout(createLeafletInstance, 100)
+      }
+    }
+
+    function createLeafletInstance() {
       if (!mapContainerRef.current || leafletMapRef.current || !window.L) return
 
-      const defaultLat = selectedPos?.lat || -7.8712
-      const defaultLng = selectedPos?.lng || 111.4621
-
-      // Custom Modern Santri Editorial Deep Forest Green & Heritage Gold Marker Icon
       const customIcon = window.L.divIcon({
-        className: 'custom-map-pin',
+        className: 'custom-google-pin',
         html: `
-          <div style="
-            position: relative;
-            width: 36px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-          ">
+          <div style="position: relative; width: 36px; height: 44px;">
             <svg width="36" height="44" viewBox="0 0 36 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M18 0C8.05887 0 0 8.05887 0 18C0 31.5 18 44 18 44C18 44 36 31.5 36 18C36 8.05887 27.9411 0 18 0Z" fill="#063D2E"/>
-              <circle cx="18" cy="18" r="7" fill="#D4AF37"/>
-              <circle cx="18" cy="18" r="4" fill="#FFFFFF"/>
+              <path d="M18 0C8.05887 0 0 8.05887 0 18C0 31.5 18 44 18 44C18 44 36 31.5 36 18C36 8.05887 27.9411 0 18 0Z" fill="#EA4335"/>
+              <circle cx="18" cy="18" r="7" fill="#FFFFFF"/>
+              <circle cx="18" cy="18" r="4" fill="#063D2E"/>
             </svg>
           </div>
         `,
@@ -148,53 +245,48 @@ export default function MapPickerModal({ isOpen, onClose, onSelectLocation }: Ma
         iconAnchor: [18, 44],
       })
 
-      const map = window.L.map(mapContainerRef.current, {
-        zoomControl: true,
-      }).setView([defaultLat, defaultLng], 14)
+      const map = window.L.map(mapContainerRef.current, { zoomControl: true }).setView([defaultLat, defaultLng], 15)
 
+      // OpenStreetMap with Google style tiles
       window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
-        attribution: '&copy; OpenStreetMap contributors'
+        attribution: '&copy; Google Maps / OpenStreetMap contributors'
       }).addTo(map)
 
-      const marker = window.L.marker([defaultLat, defaultLng], {
-        draggable: true,
-        icon: customIcon,
-      }).addTo(map)
+      const marker = window.L.marker([defaultLat, defaultLng], { draggable: true, icon: customIcon }).addTo(map)
 
-      // Marker dragend event
       marker.on('dragend', (e: any) => {
         setHasInteracted(true)
         const pos = e.target.getLatLng()
         handleReverseGeocode(pos.lat, pos.lng)
       })
 
-      // Map moveend event (updates center marker if dragged)
-      map.on('moveend', () => {
+      map.on('click', (e: any) => {
         setHasInteracted(true)
-        const center = map.getCenter()
-        marker.setLatLng(center)
-        handleReverseGeocode(center.lat, center.lng)
+        marker.setLatLng(e.latlng)
+        handleReverseGeocode(e.latlng.lat, e.latlng.lng)
       })
 
       leafletMapRef.current = map
-      markerRef.current = marker
+      leafletMarkerRef.current = marker
 
-      if (!selectedPos) {
-        handleReverseGeocode(defaultLat, defaultLng)
-      }
+      if (!selectedPos) handleReverseGeocode(defaultLat, defaultLng)
     }
 
     return () => {
+      if (googleMapRef.current) {
+        googleMapRef.current = null
+        googleMarkerRef.current = null
+      }
       if (leafletMapRef.current) {
         leafletMapRef.current.remove()
         leafletMapRef.current = null
-        markerRef.current = null
+        leafletMarkerRef.current = null
       }
     }
-  }, [isOpen, handleReverseGeocode])
+  }, [isOpen, handleReverseGeocode, selectedPos])
 
-  // Keyboard shortcut ESC to close
+  // ESC Key to close
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) onClose()
@@ -203,7 +295,7 @@ export default function MapPickerModal({ isOpen, onClose, onSelectLocation }: Ma
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isOpen, onClose])
 
-  // Debounced Autocomplete Search (300ms)
+  // Debounced Search
   useEffect(() => {
     if (!query.trim() || query.length < 3) {
       setSearchResults([])
@@ -214,16 +306,42 @@ export default function MapPickerModal({ isOpen, onClose, onSelectLocation }: Ma
 
     searchTimeoutRef.current = setTimeout(async () => {
       setIsSearching(true)
-      try {
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=id&limit=5`
-        )
-        const data = await res.json()
-        setSearchResults(data || [])
-      } catch {
-        setSearchResults([])
-      } finally {
-        setIsSearching(false)
+
+      // Try Google Places Service if available
+      if (window.google?.maps?.places?.PlacesService && googleMapRef.current) {
+        const service = new window.google.maps.places.PlacesService(googleMapRef.current)
+        service.textSearch({ query: query + ', Indonesia' }, (results: any[], status: string) => {
+          if (status === 'OK' && results) {
+            setSearchResults(
+              results.map((r, i) => ({
+                place_id: r.place_id || i,
+                lat: r.geometry.location.lat().toString(),
+                lon: r.geometry.location.lng().toString(),
+                display_name: r.formatted_address || r.name,
+              }))
+            )
+            setIsSearching(false)
+            return
+          }
+          fallbackSearch()
+        })
+        return
+      }
+
+      fallbackSearch()
+
+      async function fallbackSearch() {
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=id&limit=5`
+          )
+          const data = await res.json()
+          setSearchResults(data || [])
+        } catch {
+          setSearchResults([])
+        } finally {
+          setIsSearching(false)
+        }
       }
     }, 350)
 
@@ -232,7 +350,7 @@ export default function MapPickerModal({ isOpen, onClose, onSelectLocation }: Ma
     }
   }, [query])
 
-  // Select Search Result Item
+  // Select Search Result
   const handleSelectSearchResult = (item: SearchResult) => {
     setHasInteracted(true)
     const lat = parseFloat(item.lat)
@@ -243,15 +361,19 @@ export default function MapPickerModal({ isOpen, onClose, onSelectLocation }: Ma
     setSearchResults([])
     setQuery('')
 
-    if (leafletMapRef.current && markerRef.current) {
+    if (googleMapRef.current && googleMarkerRef.current) {
+      googleMapRef.current.setCenter({ lat, lng })
+      googleMapRef.current.setZoom(16)
+      googleMarkerRef.current.setPosition({ lat, lng })
+    } else if (leafletMapRef.current && leafletMarkerRef.current) {
       leafletMapRef.current.setView([lat, lng], 16)
-      markerRef.current.setLatLng([lat, lng])
+      leafletMarkerRef.current.setLatLng([lat, lng])
     }
 
     handleReverseGeocode(lat, lng)
   }
 
-  // Current Device Location (GPS Button)
+  // Current Device GPS Location
   const handleGetCurrentLocation = () => {
     setGpsError(null)
     if (!navigator.geolocation) {
@@ -266,9 +388,13 @@ export default function MapPickerModal({ isOpen, onClose, onSelectLocation }: Ma
         const lat = pos.coords.latitude
         const lng = pos.coords.longitude
 
-        if (leafletMapRef.current && markerRef.current) {
+        if (googleMapRef.current && googleMarkerRef.current) {
+          googleMapRef.current.setCenter({ lat, lng })
+          googleMapRef.current.setZoom(17)
+          googleMarkerRef.current.setPosition({ lat, lng })
+        } else if (leafletMapRef.current && leafletMarkerRef.current) {
           leafletMapRef.current.setView([lat, lng], 17)
-          markerRef.current.setLatLng([lat, lng])
+          leafletMarkerRef.current.setLatLng([lat, lng])
         }
 
         handleReverseGeocode(lat, lng)
@@ -317,11 +443,16 @@ export default function MapPickerModal({ isOpen, onClose, onSelectLocation }: Ma
               <MapPin className="w-5 h-5" style={{ color: 'var(--gontor-gold, #D4AF37)' }} />
             </div>
             <div>
-              <h2 className="font-display font-bold text-base sm:text-lg text-gray-900 leading-tight">
-                Pilih Lokasi Pengiriman
-              </h2>
+              <div className="flex items-center gap-2">
+                <h2 className="font-display font-bold text-base sm:text-lg text-gray-900 leading-tight">
+                  Pilih Lokasi Pengiriman Google Maps
+                </h2>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-800 flex items-center gap-1">
+                  🗺️ Google Maps
+                </span>
+              </div>
               <p className="text-xs text-gray-500 mt-0.5 font-body">
-                Cari alamat atau geser pin ke lokasi rumah Anda
+                Cari jalan atau geser pin penanda Google Maps ke lokasi rumah Anda
               </p>
             </div>
           </div>
@@ -334,7 +465,7 @@ export default function MapPickerModal({ isOpen, onClose, onSelectLocation }: Ma
           </button>
         </div>
 
-        {/* Search Bar with Debounced Autocomplete */}
+        {/* Search Bar */}
         <div className="p-3 sm:p-4 border-b border-gray-100 bg-white relative z-20">
           <div className="relative">
             <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5" />
@@ -342,7 +473,7 @@ export default function MapPickerModal({ isOpen, onClose, onSelectLocation }: Ma
               type="text"
               value={query}
               onChange={e => setQuery(e.target.value)}
-              placeholder="Cari jalan, desa, kecamatan, kota, atau kode pos..."
+              placeholder="Cari jalan, desa, kecamatan, kota, di Google Maps..."
               className="w-full pl-9 pr-10 py-2.5 rounded-xl border border-gray-200 text-xs sm:text-sm font-body outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition-all"
             />
             {isSearching && (
@@ -359,7 +490,7 @@ export default function MapPickerModal({ isOpen, onClose, onSelectLocation }: Ma
                   onClick={() => handleSelectSearchResult(item)}
                   className="w-full text-left p-3 hover:bg-green-50/80 text-gray-800 transition-colors flex items-start gap-2.5"
                 >
-                  <MapPin className="w-4 h-4 text-green-700 flex-shrink-0 mt-0.5" />
+                  <MapPin className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
                   <span className="line-clamp-2 leading-relaxed">{item.display_name}</span>
                 </button>
               ))}
@@ -374,7 +505,7 @@ export default function MapPickerModal({ isOpen, onClose, onSelectLocation }: Ma
           {/* Map Instruction Overlay */}
           {!hasInteracted && (
             <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 bg-white/95 backdrop-blur-xs px-4 py-2 rounded-xl text-xs font-display font-semibold text-gray-800 shadow-md border border-gray-200 text-center pointer-events-none animate-bounce">
-              📍 Geser peta atau pindahkan pin untuk menentukan lokasi rumah
+              📍 Klik Google Maps atau geser penanda pin merah ke lokasi rumah
             </div>
           )}
 
@@ -391,7 +522,7 @@ export default function MapPickerModal({ isOpen, onClose, onSelectLocation }: Ma
           </button>
         </div>
 
-        {/* GPS Error Notification if permission denied */}
+        {/* GPS Error Notification */}
         {gpsError && (
           <div className="px-4 py-2 bg-amber-50 border-t border-amber-200 text-amber-800 text-xs font-body flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
@@ -404,7 +535,7 @@ export default function MapPickerModal({ isOpen, onClose, onSelectLocation }: Ma
           <div className="p-3.5 rounded-xl border border-green-200 bg-green-50/60 font-body">
             <div className="flex items-center justify-between mb-1">
               <span className="text-[11px] font-bold text-green-800 uppercase tracking-wider font-display">
-                LOKASI TERPILIH (HASIL REVERSE GEOCODING)
+                LOKASI GOOGLE MAPS TERPILIH
               </span>
               {isGeocoding && (
                 <span className="text-[11px] text-green-700 font-semibold flex items-center gap-1">
@@ -415,17 +546,17 @@ export default function MapPickerModal({ isOpen, onClose, onSelectLocation }: Ma
             </div>
 
             <p className="font-semibold text-xs sm:text-sm text-gray-900 leading-snug line-clamp-2">
-              📍 {selectedAddress || 'Sedang memuat titik lokasi...'}
+              📍 {selectedAddress || 'Sedang memuat titik lokasi Google Maps...'}
             </p>
 
             {selectedPos && (
               <p className="text-[11px] text-gray-500 mt-1 font-mono">
-                Koordinat: {selectedPos.lat.toFixed(6)}, {selectedPos.lng.toFixed(6)}
+                Link Koordinat Pin: https://maps.google.com/?q={selectedPos.lat.toFixed(6)},{selectedPos.lng.toFixed(6)}
               </p>
             )}
           </div>
 
-          {/* Manual Address Detail Input (Rumah No., RT/RW, Patokan) */}
+          {/* Manual Address Detail Input */}
           <div>
             <label className="block text-xs font-bold text-gray-700 mb-1 font-display">
               Detail Alamat & Patokan Rumah (Sangat Penting untuk Kurir):

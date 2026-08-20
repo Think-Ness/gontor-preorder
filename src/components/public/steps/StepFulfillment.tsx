@@ -294,57 +294,6 @@ export default function StepFulfillment({ draft, onSave, onBack }: Props) {
       {/* Delivery Form */}
       {method === 'DELIVERY' && (
         <div className="space-y-5">
-
-          {/* Quick Location Search & Auto-Fill Box */}
-          <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-5 border border-green-200 space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="font-display font-bold text-sm text-green-900 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-green-700" />
-                Pilih Kota Tujuan Pengiriman (Auto-Fill Form & Cek Tarif)
-              </h3>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-200 text-green-800">
-                Cepat & Otomatis
-              </span>
-            </div>
-
-            <p className="text-xs text-green-700">
-              Pilih kota tujuan Anda dari daftar di bawah untuk mengisi Kota, Provinsi, dan secara otomatis menghitung ongkos kirim ekspedisi ke lokasi tersebut!
-            </p>
-
-            {/* Search Input */}
-            <div className="relative">
-              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Cari Kota / Kabupaten / Provinsi tujuan (e.g. Surabaya, Jakarta, Medan)..."
-                className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-green-300 bg-white text-xs outline-none focus:ring-2 focus:ring-green-400 font-display"
-              />
-            </div>
-
-            {/* Quick Pick Chips */}
-            <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pt-1 pr-1 custom-scrollbar">
-              {filteredCities.map((c, idx) => {
-                const isSelected = address.city === c.city
-                return (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => handleSelectCity(c)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-display font-semibold transition-all ${
-                      isSelected
-                        ? 'bg-green-700 text-white shadow-xs'
-                        : 'bg-white text-gray-700 border border-green-200 hover:bg-green-100 hover:border-green-300'
-                    }`}
-                  >
-                    📍 {c.city} ({c.province})
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-
           {/* Section 1: Detailed Address Form */}
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-4">
             <div className="flex items-center justify-between flex-wrap gap-2">
