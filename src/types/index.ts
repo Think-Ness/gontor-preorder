@@ -176,6 +176,7 @@ export interface EventSettings {
   preorder_end: string | null
   timezone: string
   is_active: boolean
+  favicon_url: string | null
   created_at: string
   updated_at: string
 }

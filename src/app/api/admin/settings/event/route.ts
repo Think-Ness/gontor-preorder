@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
   const supabase = await createAdminClient()
 
   const body = await req.json()
-  const { id, event_name, event_description, preorder_start, preorder_end, timezone, is_active } = body
+  const { id, event_name, event_description, preorder_start, preorder_end, timezone, is_active, favicon_url } = body
 
   const updates = {
     event_name,
@@ -18,6 +18,7 @@ export async function POST(req: NextRequest) {
     preorder_end: preorder_end ? new Date(preorder_end).toISOString() : null,
     timezone,
     is_active,
+    favicon_url: favicon_url || null,
   }
 
   const { error } = id
