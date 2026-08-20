@@ -94,8 +94,8 @@ export default async function OrdersPage({
       <div className="flex border-b border-gray-200">
         {[
           { id: '', label: 'Semua Metode', icon: Filter },
-          { id: 'PICKUP', label: '📦 Ambil di Stand (Pickup)', icon: Package },
-          { id: 'DELIVERY', label: '🚚 Kirim ke Alamat (Delivery)', icon: Truck },
+          { id: 'PICKUP', label: 'Ambil di Stand (Pickup)', icon: Package },
+          { id: 'DELIVERY', label: 'Kirim ke Alamat (Delivery)', icon: Truck },
         ].map(tab => {
           const isActive = methodFilter === tab.id
           const Icon = tab.icon

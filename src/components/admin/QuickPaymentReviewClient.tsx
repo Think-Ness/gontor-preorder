@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import {
   ShieldCheck, CheckCircle, XCircle, AlertTriangle, RefreshCw,
-  Loader2, Eye, ChevronRight, MessageCircle, ExternalLink, Package, MapPin, User
+  Loader2, Eye, ChevronRight, MessageCircle, ExternalLink, Package, MapPin, User, Truck
 } from 'lucide-react'
 import { formatRupiah } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
@@ -224,9 +224,9 @@ export default function QuickPaymentReviewClient({ pendingOrders, initialSelecte
                     <span className="text-xs text-gray-500 font-semibold uppercase tracking-wider font-display">Metode Pengiriman</span>
                     <p className="font-display font-bold text-base text-gray-800 mt-1 flex items-center gap-1.5">
                       {selectedOrder.fulfillment_method === 'PICKUP' ? (
-                        <>📦 Ambil di Stand Acara</>
+                        <span className="flex items-center gap-1.5 text-green-800"><Package className="w-4 h-4 text-green-700" /> Ambil di Stand Acara</span>
                       ) : (
-                        <>🚚 Dikirim ke Alamat Rumah</>
+                        <span className="flex items-center gap-1.5 text-blue-800"><Truck className="w-4 h-4 text-blue-600" /> Dikirim ke Alamat Rumah</span>
                       )}
                     </p>
                   </div>
@@ -340,7 +340,7 @@ export default function QuickPaymentReviewClient({ pendingOrders, initialSelecte
                       ) : (
                         <CheckCircle className="w-4.5 h-4.5" />
                       )}
-                      ✓ Approve (ACC)
+                      Approve (ACC)
                     </button>
 
                     {/* 2. RE-UPLOAD Button */}
@@ -350,7 +350,7 @@ export default function QuickPaymentReviewClient({ pendingOrders, initialSelecte
                       className="py-3.5 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 border border-blue-300 text-blue-700 font-display font-bold text-xs flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
                     >
                       <RefreshCw className="w-4 h-4" />
-                      ↻ Re-upload Bukti
+                      Re-upload Bukti
                     </button>
 
                     {/* 3. NEEDS REVIEW Button */}
@@ -360,7 +360,7 @@ export default function QuickPaymentReviewClient({ pendingOrders, initialSelecte
                       className="py-3.5 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-800 font-display font-bold text-xs flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
                     >
                       <AlertTriangle className="w-4 h-4" />
-                      ⚠ Needs Review
+                      Needs Review
                     </button>
 
                     {/* 4. REJECT Button */}
@@ -370,7 +370,7 @@ export default function QuickPaymentReviewClient({ pendingOrders, initialSelecte
                       className="py-3.5 px-3 rounded-xl bg-red-50 hover:bg-red-100 border border-red-300 text-red-700 font-display font-bold text-xs flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
                     >
                       <XCircle className="w-4 h-4" />
-                      ✕ Tolak Pembayaran
+                      Tolak Pembayaran
                     </button>
                   </div>
                 )}

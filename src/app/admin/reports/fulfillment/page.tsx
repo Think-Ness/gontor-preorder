@@ -39,25 +39,25 @@ export default async function FulfillmentReportPage() {
         <div className="card-premium p-5 border-l-4 border-green-600">
           <Package className="w-7 h-7 mb-2 text-green-700" />
           <div className="font-display font-black text-2xl text-gray-900">{pickupOrders.length}</div>
-          <div className="text-xs font-semibold text-gray-500 mt-1">📦 Ambil di Stand (Pickup)</div>
+          <div className="text-xs font-semibold text-gray-500 mt-1">Ambil di Stand (Pickup)</div>
         </div>
 
         <div className="card-premium p-5 border-l-4 border-blue-600">
           <Truck className="w-7 h-7 mb-2 text-blue-600" />
           <div className="font-display font-black text-2xl text-gray-900">{deliveryOrders.length}</div>
-          <div className="text-xs font-semibold text-gray-500 mt-1">🚚 Kirim ke Alamat (Delivery)</div>
+          <div className="text-xs font-semibold text-gray-500 mt-1">Kirim ke Alamat (Delivery)</div>
         </div>
 
         <div className="card-premium p-5 border-l-4 border-purple-600">
           <Clock className="w-7 h-7 mb-2 text-purple-600" />
           <div className="font-display font-black text-2xl text-gray-900">{processingCount}</div>
-          <div className="text-xs font-semibold text-gray-500 mt-1">⚙️ Sedang Dalam Proses</div>
+          <div className="text-xs font-semibold text-gray-500 mt-1">Sedang Dalam Proses</div>
         </div>
 
         <div className="card-premium p-5 border-l-4 border-amber-500">
           <CheckCircle className="w-7 h-7 mb-2 text-amber-600" />
           <div className="font-display font-black text-2xl text-gray-900">{completedCount}</div>
-          <div className="text-xs font-semibold text-gray-500 mt-1">✨ Selesai Diserahterimakan</div>
+          <div className="text-xs font-semibold text-gray-500 mt-1">Selesai Diserahterimakan</div>
         </div>
       </div>
 
