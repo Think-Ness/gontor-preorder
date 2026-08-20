@@ -98,8 +98,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: msg }, { status: 400 })
     }
 
-    // Trigger async email notification
+    // Update email in orders table & trigger async email notification
     if (data.email) {
+      await supabase.from('orders').update({ email: data.email }).eq('id', result.order_id)
+
       sendOrderReceivedEmail(data.email, {
         orderNumber: result.order_number,
         fullName: data.full_name,

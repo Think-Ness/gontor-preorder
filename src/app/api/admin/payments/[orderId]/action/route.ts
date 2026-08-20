@@ -79,7 +79,7 @@ export async function POST(
   // Fetch order for email notification
   const { data: orderDetails } = await supabase
     .from('orders')
-    .select('order_number, full_name, fulfillment_method')
+    .select('order_number, full_name, fulfillment_method, email')
     .eq('id', orderId)
     .single()
 
@@ -91,15 +91,15 @@ export async function POST(
   }
 
   // Trigger email notifications
-  if (orderDetails) {
+  if (orderDetails && orderDetails.email) {
     if (action === 'APPROVE') {
-      sendPaymentApprovedEmail(user.email ?? '', {
+      sendPaymentApprovedEmail(orderDetails.email, {
         orderNumber: orderDetails.order_number,
         fullName: orderDetails.full_name,
         fulfillmentMethod: orderDetails.fulfillment_method,
       }).catch(e => console.error('Email send error:', e))
     } else if (action === 'REJECT' || action === 'REQUEST_REUPLOAD') {
-      sendPaymentRejectedEmail(user.email ?? '', {
+      sendPaymentRejectedEmail(orderDetails.email, {
         orderNumber: orderDetails.order_number,
         fullName: orderDetails.full_name,
       }, admin_note || 'Bukti transfer memerlukan konfirmasi ulang').catch(e => console.error('Email send error:', e))

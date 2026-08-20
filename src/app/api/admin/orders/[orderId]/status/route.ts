@@ -39,7 +39,7 @@ export async function POST(
     // Get order info before update
     const { data: order } = await supabase
       .from('orders')
-      .select('order_number, full_name, fulfillment_method')
+      .select('order_number, full_name, fulfillment_method, email')
       .eq('id', orderId)
       .single()
 
@@ -58,12 +58,14 @@ export async function POST(
     }
 
     // Send email status update
-    sendOrderStatusUpdatedEmail(user.email ?? '', {
-      orderNumber: order.order_number,
-      fullName: order.full_name,
-      status,
-      fulfillmentMethod: order.fulfillment_method,
-    }).catch(e => console.error('Status email error:', e))
+    if (order.email) {
+      sendOrderStatusUpdatedEmail(order.email, {
+        orderNumber: order.order_number,
+        fullName: order.full_name,
+        status,
+        fulfillmentMethod: order.fulfillment_method,
+      }).catch(e => console.error('Status email error:', e))
+    }
 
     return NextResponse.json({ success: true })
   } catch (err) {
