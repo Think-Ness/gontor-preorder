@@ -90,15 +90,15 @@ export default function StepCustomer({ draft, onSave }: Props) {
           <label className="block text-sm font-semibold text-gray-700 mb-2 font-display">
             Status Pemesan <span className="text-red-400">*</span>
           </label>
-          <div className="grid grid-cols-2 gap-3">
-            <label className={`cursor-pointer flex flex-col items-center justify-center gap-2 p-3 border-2 rounded-xl transition-all ${isAlumni ? 'border-green-800 bg-green-50' : 'border-gray-200 hover:border-green-200 bg-white'}`}>
+          <div className="flex flex-col sm:grid sm:grid-cols-2 gap-3">
+            <label className={`cursor-pointer flex flex-col items-center justify-center gap-2 p-4 sm:p-3 border-2 rounded-xl transition-all ${isAlumni ? 'border-green-800 bg-green-50' : 'border-gray-200 hover:border-green-200 bg-white'}`}>
               <input type="radio" {...register('is_alumni')} value="true" className="hidden" 
                 onChange={() => setValue('is_alumni', true, { shouldValidate: true })} 
               />
               <GraduationCap className={`w-6 h-6 ${isAlumni ? 'text-green-800' : 'text-gray-400'}`} />
               <span className={`font-display font-bold text-sm ${isAlumni ? 'text-green-900' : 'text-gray-600'}`}>Alumni Gontor</span>
             </label>
-            <label className={`cursor-pointer flex flex-col items-center justify-center gap-2 p-3 border-2 rounded-xl transition-all ${!isAlumni ? 'border-green-800 bg-green-50' : 'border-gray-200 hover:border-green-200 bg-white'}`}>
+            <label className={`cursor-pointer flex flex-col items-center justify-center gap-2 p-4 sm:p-3 border-2 rounded-xl transition-all ${!isAlumni ? 'border-green-800 bg-green-50' : 'border-gray-200 hover:border-green-200 bg-white'}`}>
               <input type="radio" {...register('is_alumni')} value="false" className="hidden" 
                 onChange={() => setValue('is_alumni', false, { shouldValidate: true })} 
               />

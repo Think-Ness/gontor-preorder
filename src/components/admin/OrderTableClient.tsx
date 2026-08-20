@@ -105,17 +105,17 @@ export default function OrderTableClient({ orders }: { orders: any[] }) {
     <>
       {/* Floating Bulk Action Bar */}
       {selectedOrders.size > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-5">
-          <div className="bg-gray-900 text-white rounded-2xl p-3 shadow-2xl flex items-center gap-4">
-            <div className="px-3">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-5 w-[92%] md:w-auto">
+          <div className="bg-gray-900 text-white rounded-2xl p-3 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-3 md:gap-4">
+            <div className="px-3 flex-shrink-0">
               <span className="font-bold">{selectedOrders.size}</span> terpilih
             </div>
-            <div className="w-px h-6 bg-gray-700"></div>
-            <div className="flex items-center gap-2">
+            <div className="hidden md:block w-px h-6 bg-gray-700"></div>
+            <div className="flex w-full md:w-auto items-center gap-2">
               <select 
                 value={bulkStatus}
                 onChange={e => setBulkStatus(e.target.value)}
-                className="bg-gray-800 border border-gray-700 text-sm rounded-lg px-3 py-2 outline-none focus:border-gray-500"
+                className="flex-1 md:flex-none bg-gray-800 border border-gray-700 text-sm rounded-lg px-3 py-2 outline-none focus:border-gray-500"
               >
                 <option value="">Pilih Status Baru...</option>
                 <option value="PROCESSING">Processing</option>
@@ -126,9 +126,9 @@ export default function OrderTableClient({ orders }: { orders: any[] }) {
               <button 
                 onClick={handleBulkUpdate}
                 disabled={!bulkStatus || isUpdating}
-                className="bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white text-sm font-bold px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+                className="bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white text-sm font-bold px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
               >
-                {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Update Massal'}
+                {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Update'}
               </button>
             </div>
           </div>

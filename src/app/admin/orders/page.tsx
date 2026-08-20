@@ -118,19 +118,19 @@ export default async function OrdersPage({
       </div>
 
       {/* Filters (Search & Order Status Badges) */}
-      <div className="flex gap-3 flex-wrap">
-        <form className="flex-1 min-w-48">
+      <div className="flex flex-col md:flex-row gap-3 md:items-center">
+        <form className="w-full md:flex-1 md:min-w-48">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               name="q"
               defaultValue={q}
-              placeholder="Cari nama, stambuk, nomor order, WhatsApp..."
+              placeholder="Cari nama, stambuk, nomor order..."
               className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100"
             />
           </div>
         </form>
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-2 flex-wrap flex-shrink-0 w-full md:w-auto">
           {['', 'PAYMENT_REVIEW', 'PAID', 'PROCESSING', 'READY_FOR_PICKUP', 'SHIPPED', 'COMPLETED'].map(s => (
             <Link key={s} href={buildUrl(undefined, s, 1)}
               className={`px-3 py-2 rounded-lg text-xs font-display font-semibold border transition-all ${

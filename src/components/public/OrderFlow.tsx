@@ -265,12 +265,12 @@ export default function OrderFlow({
                     }`}>
                       {isDone ? <CheckCircle className="w-4 h-4" /> : <Icon className="w-4 h-4" />}
                     </div>
-                    <span className={`text-xs mt-1 font-display font-semibold ${
+                    <span className={`text-[10px] sm:text-xs mt-1 font-display font-semibold hidden sm:block ${
                       isActive ? 'text-green-700' : isDone ? 'text-green-600' : 'text-gray-400'
                     }`}>{s.label}</span>
                   </div>
                   {i < 3 && (
-                    <div className={`flex-1 h-0.5 mx-2 mb-5 rounded ${
+                    <div className={`flex-1 h-0.5 mx-1 sm:mx-2 mb-1 sm:mb-5 rounded ${
                       step > s.id ? 'bg-green-400' : 'bg-gray-200'
                     }`} />
                   )}
