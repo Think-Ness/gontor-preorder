@@ -7,7 +7,7 @@ import ProductCatalog from './ProductCatalog'
 import CartDrawer from './CartDrawer'
 import { useCart } from '@/hooks/useCart'
 import { formatRupiah } from '@/lib/utils'
-import { ShoppingBag, ChevronDown, Star, Clock, Package as PackageIcon } from 'lucide-react'
+import { ShoppingBag, ChevronDown, Star, Clock, Package as PackageIcon, Search } from 'lucide-react'
 import Link from 'next/link'
 
 interface LandingPageProps {
@@ -55,7 +55,15 @@ export default function LandingPage({
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Lacak Pesanan Button */}
+            <Link
+              href="/track"
+              className="px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-display font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-1.5 transition-all"
+            >
+              <Search className="w-3.5 h-3.5 text-green-700" />
+              Lacak Pesanan
+            </Link>
             {/* Pre-order status badge */}
             {preorderStatus === 'OPEN' && (
               <span className="badge-open px-3 py-1 rounded-full text-xs font-semibold font-display hidden sm:flex items-center gap-1">

@@ -100,19 +100,23 @@ export async function POST(
       subtotal: Number(i.subtotal),
     }))
 
-    if (action === 'APPROVE') {
-      sendPaymentApprovedEmail(orderDetails.email, {
-        orderNumber: orderDetails.order_number,
-        fullName: orderDetails.full_name,
-        fulfillmentMethod: orderDetails.fulfillment_method,
-        totalAmount: Number(orderDetails.total_amount),
-        items: emailItems,
-      }).catch(e => console.error('Email send error:', e))
-    } else if (action === 'REJECT' || action === 'REQUEST_REUPLOAD') {
-      sendPaymentRejectedEmail(orderDetails.email, {
-        orderNumber: orderDetails.order_number,
-        fullName: orderDetails.full_name,
-      }, admin_note || 'Bukti transfer memerlukan konfirmasi ulang').catch(e => console.error('Email send error:', e))
+    try {
+      if (action === 'APPROVE') {
+        await sendPaymentApprovedEmail(orderDetails.email, {
+          orderNumber: orderDetails.order_number,
+          fullName: orderDetails.full_name,
+          fulfillmentMethod: orderDetails.fulfillment_method,
+          totalAmount: Number(orderDetails.total_amount),
+          items: emailItems,
+        })
+      } else if (action === 'REJECT' || action === 'REQUEST_REUPLOAD') {
+        await sendPaymentRejectedEmail(orderDetails.email, {
+          orderNumber: orderDetails.order_number,
+          fullName: orderDetails.full_name,
+        }, admin_note || 'Bukti transfer memerlukan konfirmasi ulang')
+      }
+    } catch (e) {
+      console.error('Email send error:', e)
     }
   }
 
