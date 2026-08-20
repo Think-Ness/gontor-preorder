@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { usePathname } from 'next/navigation'
 import AdminSidebar from './AdminSidebar'
 import AdminHeader from './AdminHeader'
 
@@ -12,6 +13,11 @@ export default function AdminLayoutWrapper({
   user: any 
 }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const pathname = usePathname()
+
+  if (pathname === '/admin/delivery/print') {
+    return <>{children}</>
+  }
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden relative">

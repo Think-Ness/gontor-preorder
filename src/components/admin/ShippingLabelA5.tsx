@@ -87,7 +87,7 @@ export default function ShippingLabelA5({ order }: ShippingLabelProps) {
         </h2>
         <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
           <ul className="space-y-1.5 columns-2 gap-x-6">
-            {order.items?.map((item, idx) => {
+            {(order.order_items || order.items || []).map((item: any, idx: number) => {
               const displayName = item.variant_name_snapshot 
                 ? `${item.item_name_snapshot} - ${item.variant_name_snapshot}` 
                 : item.item_name_snapshot;
