@@ -349,33 +349,50 @@ export default function StepFulfillment({ draft, onSave, onBack }: Props) {
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-4">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <h3 className="font-display font-bold text-sm text-gray-800 flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-green-700" />
-                Detail Alamat Rumah Pengiriman
+                <MapPin className="w-4 h-4 text-green-700" style={{ color: 'var(--gontor-green, #063D2E)' }} />
+                Alamat & Lokasi Pengiriman Rumah
               </h3>
 
-              <div className="flex gap-2">
-                {/* Open Interactive Map Picker Modal Button */}
-                <button
-                  type="button"
-                  onClick={() => setIsMapModalOpen(true)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-800 text-xs font-display font-bold border border-blue-200 transition-all shadow-xs"
-                >
-                  <Map className="w-3.5 h-3.5 text-blue-600" />
-                  Buka Peta Cari Lokasi
-                </button>
-
-                {/* GPS Geolocation Button */}
-                <button
-                  type="button"
-                  onClick={handleGetLocation}
-                  disabled={gettingLocation}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-green-50 hover:bg-green-100 text-green-800 text-xs font-display font-bold border border-green-200 transition-all shadow-xs"
-                >
-                  <Navigation className={`w-3.5 h-3.5 ${gettingLocation ? 'animate-spin' : 'text-green-700'}`} />
-                  {gettingLocation ? 'Mengambil GPS...' : 'Tag GPS Rumah'}
-                </button>
-              </div>
+              {/* Prominent Location Picker Trigger Button */}
+              <button
+                type="button"
+                onClick={() => setIsMapModalOpen(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-white text-xs font-display font-bold shadow-sm hover:opacity-95 transition-all"
+                style={{ background: 'var(--gontor-green, #063D2E)' }}
+              >
+                <MapPin className="w-4 h-4" style={{ color: 'var(--gontor-gold, #D4AF37)' }} />
+                Pilih Lokasi di Peta
+              </button>
             </div>
+
+            {/* Selected Location Summary Box if location is picked */}
+            {address.fullAddress && (
+              <div className="p-4 rounded-xl border border-green-200 bg-green-50/60 font-body space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-green-900 font-display flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-green-700" />
+                    Lokasi Pengiriman Terpilih
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setIsMapModalOpen(true)}
+                    className="text-xs text-green-800 hover:text-green-950 underline font-bold font-display"
+                  >
+                    Ubah Lokasi
+                  </button>
+                </div>
+
+                <p className="text-xs sm:text-sm text-gray-800 font-semibold leading-relaxed">
+                  {address.fullAddress}
+                </p>
+
+                {(address.village || address.district || address.city || address.province) && (
+                  <p className="text-xs text-gray-600">
+                    {[address.village && `Desa ${address.village}`, address.district && `Kec. ${address.district}`, address.city, address.province, address.postalCode].filter(Boolean).join(', ')}
+                  </p>
+                )}
+              </div>
+            )}
 
             {locationSuccess && (
               <div className="p-3 rounded-xl bg-green-100 border border-green-300 text-green-900 text-xs font-semibold flex items-center gap-2">
@@ -558,15 +575,22 @@ export default function StepFulfillment({ draft, onSave, onBack }: Props) {
       <MapPickerModal
         isOpen={isMapModalOpen}
         onClose={() => setIsMapModalOpen(false)}
-        onSelectLocation={({ lat, lng, addressName, city, province, mapsUrl }) => {
+        onSelectLocation={({ lat, lng, addressName, village, district, city, province, postalCode, manualDetail, mapsUrl }) => {
+          const finalFullAddress = manualDetail
+            ? `${addressName} (${manualDetail})`
+            : addressName
+
           setAddress(p => ({
             ...p,
-            fullAddress: addressName,
+            fullAddress: finalFullAddress,
             googleMapsUrl: mapsUrl,
             latitude: lat,
             longitude: lng,
+            village: village || p.village,
+            district: district || p.district,
             city: city || p.city,
             province: province || p.province,
+            postalCode: postalCode || p.postalCode,
           }))
 
           // If city matches preset zone, calculate rates
