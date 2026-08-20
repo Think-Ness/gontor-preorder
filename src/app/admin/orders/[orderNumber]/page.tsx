@@ -4,7 +4,7 @@ import { formatRupiah } from '@/lib/utils'
 import PaymentActions from '@/components/admin/PaymentActions'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, User, MapPin, Package, CreditCard } from 'lucide-react'
+import { ChevronLeft, User, MapPin, Package, CreditCard, MessageCircle } from 'lucide-react'
 import Image from 'next/image'
 
 export const metadata: Metadata = { title: 'Detail Order' }
@@ -64,18 +64,37 @@ export default async function OrderDetailPage({
             Data Pemesan
           </h2>
           <dl className="space-y-2 text-sm">
-            {[
-              ['Stambuk', order.stambuk],
-              ['Nama', order.full_name],
-              ['Daerah', order.district],
-              ['Angkatan', order.generation_year],
-              ['WhatsApp', order.whatsapp],
-            ].map(([k, v]) => (
-              <div key={k as string} className="flex gap-2">
-                <dt className="text-gray-500 w-20 flex-shrink-0">{k}</dt>
-                <dd className="font-semibold text-gray-800">{v}</dd>
-              </div>
-            ))}
+            <div className="flex gap-2">
+              <dt className="text-gray-500 w-20 flex-shrink-0">Stambuk</dt>
+              <dd className="font-semibold text-gray-800">{order.stambuk}</dd>
+            </div>
+            <div className="flex gap-2">
+              <dt className="text-gray-500 w-20 flex-shrink-0">Nama</dt>
+              <dd className="font-semibold text-gray-800">{order.full_name}</dd>
+            </div>
+            <div className="flex gap-2">
+              <dt className="text-gray-500 w-20 flex-shrink-0">Daerah</dt>
+              <dd className="font-semibold text-gray-800">{order.district}</dd>
+            </div>
+            <div className="flex gap-2">
+              <dt className="text-gray-500 w-20 flex-shrink-0">Angkatan</dt>
+              <dd className="font-semibold text-gray-800">{order.generation_year}</dd>
+            </div>
+            <div className="flex gap-2 items-center">
+              <dt className="text-gray-500 w-20 flex-shrink-0">WhatsApp</dt>
+              <dd className="font-semibold text-gray-800 flex items-center gap-2">
+                <span>{order.whatsapp}</span>
+                <a
+                  href={`https://wa.me/${order.whatsapp.replace(/\D/g, '').replace(/^0/, '62')}?text=${encodeURIComponent(`Halo Kak ${order.full_name}, mengenai pesanan ${order.order_number} Gontor 100 Tahun...`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-md bg-green-600 hover:bg-green-700 text-white font-bold transition-all shadow-sm"
+                >
+                  <MessageCircle className="w-3.5 h-3.5" />
+                  Chat WA
+                </a>
+              </dd>
+            </div>
           </dl>
         </div>
 

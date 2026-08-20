@@ -48,7 +48,42 @@ function TrackingContent() {
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
+  // Re-upload state
+  const [reuploadFile, setReuploadFile] = useState<File | null>(null)
+  const [reuploading, setReuploading] = useState(false)
+  const [reuploadSuccess, setReuploadSuccess] = useState(false)
+  const [reuploadError, setReuploadError] = useState<string | null>(null)
+
   const order = orders[selectedIndex] ?? null
+
+  const handleReuploadSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!reuploadFile || !order) return
+    setReuploading(true)
+    setReuploadError(null)
+
+    try {
+      const formData = new FormData()
+      formData.append('file', reuploadFile)
+      formData.append('order_number', order.order_number)
+
+      const res = await fetch('/api/orders/reupload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Gagal mengupload bukti baru')
+
+      setReuploadSuccess(true)
+      // Refresh track data
+      fetchTrack(order.order_number)
+    } catch (err) {
+      setReuploadError(err instanceof Error ? err.message : 'Gagal mengupload bukti baru')
+    } finally {
+      setReuploading(false)
+    }
+  }
 
   const fetchTrack = async (searchVal: string) => {
     if (!searchVal.trim()) return
@@ -288,11 +323,54 @@ function TrackingContent() {
                 </div>
               </div>
 
-              {/* Admin Note if any */}
-              {order.admin_note && (
-                <div className="mt-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs">
-                  <p className="font-bold mb-1">Catatan Panitia:</p>
-                  <p>{order.admin_note}</p>
+              {/* Admin Note & Interactive Re-upload Form if required */}
+              {(order.payment_status === 'REJECTED' || order.order_status === 'REJECTED' || order.payment_status === 'REQUEST_REUPLOAD' || order.admin_note) && (
+                <div className="mt-6 p-5 rounded-2xl bg-amber-50 border border-amber-200 space-y-4">
+                  <div className="flex items-center gap-2 text-amber-900 font-display font-bold text-sm">
+                    <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+                    PERLU UPLOAD ULANG BUKTI PEMBAYARAN
+                  </div>
+
+                  {order.admin_note && (
+                    <div className="bg-white/80 p-3 rounded-xl border border-amber-200 text-xs text-amber-900">
+                      <p className="font-bold mb-0.5">Catatan Panitia Keuangan:</p>
+                      <p className="italic">"{order.admin_note}"</p>
+                    </div>
+                  )}
+
+                  {reuploadSuccess ? (
+                    <div className="p-3 rounded-xl bg-green-100 border border-green-300 text-green-800 text-xs font-semibold flex items-center gap-2">
+                      <Check className="w-4 h-4 text-green-700" />
+                      Bukti transfer baru berhasil dikirim! Panitia akan memverifikasi ulang pesanan Anda.
+                    </div>
+                  ) : (
+                    <form onSubmit={handleReuploadSubmit} className="space-y-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">
+                          Upload Foto Bukti Transfer Baru (Max 5MB):
+                        </label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={e => setReuploadFile(e.target.files?.[0] || null)}
+                          className="block w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-amber-100 file:text-amber-900 hover:file:bg-amber-200 font-display cursor-pointer"
+                          required
+                        />
+                      </div>
+
+                      {reuploadError && (
+                        <p className="text-xs text-red-600 font-semibold">{reuploadError}</p>
+                      )}
+
+                      <button
+                        type="submit"
+                        disabled={reuploading || !reuploadFile}
+                        className="btn-primary w-full py-3 rounded-xl font-display font-bold text-xs flex items-center justify-center gap-2 disabled:opacity-50"
+                      >
+                        {reuploading ? 'Mengupload...' : 'Kirim Bukti Pembayaran Baru'}
+                      </button>
+                    </form>
+                  )}
                 </div>
               )}
             </div>
