@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { Product, ProductVariant, CartItem } from '@/types'
 import { formatRupiah } from '@/lib/utils'
-import { Plus, Minus, ShoppingBag, AlertCircle } from 'lucide-react'
+import { Plus, Minus, ShoppingBag, AlertCircle, Award } from 'lucide-react'
 import { buildDriveImageUrl } from '@/lib/drive-urls'
 
 interface ProductCardProps {
@@ -12,9 +12,10 @@ interface ProductCardProps {
   onAdd: (item: Omit<CartItem, 'id'>) => void
   cartItems: CartItem[]
   isOpen: boolean
+  isTopTier?: boolean
 }
 
-export default function ProductCard({ product, onAdd, cartItems, isOpen }: ProductCardProps) {
+export default function ProductCard({ product, onAdd, cartItems, isOpen, isTopTier }: ProductCardProps) {
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
     product.variants?.[0] ?? null
   )
@@ -84,6 +85,14 @@ export default function ProductCard({ product, onAdd, cartItems, isOpen }: Produ
     <div className="card-premium flex flex-col overflow-hidden group">
       {/* Image */}
       <div className="relative aspect-square bg-gray-50 overflow-hidden">
+        {isTopTier && (
+          <div className="absolute top-2 left-2 z-10">
+            <span className="bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-md border border-amber-400 text-[10px] font-display font-black px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center gap-1">
+              <Award className="w-3 h-3" />
+              Terlaris
+            </span>
+          </div>
+        )}
         {imageUrl ? (
           <Image
             src={imageUrl}

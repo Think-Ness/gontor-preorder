@@ -1,10 +1,9 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { CheckoutDraft, FulfillmentMethod } from '@/types'
-import { MapPin, ShoppingBag, ChevronLeft, ChevronRight, Truck, Navigation, CheckCircle2, ExternalLink, Search, Sparkles, Map } from 'lucide-react'
+import { Truck, Navigation, CheckCircle2, MapPin } from 'lucide-react'
 import { formatRupiah } from '@/lib/utils'
-import MapPickerModal from '../MapPickerModal'
 
 interface Props {
   draft: CheckoutDraft | null
@@ -102,24 +101,37 @@ const ZONE_RATES = {
 
 export default function StepFulfillment({ draft, onSave, onBack }: Props) {
   const [method, setMethod] = useState<FulfillmentMethod>(draft?.fulfillmentMethod || 'PICKUP')
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  
+  // Menentukan active zone berdasarkan provinsi yang diinput di Step 1
+  const determineZone = (province: string) => {
+    const p = province.toLowerCase()
+    if (p.includes('timur') && p.includes('jawa')) return 'ZONA_1'
+    if (p.includes('tengah') && p.includes('jawa')) return 'ZONA_1'
+    
+    if (p.includes('barat') && p.includes('jawa')) return 'ZONA_2'
+    if (p.includes('dki')) return 'ZONA_2'
+    if (p.includes('banten')) return 'ZONA_2'
+    if (p.includes('yogyakarta') || p.includes('diy')) return 'ZONA_2'
+    if (p.includes('bali')) return 'ZONA_2'
+    
+    if (p.includes('sumatera') || p.includes('riau') || p.includes('lampung') || p.includes('aceh')) return 'ZONA_3'
+    if (p.includes('nusa tenggara barat') || p.includes('ntb')) return 'ZONA_3'
+    
+    if (p.includes('kalimantan') || p.includes('sulawesi')) return 'ZONA_4'
+    if (p.includes('nusa tenggara timur') || p.includes('ntt')) return 'ZONA_4'
+    
+    if (p.includes('maluku') || p.includes('papua')) return 'ZONA_5'
+    
+    return 'ZONA_2' // default fallback
+  }
 
-  // Current Destination Zone (Default Zona 2)
   const [activeZone, setActiveZone] = useState<keyof typeof ZONE_RATES>('ZONA_2')
-  const [searchQuery, setSearchQuery] = useState('')
 
-  // Address State
-  const [address, setAddress] = useState({
-    fullAddress: draft?.address?.fullAddress || '',
-    village: draft?.address?.village || '',
-    district: draft?.address?.district || '',
-    city: draft?.address?.city || '',
-    province: draft?.address?.province || '',
-    postalCode: draft?.address?.postalCode || '',
-    googleMapsUrl: draft?.address?.googleMapsUrl || '',
-    latitude: draft?.address?.latitude || undefined as number | undefined,
-    longitude: draft?.address?.longitude || undefined as number | undefined,
-  })
+  useEffect(() => {
+    if (draft?.address?.province) {
+      setActiveZone(determineZone(draft.address.province))
+    }
+  }, [draft?.address?.province])
 
   // Dynamic Available Couriers based on Active Zone
   const currentCouriers = useMemo(() => ZONE_RATES[activeZone], [activeZone])
@@ -127,436 +139,173 @@ export default function StepFulfillment({ draft, onSave, onBack }: Props) {
   const [selectedCourier, setSelectedCourier] = useState(draft?.address?.courierName || currentCouriers[0].name)
   const [shippingCost, setShippingCost] = useState<number>(draft?.address?.shippingCost ?? currentCouriers[0].cost)
 
-  const [gettingLocation, setGettingLocation] = useState(false)
-  const [locationSuccess, setLocationSuccess] = useState(false)
-  const [isMapModalOpen, setIsMapModalOpen] = useState(false)
-
-  const inputCls = (err?: string) =>
-    `w-full px-4 py-3 rounded-xl border text-sm outline-none transition-all font-body ${
-      err
-        ? 'border-red-300 bg-red-50 focus:ring-2 focus:ring-red-200'
-        : 'border-gray-200 bg-white focus:border-green-500 focus:ring-2 focus:ring-green-100'
-    }`
-
-  // Quick Select Destination City Handler
-  const handleSelectCity = (dest: DestinationCity) => {
-    setAddress(p => ({
-      ...p,
-      city: dest.city,
-      province: dest.province,
-      postalCode: dest.postalCode,
-    }))
-    setActiveZone(dest.zone)
-
-    // Reset selected courier rate to new zone defaults
-    const newCouriers = ZONE_RATES[dest.zone]
-    setSelectedCourier(newCouriers[0].name)
-    setShippingCost(newCouriers[0].cost)
-
-    setErrors(p => ({ ...p, city: '', province: '', postalCode: '' }))
-    setSearchQuery('')
-  }
-
-  // Filtered Cities for Search Box
-  const filteredCities = useMemo(() => {
-    if (!searchQuery.trim()) return DESTINATION_CITIES
-    const q = searchQuery.toLowerCase()
-    return DESTINATION_CITIES.filter(
-      c => c.city.toLowerCase().includes(q) || c.province.toLowerCase().includes(q)
-    )
-  }, [searchQuery])
-
-  // GPS Geolocation Handler (For pinpointing exact doorstep)
-  const handleGetLocation = () => {
-    if (!navigator.geolocation) {
-      alert('Browser Anda tidak mendukung GPS Geolocation.')
-      return
-    }
-
-    setGettingLocation(true)
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const lat = pos.coords.latitude
-        const lng = pos.coords.longitude
-        const mapsUrl = `https://maps.google.com/?q=${lat},${lng}`
-
-        setAddress(p => ({
-          ...p,
-          latitude: lat,
-          longitude: lng,
-          googleMapsUrl: mapsUrl,
-        }))
-
-        setGettingLocation(false)
-        setLocationSuccess(true)
-        setTimeout(() => setLocationSuccess(false), 4000)
-      },
-      (err) => {
-        setGettingLocation(false)
-        alert(`Gagal mengambil koordinat lokasi: ${err.message}. Anda dapat menempelkan link Google Maps secara manual.`)
-      },
-      { enableHighAccuracy: true, timeout: 10000 }
-    )
-  }
-
-  const handleCourierSelect = (courier: (typeof currentCouriers)[0]) => {
-    setSelectedCourier(courier.name)
-    setShippingCost(courier.cost)
-  }
-
   const handleNext = () => {
-    const newErrors: Record<string, string> = {}
-    if (method === 'DELIVERY') {
-      if (!address.fullAddress || address.fullAddress.length < 5) newErrors.fullAddress = 'Alamat lengkap wajib diisi'
-      if (!address.village) newErrors.village = 'Desa/Kelurahan wajib'
-      if (!address.district) newErrors.district = 'Kecamatan wajib'
-      if (!address.city) newErrors.city = 'Kabupaten/Kota wajib'
-      if (!address.province) newErrors.province = 'Provinsi wajib'
-      if (!/^\d{5}$/.test(address.postalCode)) newErrors.postalCode = 'Kode pos harus 5 digit'
-    }
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors)
-      return
-    }
-
     onSave({
       fulfillmentMethod: method,
       address: {
-        ...address,
+        ...(draft?.address || {
+          fullAddress: '',
+          village: '',
+          district: '',
+          city: '',
+          province: '',
+          postalCode: ''
+        }),
         courierName: method === 'DELIVERY' ? selectedCourier : undefined,
-        shippingCost: method === 'DELIVERY' ? shippingCost : 0,
-      },
+        shippingCost: method === 'DELIVERY' ? shippingCost : undefined,
+      }
     })
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <div className="text-center mb-6">
         <div className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3"
           style={{ background: 'rgba(13,74,43,0.1)' }}>
           <Truck className="w-6 h-6" style={{ color: 'var(--gontor-green)' }} />
         </div>
         <h2 className="font-display font-bold text-xl" style={{ color: 'var(--gontor-green-dark)' }}>Metode Pengiriman</h2>
-        <p className="text-sm text-gray-500 mt-1">Pilih cara pengambilan merchandise Anda</p>
+        <p className="text-sm text-gray-500 mt-1">Pilih cara Anda menerima pesanan</p>
       </div>
 
-      {/* Method Selection */}
-      <div className="grid grid-cols-2 gap-3 mb-5">
-        <button
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* PICKUP */}
+        <div 
           onClick={() => setMethod('PICKUP')}
-          className={`p-4 rounded-2xl border-2 text-left transition-all ${
-            method === 'PICKUP'
-              ? 'border-green-500 bg-green-50'
-              : 'border-gray-200 bg-white hover:border-gray-300'
+          className={`cursor-pointer border-2 rounded-2xl p-5 transition-all relative overflow-hidden ${
+            method === 'PICKUP' 
+              ? 'border-emerald-600 bg-emerald-50 shadow-md' 
+              : 'border-gray-200 bg-white hover:border-emerald-200 hover:bg-emerald-50/50'
           }`}
         >
-          <ShoppingBag className={`w-6 h-6 mb-2 ${method === 'PICKUP' ? 'text-green-600' : 'text-gray-400'}`} />
-          <div className={`font-display font-bold text-sm ${method === 'PICKUP' ? 'text-green-800' : 'text-gray-700'}`}>
-            Ambil di Stand
+          {method === 'PICKUP' && (
+            <div className="absolute top-4 right-4 text-emerald-600">
+              <CheckCircle2 className="w-6 h-6" />
+            </div>
+          )}
+          <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${method === 'PICKUP' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'}`}>
+            <Navigation className="w-6 h-6" />
           </div>
-          <div className="text-xs text-gray-500 mt-0.5">Reuni Akbar 19–20 Sep 2026</div>
-        </button>
+          <h3 className={`font-display font-bold text-lg mb-1 ${method === 'PICKUP' ? 'text-emerald-900' : 'text-gray-900'}`}>Ambil di Stand</h3>
+          <p className="text-sm text-gray-500 leading-relaxed">
+            Ambil langsung di stand bazar 100 Tahun Gontor. Hemat ongkir, dan bisa langsung dipakai saat acara.
+          </p>
+          <div className="mt-4 inline-block bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full font-display tracking-wide">
+            GRATIS ONGKIR
+          </div>
+        </div>
 
-        <button
+        {/* DELIVERY */}
+        <div 
           onClick={() => setMethod('DELIVERY')}
-          className={`p-4 rounded-2xl border-2 text-left transition-all ${
-            method === 'DELIVERY'
-              ? 'border-green-500 bg-green-50'
-              : 'border-gray-200 bg-white hover:border-gray-300'
+          className={`cursor-pointer border-2 rounded-2xl p-5 transition-all relative overflow-hidden ${
+            method === 'DELIVERY' 
+              ? 'border-blue-600 bg-blue-50 shadow-md' 
+              : 'border-gray-200 bg-white hover:border-blue-200 hover:bg-blue-50/50'
           }`}
         >
-          <Truck className={`w-6 h-6 mb-2 ${method === 'DELIVERY' ? 'text-green-600' : 'text-gray-400'}`} />
-          <div className={`font-display font-bold text-sm ${method === 'DELIVERY' ? 'text-green-800' : 'text-gray-700'}`}>
-            Kirim ke Rumah
-          </div>
-          <div className="text-xs text-gray-500 mt-0.5">Alamat pengiriman diperlukan</div>
-        </button>
-      </div>
-
-      {/* Pickup Info */}
-      {method === 'PICKUP' && (
-        <div className="bg-green-50 rounded-2xl p-5 mb-5 border border-green-100">
-          <div className="flex items-start gap-3">
-            <MapPin className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-            <div>
-              <div className="font-display font-bold text-sm text-green-800 mb-1">Stand Merchandise Utama</div>
-              <p className="text-xs text-green-700">
-                Merchandise dapat diambil di stand resmi panitia saat Reuni Akbar Alumni 100 Tahun Gontor (19–20 September 2026).
-              </p>
-              <p className="text-xs text-green-600 mt-2 font-semibold flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" /> Tidak ada biaya pengiriman (Gratis)
-              </p>
+          {method === 'DELIVERY' && (
+            <div className="absolute top-4 right-4 text-blue-600">
+              <CheckCircle2 className="w-6 h-6" />
             </div>
+          )}
+          <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${method === 'DELIVERY' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}>
+            <Truck className="w-6 h-6" />
+          </div>
+          <h3 className={`font-display font-bold text-lg mb-1 ${method === 'DELIVERY' ? 'text-blue-900' : 'text-gray-900'}`}>Kirim ke Alamat</h3>
+          <p className="text-sm text-gray-500 leading-relaxed">
+            Barang dikirim ke alamat Anda melalui kurir ekspedisi. Cocok untuk yang berhalangan hadir.
+          </p>
+          <div className="mt-4 inline-block bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full font-display tracking-wide">
+            SESUAI TARIF KURIR
           </div>
         </div>
-      )}
+      </div>
 
-      {/* Delivery Form */}
       {method === 'DELIVERY' && (
-        <div className="space-y-5">
-          {/* Section 1: Detailed Address Form */}
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-4">
-            <div className="flex items-center justify-between flex-wrap gap-2">
-              <h3 className="font-display font-bold text-sm text-gray-800 flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-green-700" style={{ color: 'var(--gontor-green, #063D2E)' }} />
-                Alamat & Lokasi Pengiriman Rumah
-              </h3>
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 animate-in fade-in slide-in-from-top-4 duration-300">
+          <h3 className="font-display font-bold text-gray-800 text-base mb-4 pb-2 border-b border-gray-100 flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-blue-600" />
+              Alamat Pengiriman Anda
+            </span>
+          </h3>
 
-              {/* Prominent Location Picker Trigger Button */}
-              <button
-                type="button"
-                onClick={() => setIsMapModalOpen(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-white text-xs font-display font-bold shadow-sm hover:opacity-95 transition-all"
-                style={{ background: 'var(--gontor-green, #063D2E)' }}
-              >
-                <MapPin className="w-4 h-4" style={{ color: 'var(--gontor-gold, #D4AF37)' }} />
-                Pilih Lokasi di Peta
-              </button>
-            </div>
-
-            {/* Selected Location Summary Box if location is picked */}
-            {address.fullAddress && (
-              <div className="p-4 rounded-xl border border-green-200 bg-green-50/60 font-body space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-green-900 font-display flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-green-700" />
-                    Lokasi Pengiriman Terpilih
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setIsMapModalOpen(true)}
-                    className="text-xs text-green-800 hover:text-green-950 underline font-bold font-display"
-                  >
-                    Ubah Lokasi
-                  </button>
-                </div>
-
-                <p className="text-xs sm:text-sm text-gray-800 font-semibold leading-relaxed">
-                  {address.fullAddress}
-                </p>
-
-                {(address.village || address.district || address.city || address.province) && (
-                  <p className="text-xs text-gray-600">
-                    {[address.village && `Desa ${address.village}`, address.district && `Kec. ${address.district}`, address.city, address.province, address.postalCode].filter(Boolean).join(', ')}
-                  </p>
-                )}
-              </div>
-            )}
-
-            {locationSuccess && (
-              <div className="p-3 rounded-xl bg-green-100 border border-green-300 text-green-900 text-xs font-semibold flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-green-700 flex-shrink-0" />
-                Koordinat GPS presisi lokasi rumah Anda berhasil didapatkan!
-              </div>
-            )}
-
-            <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1 font-display">
-                Alamat Lengkap (Jalan, No. Rumah, RT/RW, Patokan) <span className="text-red-400">*</span>
-              </label>
-              <textarea
-                value={address.fullAddress}
-                onChange={e => { setAddress(p => ({ ...p, fullAddress: e.target.value })); setErrors(p => ({ ...p, fullAddress: '' })) }}
-                placeholder="Contoh: Jl. Ahmad Yani No. 88, RT 01/RW 04 (Samping Masjid Al-Hidayah)"
-                rows={2}
-                className={inputCls(errors.fullAddress)}
-              />
-              {errors.fullAddress && <p className="text-xs text-red-500 mt-1">{errors.fullAddress}</p>}
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1 font-display">
-                  Kabupaten / Kota <span className="text-red-400">*</span>
-                </label>
-                <input
-                  value={address.city}
-                  onChange={e => { setAddress(p => ({ ...p, city: e.target.value })); setErrors(p => ({ ...p, city: '' })) }}
-                  placeholder="e.g. Kota Surabaya"
-                  className={inputCls(errors.city)}
-                />
-                {errors.city && <p className="text-xs text-red-500 mt-1">{errors.city}</p>}
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1 font-display">
-                  Provinsi <span className="text-red-400">*</span>
-                </label>
-                <input
-                  value={address.province}
-                  onChange={e => { setAddress(p => ({ ...p, province: e.target.value })); setErrors(p => ({ ...p, province: '' })) }}
-                  placeholder="e.g. Jawa Timur"
-                  className={inputCls(errors.province)}
-                />
-                {errors.province && <p className="text-xs text-red-500 mt-1">{errors.province}</p>}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1 font-display">
-                  Kecamatan <span className="text-red-400">*</span>
-                </label>
-                <input
-                  value={address.district}
-                  onChange={e => { setAddress(p => ({ ...p, district: e.target.value })); setErrors(p => ({ ...p, district: '' })) }}
-                  placeholder="Nama kec"
-                  className={inputCls(errors.district)}
-                />
-                {errors.district && <p className="text-xs text-red-500 mt-1">{errors.district}</p>}
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1 font-display">
-                  Desa / Kel. <span className="text-red-400">*</span>
-                </label>
-                <input
-                  value={address.village}
-                  onChange={e => { setAddress(p => ({ ...p, village: e.target.value })); setErrors(p => ({ ...p, village: '' })) }}
-                  placeholder="Nama desa"
-                  className={inputCls(errors.village)}
-                />
-                {errors.village && <p className="text-xs text-red-500 mt-1">{errors.village}</p>}
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1 font-display">
-                  Kode Pos <span className="text-red-400">*</span>
-                </label>
-                <input
-                  value={address.postalCode}
-                  onChange={e => { setAddress(p => ({ ...p, postalCode: e.target.value })); setErrors(p => ({ ...p, postalCode: '' })) }}
-                  placeholder="5 digit"
-                  maxLength={5}
-                  className={inputCls(errors.postalCode)}
-                />
-                {errors.postalCode && <p className="text-xs text-red-500 mt-1">{errors.postalCode}</p>}
-              </div>
-            </div>
-
-            {/* Optional Google Maps Share Link input */}
-            <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1 font-display flex items-center justify-between">
-                <span>Link Google Maps Rumah (Opsional):</span>
-                {address.googleMapsUrl && (
-                  <a
-                    href={address.googleMapsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-green-700 hover:underline text-[11px] font-bold flex items-center gap-1"
-                  >
-                    Buka Peta <ExternalLink className="w-3 h-3" />
-                  </a>
-                )}
-              </label>
-              <input
-                type="text"
-                value={address.googleMapsUrl}
-                onChange={e => setAddress(p => ({ ...p, googleMapsUrl: e.target.value }))}
-                placeholder="https://maps.google.com/?q=-7.89,111.45 atau paste link Google Maps..."
-                className={inputCls()}
-              />
-            </div>
+          <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-6">
+            <p className="text-sm text-gray-700 font-semibold mb-1">{draft?.name}</p>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              {draft?.address?.fullAddress}<br/>
+              Kel/Desa {draft?.address?.village}, Kec. {draft?.address?.district}<br/>
+              {draft?.address?.city}, {draft?.address?.province} - {draft?.address?.postalCode}
+            </p>
+            <p className="text-xs text-gray-500 mt-2 italic">*Diambil dari data Tahap 1</p>
           </div>
 
-          {/* Section 2: Courier & Shipping Fee Estimator */}
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="font-display font-bold text-sm text-gray-800 flex items-center gap-2">
-                <Truck className="w-4 h-4 text-blue-600" />
-                Pilihan Ekspedisi & Tarif Ongkir ({address.city || 'Tujuan Pengiriman'})
-              </h3>
-              <span className="text-[11px] font-semibold text-gray-500">
-                Tarif Wilayah: {activeZone.replace('ZONA_', 'Zona ')}
-              </span>
-            </div>
-
-            <div className="space-y-2">
-              {currentCouriers.map(c => {
-                const isSelected = selectedCourier === c.name
-                return (
-                  <div
-                    key={c.id}
-                    onClick={() => handleCourierSelect(c)}
-                    className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${
-                      isSelected
-                        ? 'border-green-600 bg-green-50/70 shadow-xs'
-                        : 'border-gray-200 bg-white hover:bg-gray-50'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                        isSelected ? 'border-green-600 bg-green-600' : 'border-gray-300'
-                      }`}>
-                        {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                      </div>
-                      <div>
-                        <p className={`text-xs font-display font-bold ${isSelected ? 'text-green-900' : 'text-gray-800'}`}>
-                          {c.name}
-                        </p>
-                        <p className="text-[11px] text-gray-500">Estimasi Tiba: {c.est}</p>
-                      </div>
-                    </div>
-
-                    <span className={`text-xs font-display font-bold ${isSelected ? 'text-green-800' : 'text-gray-900'}`}>
-                      {formatRupiah(c.cost)}
-                    </span>
+          <h3 className="font-display font-bold text-gray-800 text-base mb-4 flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <Truck className="w-4 h-4 text-blue-600" />
+              Pilih Ekspedisi (Zona: {activeZone.replace('_', ' ')})
+            </span>
+          </h3>
+          <div className="space-y-2.5">
+            {currentCouriers.map(c => (
+              <label 
+                key={c.id} 
+                className={`flex items-center justify-between p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                  selectedCourier === c.name ? 'border-blue-500 bg-blue-50/50' : 'border-gray-100 hover:border-blue-200 hover:bg-gray-50'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                    selectedCourier === c.name ? 'border-blue-500' : 'border-gray-300'
+                  }`}>
+                    {selectedCourier === c.name && <div className="w-2.5 h-2.5 rounded-full bg-blue-500" />}
                   </div>
-                )
-              })}
-            </div>
+                  <div>
+                    <div className="font-bold text-sm text-gray-800">{c.name}</div>
+                    <div className="text-xs text-gray-500">Estimasi: {c.est}</div>
+                  </div>
+                </div>
+                <div className="font-display font-bold text-blue-700">
+                  {formatRupiah(c.cost)}
+                </div>
+                {/* Hidden radio just for a11y & logical flow if needed */}
+                <input 
+                  type="radio" 
+                  name="courier" 
+                  value={c.name} 
+                  checked={selectedCourier === c.name} 
+                  className="hidden"
+                  onChange={() => {
+                    setSelectedCourier(c.name)
+                    setShippingCost(c.cost)
+                  }}
+                />
+              </label>
+            ))}
           </div>
         </div>
       )}
 
-      {/* Footer Navigation Buttons */}
-      <div className="flex gap-3 pt-2">
-        <button onClick={onBack} className="flex items-center gap-2 px-5 py-3 rounded-xl border border-gray-200 text-gray-600 font-display font-semibold hover:bg-gray-50">
-          <ChevronLeft className="w-4 h-4" />
+      {method === 'PICKUP' && (
+        <div className="bg-emerald-50 rounded-2xl p-5 border border-emerald-100 text-sm text-emerald-800 animate-in fade-in slide-in-from-top-4 duration-300 flex items-start gap-3">
+          <Navigation className="w-5 h-5 flex-shrink-0 mt-0.5 text-emerald-600" />
+          <div>
+            <p className="font-bold mb-1">Lokasi Stand Pengambilan:</p>
+            <p>Pondok Modern Darussalam Gontor Pusat, Ponorogo, Jawa Timur.</p>
+            <p className="mt-2 text-xs opacity-80">Detail jam buka & titik stand akan diinformasikan menjelang hari H melalui WhatsApp.</p>
+          </div>
+        </div>
+      )}
+
+      <div className="flex gap-3 pt-4 border-t border-gray-100">
+        <button type="button" onClick={onBack} className="px-6 py-4 rounded-xl border border-gray-200 font-display font-bold text-gray-600 hover:bg-gray-50 transition-all">
+          Kembali
         </button>
-        <button onClick={handleNext} className="btn-primary flex-1 py-3 font-display font-bold flex items-center justify-center gap-2">
-          Lanjut — Pembayaran
-          <ChevronRight className="w-4 h-4" />
+        <button onClick={handleNext} className="flex-1 btn-primary py-4 font-display font-bold">
+          Lanjut ke Pembayaran
         </button>
       </div>
-
-      {/* Interactive Map Picker Modal */}
-      <MapPickerModal
-        isOpen={isMapModalOpen}
-        onClose={() => setIsMapModalOpen(false)}
-        onSelectLocation={({ lat, lng, addressName, village, district, city, province, postalCode, manualDetail, mapsUrl }) => {
-          const finalFullAddress = manualDetail
-            ? `${addressName} (${manualDetail})`
-            : addressName
-
-          setAddress(p => ({
-            ...p,
-            fullAddress: finalFullAddress,
-            googleMapsUrl: mapsUrl,
-            latitude: lat,
-            longitude: lng,
-            village: village || p.village,
-            district: district || p.district,
-            city: city || p.city,
-            province: province || p.province,
-            postalCode: postalCode || p.postalCode,
-          }))
-
-          // If city matches preset zone, calculate rates
-          if (city || province) {
-            const matched = DESTINATION_CITIES.find(
-              c => (city && c.city.toLowerCase().includes(city.toLowerCase())) ||
-                   (province && c.province.toLowerCase().includes(province.toLowerCase()))
-            )
-            if (matched) {
-              handleSelectCity(matched)
-            }
-          }
-
-          setLocationSuccess(true)
-          setTimeout(() => setLocationSuccess(false), 4000)
-        }}
-      />
     </div>
   )
 }

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { EventSettings } from '@/types'
-import { Loader2, Save, Clock, Image as ImageIcon, Upload, Globe, Link2 } from 'lucide-react'
+import { Loader2, Save, Clock, Upload, Globe, Link2, Camera, Phone, FileText, Hash } from 'lucide-react'
 
 interface Props { initialData: EventSettings | null }
 
@@ -15,6 +15,10 @@ export default function EventSettingsForm({ initialData }: Props) {
     timezone: initialData?.timezone ?? 'Asia/Jakarta',
     is_active: initialData?.is_active ?? true,
     favicon_url: initialData?.favicon_url ?? '',
+    footer_tagline: initialData?.footer_tagline ?? '',
+    footer_hashtags: initialData?.footer_hashtags ?? '',
+    contact_whatsapp: initialData?.contact_whatsapp ?? '',
+    social_instagram: initialData?.social_instagram ?? '',
   })
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -287,6 +291,68 @@ export default function EventSettingsForm({ initialData }: Props) {
         <label className="text-sm font-semibold text-gray-700 font-display">
           Status Pre-Order: <span className={form.is_active ? 'text-green-700 font-bold' : 'text-red-600 font-bold'}>{form.is_active ? 'AKTIF' : 'NONAKTIF'}</span>
         </label>
+      </div>
+
+      {/* Footer Settings */}
+      <div className="p-5 bg-gray-50/80 rounded-2xl border border-gray-200/80 space-y-4">
+        <div className="flex items-center gap-2 mb-1">
+          <FileText className="w-4 h-4 text-green-700" />
+          <span className="text-sm font-bold text-gray-800 font-display">Pengaturan Footer Website</span>
+        </div>
+        <p className="text-xs text-gray-500">Isi teks, hashtag, dan kontak yang tampil di bagian bawah halaman website.</p>
+
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5 font-display flex items-center gap-1">
+            <FileText className="w-3.5 h-3.5" /> Tagline Footer
+          </label>
+          <input
+            type="text"
+            placeholder="Contoh: Warisan Ilmu, Cahaya Peradaban"
+            value={form.footer_tagline}
+            onChange={e => setForm(p => ({ ...p, footer_tagline: e.target.value }))}
+            className={inputCls}
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5 font-display flex items-center gap-1">
+            <Hash className="w-3.5 h-3.5" /> Hashtag (pisahkan dengan spasi atau koma)
+          </label>
+          <input
+            type="text"
+            placeholder="Contoh: #100TahunGontor #ReuniAkbar #GontorMerch"
+            value={form.footer_hashtags}
+            onChange={e => setForm(p => ({ ...p, footer_hashtags: e.target.value }))}
+            className={inputCls}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5 font-display flex items-center gap-1">
+              <Phone className="w-3.5 h-3.5" /> Nomor WhatsApp Kontak
+            </label>
+            <input
+              type="text"
+              placeholder="628xxxxxxxxxx"
+              value={form.contact_whatsapp}
+              onChange={e => setForm(p => ({ ...p, contact_whatsapp: e.target.value }))}
+              className={inputCls}
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5 font-display flex items-center gap-1">
+              <Camera className="w-3.5 h-3.5" /> Username Instagram
+            </label>
+            <input
+              type="text"
+              placeholder="@gontor_official"
+              value={form.social_instagram}
+              onChange={e => setForm(p => ({ ...p, social_instagram: e.target.value }))}
+              className={inputCls}
+            />
+          </div>
+        </div>
       </div>
 
       <button onClick={handleSave} disabled={saving}

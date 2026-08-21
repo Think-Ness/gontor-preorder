@@ -346,7 +346,6 @@ export default function OrderFlow({
                     is_alumni: draft?.isAlumni ?? true,
                     stambuk: draft?.stambuk,
                     full_name: draft?.name,
-                    district: draft?.district,
                     generation_year: Number(draft?.generationYear),
                     whatsapp: draft?.whatsapp,
                     email: draft?.email,
@@ -357,6 +356,8 @@ export default function OrderFlow({
                     shipping_city: draft?.address?.city,
                     shipping_province: draft?.address?.province,
                     shipping_postal_code: draft?.address?.postalCode,
+                    shipping_latitude: draft?.address?.latitude,
+                    shipping_longitude: draft?.address?.longitude,
                     shipping_cost: draft?.fulfillmentMethod === 'DELIVERY' ? Number(draft?.address?.shippingCost || 0) : 0,
                     items: cart.items.map(i => ({
                       productId: i.productId,

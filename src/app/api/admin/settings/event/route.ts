@@ -10,7 +10,13 @@ export async function POST(req: NextRequest) {
   const supabase = await createAdminClient()
 
   const body = await req.json()
-  const { id, event_name, event_description, preorder_start, preorder_end, timezone, is_active, favicon_url } = body
+  const {
+    id, event_name, event_description,
+    preorder_start, preorder_end, timezone,
+    is_active, favicon_url,
+    footer_tagline, footer_hashtags,
+    contact_whatsapp, social_instagram,
+  } = body
 
   const updates = {
     event_name,
@@ -20,6 +26,10 @@ export async function POST(req: NextRequest) {
     timezone,
     is_active,
     favicon_url: favicon_url || null,
+    footer_tagline: footer_tagline || null,
+    footer_hashtags: footer_hashtags || null,
+    contact_whatsapp: contact_whatsapp || null,
+    social_instagram: social_instagram || null,
   }
 
   const { error } = id
@@ -38,3 +48,4 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ success: true })
 }
+

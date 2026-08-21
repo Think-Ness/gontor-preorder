@@ -1,14 +1,15 @@
 'use client'
 
 import Link from 'next/link'
-import { Eye, Printer, MessageCircle } from 'lucide-react'
+import { Eye, Printer, MessageCircle, Trash2 } from 'lucide-react'
 
 interface OrderRowActionsProps {
   order: any
   waUrl?: string
+  onDeleteClick?: () => void
 }
 
-export default function OrderRowActions({ order, waUrl }: OrderRowActionsProps) {
+export default function OrderRowActions({ order, waUrl, onDeleteClick }: OrderRowActionsProps) {
   const isDelivery = order.fulfillment_method === 'DELIVERY'
   
   // Build WA URL if not provided explicitly
@@ -51,7 +52,18 @@ export default function OrderRowActions({ order, waUrl }: OrderRowActionsProps) 
         </a>
       )}
 
-      {/* 3. Detail Button */}
+      {/* 3. Delete Button */}
+      {onDeleteClick && (
+        <button
+          onClick={onDeleteClick}
+          className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 transition-colors border border-red-200/60 flex-shrink-0"
+          title="Hapus Pesanan"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
+      )}
+
+      {/* 4. Detail Button */}
       <Link
         href={`/admin/orders/${order.order_number}`}
         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold transition-colors flex-shrink-0"
@@ -62,3 +74,4 @@ export default function OrderRowActions({ order, waUrl }: OrderRowActionsProps) 
     </div>
   )
 }
+

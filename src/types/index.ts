@@ -177,9 +177,15 @@ export interface EventSettings {
   timezone: string
   is_active: boolean
   favicon_url: string | null
+  // Footer customization
+  footer_tagline: string | null
+  footer_hashtags: string | null
+  contact_whatsapp: string | null
+  social_instagram: string | null
   created_at: string
   updated_at: string
 }
+
 
 export interface AdminProfile {
   id: string
@@ -235,7 +241,6 @@ export interface CheckoutDraft {
   isAlumni?: boolean
   stambuk: string
   name: string
-  district: string
   generationYear: string
   whatsapp: string
   email?: string

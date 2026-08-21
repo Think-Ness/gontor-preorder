@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { MessageCircle, Package, Truck, ChevronDown, Loader2, CreditCard, Clock, Layers } from 'lucide-react'
 import { formatRupiah } from '@/lib/utils'
 import OrderRowActions from '@/components/admin/OrderRowActions'
+import DeleteOrderModal from '@/components/admin/DeleteOrderModal'
 
 const statusLabels: Record<string, string> = {
   DRAFT: 'Draft', PROOF_UPLOADED: 'Bukti Upload', PAYMENT_REVIEW: 'Payment Review',
@@ -45,6 +46,7 @@ export default function OrderTableClient({ orders }: { orders: any[] }) {
   const [isDragging, setIsDragging] = useState(false)
   const [bulkStatus, setBulkStatus] = useState('')
   const [isUpdating, setIsUpdating] = useState(false)
+  const [orderToDelete, setOrderToDelete] = useState<any>(null)
 
   // Clear selection if orders change
   useEffect(() => {
@@ -249,7 +251,11 @@ export default function OrderTableClient({ orders }: { orders: any[] }) {
                     </div>
                   </td>
                   <td className="px-4 py-4 text-right pr-6">
-                    <OrderRowActions order={order} waUrl={waUrl} />
+                    <OrderRowActions 
+                      order={order} 
+                      waUrl={waUrl} 
+                      onDeleteClick={() => setOrderToDelete(order)}
+                    />
                   </td>
                 </tr>
               )
@@ -257,6 +263,16 @@ export default function OrderTableClient({ orders }: { orders: any[] }) {
           </tbody>
         </table>
       </div>
+
+      <DeleteOrderModal
+        isOpen={!!orderToDelete}
+        onClose={() => setOrderToDelete(null)}
+        order={orderToDelete}
+        onConfirm={() => {
+          setOrderToDelete(null)
+          router.refresh()
+        }}
+      />
     </>
   )
 }

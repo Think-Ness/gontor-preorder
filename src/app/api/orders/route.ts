@@ -40,12 +40,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Pre-order sudah berakhir' }, { status: 400 })
     }
 
-    // Validate delivery address
+    // Validate address: city & province required for ALL methods (for map distribution)
+    if (!data.shipping_city || !data.shipping_province) {
+      return NextResponse.json({ error: 'Kota/Kabupaten dan Provinsi wajib diisi untuk semua metode pengambilan' }, { status: 400 })
+    }
+
+    // Validate full delivery address
     if (data.fulfillment_method === 'DELIVERY') {
-      if (!data.shipping_address || !data.shipping_city || !data.shipping_province) {
+      if (!data.shipping_address) {
         return NextResponse.json({ error: 'Alamat pengiriman tidak lengkap' }, { status: 400 })
       }
     }
+
 
     // Normalize WhatsApp
     const normalizedWA = normalizeWhatsApp(data.whatsapp)
@@ -56,7 +62,7 @@ export async function POST(req: NextRequest) {
       email: data.email,
       stambuk: data.stambuk,
       full_name: data.full_name,
-      district: data.district,
+      district: data.shipping_city || '-', // Mapping from shipping_city since district is removed from Step 1
       generation_year: data.generation_year,
       whatsapp: normalizedWA,
       fulfillment_method: data.fulfillment_method,
@@ -66,6 +72,8 @@ export async function POST(req: NextRequest) {
       shipping_city: data.shipping_city ?? null,
       shipping_province: data.shipping_province ?? null,
       shipping_postal_code: data.shipping_postal_code ?? null,
+      shipping_latitude: data.shipping_latitude ?? null,
+      shipping_longitude: data.shipping_longitude ?? null,
       shipping_cost: Number(data.shipping_cost || 0),
       payment_proof_file_id: data.payment_proof_file_id,
       payment_proof_url: `/api/drive/preview/${data.payment_proof_file_id}`,

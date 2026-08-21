@@ -1,10 +1,12 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { customerSchema, CustomerFormData } from '@/lib/validations/schemas'
 import { CheckoutDraft } from '@/types'
 import { normalizeWhatsApp } from '@/lib/utils'
-import { ChevronRight, User, GraduationCap, Users } from 'lucide-react'
+import { ChevronRight, User, GraduationCap, Users, MapPin, Navigation, Search } from 'lucide-react'
+import MapPickerModal from '../MapPickerModal'
+import { normalizeProvince, PROVINCES_LIST } from '../IndonesiaMapData'
 
 interface Props {
   draft: CheckoutDraft | null
@@ -12,20 +14,33 @@ interface Props {
 }
 
 export default function StepCustomer({ draft, onSave }: Props) {
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false)
+  const [gettingLocation, setGettingLocation] = useState(false)
+  const [locationSuccess, setLocationSuccess] = useState(false)
+
   const { register, handleSubmit, setValue, watch, control, formState: { errors } } = useForm<CustomerFormData>({
     resolver: zodResolver(customerSchema),
     defaultValues: {
       is_alumni: draft?.isAlumni !== undefined ? draft.isAlumni : true,
       stambuk: draft?.stambuk || '',
       full_name: draft?.name || '',
-      district: draft?.district || '',
       generation_year: draft?.generationYear && draft.generationYear !== '0' ? Number(draft.generationYear) : undefined,
       whatsapp: draft?.whatsapp || '',
       email: draft?.email || '',
+      shipping_address: draft?.address?.fullAddress || '',
+      shipping_village: draft?.address?.village || '',
+      shipping_district: draft?.address?.district || '',
+      shipping_city: draft?.address?.city || '',
+      shipping_province: draft?.address?.province || '',
+      shipping_postal_code: draft?.address?.postalCode || '',
+      shipping_latitude: draft?.address?.latitude,
+      shipping_longitude: draft?.address?.longitude,
+      shipping_google_maps_url: draft?.address?.googleMapsUrl || '',
     },
   })
 
   const isAlumni = watch('is_alumni')
+  const mapUrl = watch('shipping_google_maps_url')
 
   // Auto-fill from localStorage if available and form is empty
   useEffect(() => {
@@ -36,10 +51,19 @@ export default function StepCustomer({ draft, onSave }: Props) {
         if (draft?.isAlumni === undefined && profile.is_alumni !== undefined) setValue('is_alumni', profile.is_alumni)
         if (!draft?.stambuk && profile.stambuk) setValue('stambuk', profile.stambuk)
         if (!draft?.name && profile.full_name) setValue('full_name', profile.full_name)
-        if (!draft?.district && profile.district) setValue('district', profile.district)
         if (!draft?.generationYear && profile.generation_year) setValue('generation_year', Number(profile.generation_year))
         if (!draft?.whatsapp && profile.whatsapp) setValue('whatsapp', profile.whatsapp)
         if (!draft?.email && profile.email) setValue('email', profile.email)
+        
+        if (!draft?.address?.fullAddress && profile.shipping_address) setValue('shipping_address', profile.shipping_address)
+        if (!draft?.address?.village && profile.shipping_village) setValue('shipping_village', profile.shipping_village)
+        if (!draft?.address?.district && profile.shipping_district) setValue('shipping_district', profile.shipping_district)
+        if (!draft?.address?.city && profile.shipping_city) setValue('shipping_city', profile.shipping_city)
+        if (!draft?.address?.province && profile.shipping_province) setValue('shipping_province', profile.shipping_province)
+        if (!draft?.address?.postalCode && profile.shipping_postal_code) setValue('shipping_postal_code', profile.shipping_postal_code)
+        if (!draft?.address?.latitude && profile.shipping_latitude) setValue('shipping_latitude', profile.shipping_latitude)
+        if (!draft?.address?.longitude && profile.shipping_longitude) setValue('shipping_longitude', profile.shipping_longitude)
+        if (!draft?.address?.googleMapsUrl && profile.shipping_google_maps_url) setValue('shipping_google_maps_url', profile.shipping_google_maps_url)
       }
     } catch (e) {
       console.warn('Failed to parse saved customer profile')
@@ -58,11 +82,46 @@ export default function StepCustomer({ draft, onSave }: Props) {
       isAlumni: data.is_alumni,
       stambuk: data.is_alumni ? (data.stambuk || '-') : '-',
       name: data.full_name,
-      district: data.district,
       generationYear: data.is_alumni ? String(data.generation_year || 0) : '0',
       whatsapp: normalized,
       email: data.email,
+      address: {
+        fullAddress: data.shipping_address,
+        village: data.shipping_village,
+        district: data.shipping_district,
+        city: data.shipping_city,
+        province: data.shipping_province,
+        postalCode: data.shipping_postal_code,
+        latitude: data.shipping_latitude,
+        longitude: data.shipping_longitude,
+        googleMapsUrl: data.shipping_google_maps_url,
+      }
     })
+  }
+
+  const handleGetCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Browser Anda tidak mendukung geolokasi")
+      return
+    }
+    setGettingLocation(true)
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude
+        const lng = pos.coords.longitude
+        setValue('shipping_latitude', lat, { shouldValidate: true })
+        setValue('shipping_longitude', lng, { shouldValidate: true })
+        setValue('shipping_google_maps_url', `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`, { shouldValidate: true })
+        
+        setLocationSuccess(true)
+        setTimeout(() => setLocationSuccess(false), 3000)
+        setGettingLocation(false)
+      },
+      (err) => {
+        alert("Gagal mendapatkan lokasi. Pastikan izin lokasi diberikan.")
+        setGettingLocation(false)
+      }
+    )
   }
 
   const inputCls = (err?: { message?: string }) =>
@@ -80,10 +139,15 @@ export default function StepCustomer({ draft, onSave }: Props) {
           <User className="w-6 h-6" style={{ color: 'var(--gontor-green)' }} />
         </div>
         <h2 className="font-display font-bold text-xl" style={{ color: 'var(--gontor-green-dark)' }}>Data Pemesan</h2>
-        <p className="text-sm text-gray-500 mt-1">Isi data diri Anda untuk keperluan pengiriman</p>
+        <p className="text-sm text-gray-500 mt-1">Isi data diri Anda beserta alamat pengiriman</p>
       </div>
 
+      {/* Identitas Diri */}
       <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-5">
+        <h3 className="font-display font-bold text-gray-800 text-base mb-4 pb-2 border-b border-gray-100 flex items-center gap-2">
+          <User className="w-4 h-4 text-emerald-600" />
+          Informasi Pribadi
+        </h3>
         
         {/* Pilihan Alumni / Umum */}
         <div>
@@ -108,16 +172,14 @@ export default function StepCustomer({ draft, onSave }: Props) {
           </div>
         </div>
 
-        <hr className="border-gray-100" />
-
         {isAlumni && (
-          <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Stambuk */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-display">
                 Stambuk <span className="text-red-400">*</span>
               </label>
-              <input {...register('stambuk')} placeholder="Nomor stambuk Anda" className={inputCls(errors.stambuk)} />
+              <input {...register('stambuk')} placeholder="Contoh: 66820" className={inputCls(errors.stambuk)} />
               {errors.stambuk && <p className="text-xs text-red-500 mt-1">{errors.stambuk.message}</p>}
             </div>
 
@@ -129,14 +191,14 @@ export default function StepCustomer({ draft, onSave }: Props) {
               <input
                 {...register('generation_year', { valueAsNumber: true })}
                 type="number"
-                placeholder="Tahun kelulusan, contoh: 2005"
+                placeholder="Tahun: 2005"
                 min={1926}
                 max={2026}
                 className={inputCls(errors.generation_year)}
               />
               {errors.generation_year && <p className="text-xs text-red-500 mt-1">{errors.generation_year.message}</p>}
             </div>
-          </>
+          </div>
         )}
 
         {/* Nama */}
@@ -144,47 +206,173 @@ export default function StepCustomer({ draft, onSave }: Props) {
           <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-display">
             Nama Lengkap <span className="text-red-400">*</span>
           </label>
-          <input {...register('full_name')} placeholder="Nama lengkap sesuai KTP" className={inputCls(errors.full_name)} />
+          <input {...register('full_name')} placeholder="Nama lengkap Anda" className={inputCls(errors.full_name)} />
           {errors.full_name && <p className="text-xs text-red-500 mt-1">{errors.full_name.message}</p>}
         </div>
 
-        {/* Daerah */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* WhatsApp */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-display">
+              Nomor WhatsApp <span className="text-red-400">*</span>
+            </label>
+            <input
+              {...register('whatsapp')}
+              type="tel"
+              placeholder="08xxxxxxxxxx"
+              className={inputCls(errors.whatsapp)}
+            />
+            {errors.whatsapp && <p className="text-xs text-red-500 mt-1">{errors.whatsapp.message}</p>}
+          </div>
+
+          {/* Email */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-display">
+              Email <span className="text-red-400">*</span>
+            </label>
+            <input
+              {...register('email')}
+              type="email"
+              placeholder="email@domain.com"
+              className={inputCls(errors.email)}
+            />
+            {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>}
+          </div>
+        </div>
+      </div>
+
+      {/* Alamat Pengiriman */}
+      <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-5">
+        <div className="flex items-center justify-between border-b border-gray-100 pb-2 mb-4">
+          <h3 className="font-display font-bold text-gray-800 text-base flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-emerald-600" />
+            Titik Lokasi Peta & Alamat Lengkap
+          </h3>
+        </div>
+        
+        <p className="text-xs text-gray-500 mb-4 leading-relaxed bg-amber-50 p-3 rounded-lg border border-amber-100">
+          📍 Alamat ini akan digunakan sebagai alamat pengiriman default dan titik Anda di <b>Peta Sebaran Pemesan</b>. Wajib diisi meskipun Anda nantinya memilih opsi "Ambil di Stand".
+        </p>
+
+        {/* Google Maps Embed / Link Result */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-display">
-            Daerah Asal / Tinggal <span className="text-red-400">*</span>
+          <label className="block text-sm font-semibold text-gray-700 mb-2 font-display">
+            Pin Lokasi (Google Maps) <span className="text-red-400">*</span>
           </label>
-          <input {...register('district')} placeholder="Kota/Kabupaten tempat tinggal saat ini" className={inputCls(errors.district)} />
-          {errors.district && <p className="text-xs text-red-500 mt-1">{errors.district.message}</p>}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              type="button"
+              onClick={handleGetCurrentLocation}
+              disabled={gettingLocation}
+              className="flex-1 flex items-center justify-center gap-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 py-3 px-4 rounded-xl font-semibold text-sm transition-all"
+            >
+              {gettingLocation ? (
+                <span className="flex items-center gap-2">
+                  <span className="animate-spin border-2 border-emerald-700 border-t-transparent rounded-full w-4 h-4" />
+                  Mencari...
+                </span>
+              ) : locationSuccess ? (
+                <span className="flex items-center gap-2 text-emerald-700">
+                  <CheckCircle className="w-4 h-4" /> Ditemukan!
+                </span>
+              ) : (
+                <>
+                  <Navigation className="w-4 h-4" /> Gunakan Lokasi Saat Ini
+                </>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsMapModalOpen(true)}
+              className="flex-1 flex items-center justify-center gap-2 bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 py-3 px-4 rounded-xl font-semibold text-sm transition-all"
+            >
+              <Search className="w-4 h-4" />
+              Cari di Peta Google
+            </button>
+          </div>
+          
+          <input type="hidden" {...register('shipping_latitude')} />
+          <input type="hidden" {...register('shipping_longitude')} />
+          <input type="hidden" {...register('shipping_google_maps_url')} />
+          
+          {mapUrl && (
+            <div className="mt-3 bg-blue-50 border border-blue-100 rounded-xl p-3 flex items-start gap-3">
+              <MapPin className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
+              <div className="text-xs text-blue-900 break-all leading-tight pr-2">
+                <span className="font-semibold block mb-1">Lokasi Peta Tersimpan:</span>
+                <a href={mapUrl} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">{mapUrl}</a>
+              </div>
+            </div>
+          )}
+          {errors.shipping_latitude && <p className="text-xs text-red-500 mt-2">Titik lokasi peta wajib diisi</p>}
         </div>
 
-        {/* WhatsApp */}
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-display">
-            Nomor HP / WhatsApp Aktif <span className="text-red-400">*</span>
+            Alamat Detail (Jalan, RT/RW, Patokan) <span className="text-red-400">*</span>
           </label>
-          <input
-            {...register('whatsapp')}
-            type="tel"
-            placeholder="08xxxxxxxxxx atau +628xxxxxxxxx"
-            className={inputCls(errors.whatsapp)}
+          <textarea
+            {...register('shipping_address')}
+            rows={3}
+            placeholder="Contoh: Jl. Pondok Modern Gontor No.1, RT 01/RW 02, Kec. Mlarak (Depan minimarket A)"
+            className={inputCls(errors.shipping_address)}
           />
-          {errors.whatsapp && <p className="text-xs text-red-500 mt-1">{errors.whatsapp.message}</p>}
-          <p className="text-xs text-gray-400 mt-1">Untuk komunikasi jika ada kendala pengiriman</p>
+          {errors.shipping_address && <p className="text-xs text-red-500 mt-1">{errors.shipping_address.message}</p>}
         </div>
 
-        {/* Email */}
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-display">
-            Email Aktif <span className="text-red-400">*</span>
-          </label>
-          <input
-            {...register('email')}
-            type="email"
-            placeholder="contoh: email@domain.com"
-            className={inputCls(errors.email)}
-          />
-          {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>}
-          <p className="text-xs text-gray-400 mt-1">Digunakan untuk menerima bukti pembayaran & invoice</p>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-display">
+              Desa/Kelurahan <span className="text-red-400">*</span>
+            </label>
+            <input {...register('shipping_village')} className={inputCls(errors.shipping_village)} placeholder="Desa" />
+            {errors.shipping_village && <p className="text-xs text-red-500 mt-1">{errors.shipping_village.message}</p>}
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-display">
+              Kecamatan <span className="text-red-400">*</span>
+            </label>
+            <input {...register('shipping_district')} className={inputCls(errors.shipping_district)} placeholder="Kecamatan" />
+            {errors.shipping_district && <p className="text-xs text-red-500 mt-1">{errors.shipping_district.message}</p>}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-display">
+              Kab/Kota <span className="text-red-400">*</span>
+            </label>
+            <input {...register('shipping_city')} className={inputCls(errors.shipping_city)} placeholder="Kota" />
+            {errors.shipping_city && <p className="text-xs text-red-500 mt-1">{errors.shipping_city.message}</p>}
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-display">
+              Provinsi <span className="text-red-400">*</span>
+            </label>
+            <select
+              {...register('shipping_province')}
+              className={inputCls(errors.shipping_province)}
+            >
+              <option value="">Pilih Provinsi...</option>
+              {PROVINCES_LIST.map(p => (
+                <option key={p} value={p}>{p}</option>
+              ))}
+            </select>
+            {errors.shipping_province && <p className="text-xs text-red-500 mt-1">{errors.shipping_province.message}</p>}
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5 font-display">
+              Kode Pos <span className="text-red-400">*</span>
+            </label>
+            <input
+              {...register('shipping_postal_code')}
+              type="text"
+              maxLength={5}
+              placeholder="12345"
+              className={inputCls(errors.shipping_postal_code)}
+            />
+            {errors.shipping_postal_code && <p className="text-xs text-red-500 mt-1">{errors.shipping_postal_code.message}</p>}
+          </div>
         </div>
       </div>
 
@@ -192,6 +380,29 @@ export default function StepCustomer({ draft, onSave }: Props) {
         Lanjut — Pilih Merchandise
         <ChevronRight className="w-5 h-5" />
       </button>
+
+      {/* Map Picker Modal */}
+      <MapPickerModal
+        isOpen={isMapModalOpen}
+        onClose={() => setIsMapModalOpen(false)}
+        onSelect={(res) => {
+          setValue('shipping_address', res.addressName, { shouldValidate: true })
+          setValue('shipping_latitude', res.lat, { shouldValidate: true })
+          setValue('shipping_longitude', res.lng, { shouldValidate: true })
+          setValue('shipping_google_maps_url', res.mapsUrl, { shouldValidate: true })
+          
+          if (res.village) setValue('shipping_village', res.village, { shouldValidate: true })
+          if (res.district) setValue('shipping_district', res.district, { shouldValidate: true })
+          if (res.city) setValue('shipping_city', res.city, { shouldValidate: true })
+          if (res.postalCode) setValue('shipping_postal_code', res.postalCode, { shouldValidate: true })
+          
+          if (res.province) {
+             const p = normalizeProvince(res.province)
+             if (p) setValue('shipping_province', p, { shouldValidate: true })
+          }
+          setIsMapModalOpen(false)
+        }}
+      />
     </form>
   )
 }

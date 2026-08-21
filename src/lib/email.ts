@@ -295,3 +295,40 @@ export async function sendOrderStatusUpdatedEmail(toEmail: string, order: {
     console.error('[Email Error]', err)
   }
 }
+
+// 5. Order Cancelled / Deleted
+export async function sendOrderCancellationEmail(toEmail: string, order: {
+  orderNumber: string
+  fullName: string
+}, customMessage: string) {
+  const transporter = getTransporter()
+  if (!transporter || !toEmail) {
+    console.log(`[Email Skipped] Cancellation for ${order.orderNumber}`)
+    return
+  }
+
+  const content = `
+    <h2>Pesanan Dibatalkan ❌</h2>
+    <p>Halo, <strong>${order.fullName}</strong>.</p>
+    <p>Pesanan Anda dengan Nomor Order <strong>${order.orderNumber}</strong> telah dibatalkan oleh Admin.</p>
+
+    <div class="card" style="background:#fef2f2; border-color:#fecaca;">
+      <p style="margin:0; font-size:13px; font-weight:700; color:#991b1b;">Pesan dari Panitia:</p>
+      <p style="margin:4px 0 0 0; font-size:14px; color:#7f1d1d;">"${customMessage}"</p>
+    </div>
+
+    <p>Apabila Anda merasa ini adalah sebuah kesalahan, silakan hubungi Customer Service kami via WhatsApp resmi panitia.</p>
+  `
+
+  try {
+    await transporter.sendMail({
+      from: FROM_EMAIL,
+      to: toEmail,
+      subject: `[${order.orderNumber}] Pesanan Dibatalkan - 100 Tahun Gontor`,
+      html: wrapEmailHtml(content),
+    })
+    console.log(`[Email Sent] Cancellation for ${order.orderNumber}`)
+  } catch (err) {
+    console.error('[Email Error]', err)
+  }
+}

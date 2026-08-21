@@ -360,3 +360,14 @@ a, button {
   user-select: none;
 }
 
+@keyframes sway3D {
+  0% { transform: perspective(1000px) rotateY(-20deg) rotateX(5deg) translateY(0px); }
+  50% { transform: perspective(1000px) rotateY(20deg) rotateX(-5deg) translateY(-15px); }
+  100% { transform: perspective(1000px) rotateY(-20deg) rotateX(5deg) translateY(0px); }
+}
+
+.animate-sway-3d {
+  animation: sway3D 6s ease-in-out infinite;
+  transform-style: preserve-3d;
+  will-change: transform;
+}

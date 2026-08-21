@@ -13,7 +13,7 @@ declare global {
 interface MapPickerModalProps {
   isOpen: boolean
   onClose: () => void
-  onSelectLocation: (data: {
+  onSelect: (data: {
     lat: number
     lng: number
     addressName: string
@@ -44,7 +44,7 @@ interface SearchResult {
   }
 }
 
-export default function MapPickerModal({ isOpen, onClose, onSelectLocation }: MapPickerModalProps) {
+export default function MapPickerModal({ isOpen, onClose, onSelect }: MapPickerModalProps) {
   const [query, setQuery] = useState('')
   const [isSearching, setIsSearching] = useState(false)
   const [isGeocoding, setIsGeocoding] = useState(false)
@@ -413,7 +413,7 @@ export default function MapPickerModal({ isOpen, onClose, onSelectLocation }: Ma
     if (!selectedPos || isGeocoding) return
     const mapsUrl = `https://maps.google.com/?q=${selectedPos.lat.toFixed(6)},${selectedPos.lng.toFixed(6)}`
     
-    onSelectLocation({
+    onSelect({
       lat: selectedPos.lat,
       lng: selectedPos.lng,
       addressName: selectedAddress,
@@ -584,7 +584,7 @@ export default function MapPickerModal({ isOpen, onClose, onSelectLocation }: Ma
               className="flex-1 py-3 text-xs sm:text-sm font-display font-bold flex items-center justify-center gap-2 rounded-xl text-white shadow-sm transition-all disabled:opacity-50"
               style={{ background: 'var(--gontor-green, #063D2E)' }}
             >
-              <Check className="w-4 h-4 style={{ color: 'var(--gontor-gold)' }}" />
+              <Check className="w-4 h-4 text-[#D4AF37]" />
               Gunakan Lokasi Ini
             </button>
           </div>

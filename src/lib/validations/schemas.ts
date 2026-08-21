@@ -7,13 +7,25 @@ export const customerSchema = z.object({
   is_alumni: z.boolean(),
   stambuk: z.string().optional(),
   full_name: z.string().min(2, 'Nama lengkap wajib diisi'),
-  district: z.string().min(1, 'Daerah wajib diisi'),
   generation_year: z.number({ message: 'Angkatan harus berupa angka' }).int().min(1926, 'Angkatan tidak valid').max(new Date().getFullYear(), 'Angkatan tidak valid').optional().nullable(),
   whatsapp: z
     .string()
     .min(1, 'Nomor WhatsApp wajib diisi')
     .regex(/^(\+62|62|0)8[1-9][0-9]{6,11}$/, 'Format nomor HP Indonesia tidak valid'),
   email: z.string().email('Format email wajib dan harus valid'),
+  
+  // Address Fields
+  shipping_address: z.string().min(5, 'Alamat lengkap wajib diisi'),
+  shipping_village: z.string().min(1, 'Desa/Kelurahan wajib diisi'),
+  shipping_district: z.string().min(1, 'Kecamatan wajib diisi'),
+  shipping_city: z.string().min(1, 'Kabupaten/Kota wajib diisi'),
+  shipping_province: z.string().min(1, 'Provinsi wajib diisi'),
+  shipping_postal_code: z
+    .string()
+    .regex(/^\d{5}$/, 'Kode pos harus 5 digit'),
+  shipping_latitude: z.number().optional(),
+  shipping_longitude: z.number().optional(),
+  shipping_google_maps_url: z.string().optional(),
 }).superRefine((data, ctx) => {
   if (data.is_alumni) {
     if (!data.stambuk || data.stambuk.trim() === '') {
@@ -51,7 +63,6 @@ export const createOrderSchema = z.object({
   is_alumni: z.boolean().optional(),
   stambuk: z.string().min(1),
   full_name: z.string().min(2),
-  district: z.string().min(1),
   generation_year: z.number().int(),
   whatsapp: z.string().min(1),
   email: z.string().email(),
@@ -66,6 +77,8 @@ export const createOrderSchema = z.object({
   shipping_city: z.string().optional(),
   shipping_province: z.string().optional(),
   shipping_postal_code: z.string().optional(),
+  shipping_latitude: z.number().optional(),
+  shipping_longitude: z.number().optional(),
   shipping_cost: z.number().optional(),
 
   // Cart items

@@ -52,26 +52,27 @@ export default function CountdownTimer({ endDate }: CountdownTimerProps) {
   ]
 
   return (
-    <div className="flex items-center justify-center gap-3 sm:gap-5">
+    <div className="flex items-center justify-center gap-1.5 sm:gap-4">
       {units.map(({ label, value }, i) => (
-        <div key={label} className="flex items-center gap-3 sm:gap-5">
+        <div key={label} className="flex items-center gap-1.5 sm:gap-4">
           <div className="text-center">
             <div
-              className="countdown-digit w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center rounded-xl sm:rounded-2xl"
+              className="w-14 h-14 sm:w-20 sm:h-20 flex items-center justify-center rounded-xl sm:rounded-2xl shadow-lg border border-emerald-800"
               style={{
-                background: 'rgba(255,255,255,0.1)',
-                border: '1px solid rgba(255,255,255,0.15)',
-                backdropFilter: 'blur(8px)',
+                background: 'linear-gradient(135deg, #063D2E, #0d6041)',
+                color: 'white',
               }}
             >
-              {pad(value)}
+              <span className="font-display font-black text-2xl sm:text-4xl tabular-nums drop-shadow-md">
+                {pad(value)}
+              </span>
             </div>
-            <div className="text-green-300 text-xs font-display font-semibold mt-2 tracking-widest uppercase">
+            <div className="text-emerald-800 text-[10px] sm:text-xs font-display font-bold mt-1.5 sm:mt-2 tracking-widest uppercase">
               {label}
             </div>
           </div>
           {i < units.length - 1 && (
-            <span className="countdown-digit text-amber-400 mb-5 text-2xl sm:text-3xl">:</span>
+            <span className="font-display font-black text-amber-500 mb-5 text-xl sm:text-3xl">:</span>
           )}
         </div>
       ))}

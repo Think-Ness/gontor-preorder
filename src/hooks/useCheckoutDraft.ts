@@ -39,7 +39,6 @@ export function useCheckoutDraft() {
           draftId: generateSessionId(),
           stambuk: '',
           name: '',
-          district: '',
           generationYear: '',
           whatsapp: '',
           fulfillmentMethod: null,

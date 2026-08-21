@@ -4,10 +4,8 @@ import { useState, useEffect } from 'react'
 import { EventSettings, PreorderStatus, Product, Package, PaymentMethod } from '@/types'
 import CompetzyHeader from './CompetzyHeader'
 import CompetzyCategoryGrid from './CompetzyCategoryGrid'
+import IndonesiaMapSection from './IndonesiaMapSection'
 import ProductCatalog from './ProductCatalog'
-import CompetzyFeatures from './CompetzyFeatures'
-import CompetzyStats from './CompetzyStats'
-import CompetzyTestimonial from './CompetzyTestimonial'
 import CompetzyCallToAction from './CompetzyCallToAction'
 import CompetzyFooter from './CompetzyFooter'
 import CartDrawer from './CartDrawer'
@@ -15,6 +13,7 @@ import CountdownTimer from './CountdownTimer'
 import { useCart } from '@/hooks/useCart'
 import { formatRupiah } from '@/lib/utils'
 import { ShoppingBag, ArrowRight, Clock, ShieldCheck, Sparkles, Award, CheckCircle2 } from 'lucide-react'
+import { ProductStat, MapPinData } from '@/app/page'
 
 interface LandingPageProps {
   settings: EventSettings | null
@@ -22,6 +21,8 @@ interface LandingPageProps {
   products: Product[]
   packages: Package[]
   primaryPayment: PaymentMethod | null
+  productStats: ProductStat[]
+  mapPins: MapPinData[]
 }
 
 const FALLING_GLYPHS = [
@@ -41,6 +42,8 @@ export default function LandingPage({
   products,
   packages,
   primaryPayment,
+  productStats,
+  mapPins,
 }: LandingPageProps) {
   const { cart, addItem, removeItem, updateQuantity, clearCart } = useCart()
   const [isCartOpen, setIsCartOpen] = useState(false)
@@ -54,7 +57,7 @@ export default function LandingPage({
   const faviconUrl = settings?.favicon_url
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f8faf9] text-gray-900 antialiased selection:bg-purple-100 selection:text-[#5627ff]">
+    <div className="min-h-screen flex flex-col bg-[#f8faf9] text-gray-900 antialiased selection:bg-emerald-100 selection:text-[#063D2E]">
       
       {/* 1. COMPETZY FLOATING TOP HEADER */}
       <CompetzyHeader
@@ -96,16 +99,16 @@ export default function LandingPage({
           <div className="text-center lg:text-left space-y-6">
             
             {/* Tag Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 border border-purple-200/80 shadow-2xs backdrop-blur-md">
-              <span className="w-2 h-2 rounded-full bg-[#5627ff] animate-pulse" />
-              <span className="text-[11px] font-extrabold font-display tracking-widest uppercase text-[#5627ff]">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 border border-emerald-200/80 shadow-2xs backdrop-blur-md">
+              <span className="w-2 h-2 rounded-full bg-[#063D2E] animate-pulse" />
+              <span className="text-[11px] font-extrabold font-display tracking-widest uppercase text-[#063D2E]">
                 Official Merchandise 100 Tahun Gontor
               </span>
             </div>
 
             {/* Giant Headline (Competzy Style) */}
             <h1 className="font-display font-black leading-[1.08] tracking-tight text-gray-950" style={{ fontSize: 'clamp(2.3rem, 4.8vw, 3.8rem)' }}>
-              <span className="block bg-gradient-to-r from-[#5627ff] via-purple-700 to-indigo-800 bg-clip-text text-transparent">
+              <span className="block bg-gradient-to-r from-[#063D2E] via-emerald-800 to-emerald-950 bg-clip-text text-transparent">
                 Satu Platform untuk
               </span>
               <span className="block text-[#181219] mt-1">
@@ -118,35 +121,23 @@ export default function LandingPage({
               <span>Merchandise resmi peringatan 1 Abad Pondok Modern Darussalam Gontor. </span>
               <span className="font-bold text-gray-900">100 Tahun Mengabdi, </span>
               <span>menjalin </span>
-              <span className="relative inline-block font-black italic text-[#d9277b] mx-1">
+              <span className="relative inline-block font-black italic text-amber-500 mx-1">
                 UKHUWAH ABADI
                 {/* SVG Curve Underline */}
                 <svg aria-hidden="true" viewBox="0 0 200 14" preserveAspectRatio="none" className="pointer-events-none absolute left-0 right-0 -bottom-1.5 h-2 w-full">
-                  <path d="M4,11 Q90,2 196,6" fill="none" stroke="#d9277b" strokeWidth="4" strokeLinecap="round" />
+                  <path d="M4,11 Q90,2 196,6" fill="none" stroke="#f59e0b" strokeWidth="4" strokeLinecap="round" />
                 </svg>
               </span>
               <span>seluruh alumni &amp; santri.</span>
             </p>
 
-            {/* Countdown or Status Alert */}
-            {preorderStatus === 'OPEN' && settings?.preorder_end && (
-              <div className="pt-2 max-w-md mx-auto lg:mx-0">
-                <div className="p-4 rounded-2xl bg-white/90 border border-purple-100 shadow-xl backdrop-blur-md">
-                  <div className="text-xs font-bold text-[#5627ff] uppercase tracking-wider mb-3 flex items-center justify-center lg:justify-start gap-1.5">
-                    <Clock className="w-4 h-4 text-amber-500" />
-                    <span>PRE-ORDER BERAKHIR DALAM:</span>
-                  </div>
-                  <CountdownTimer endDate={settings.preorder_end} />
-                </div>
-              </div>
-            )}
 
             {/* Primary Action CTA (Competzy Style Pill Button) */}
             <div className="pt-2 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
               {preorderStatus === 'OPEN' ? (
                 <a
                   href="#catalog"
-                  className="group relative inline-flex items-center gap-3 rounded-full font-bold font-display tracking-tight text-base pl-7 pr-2.5 py-3.5 bg-[#d9277b] hover:bg-[#c01d6a] text-white shadow-[0_16px_36px_-12px_rgba(217,39,123,0.5)] transition-all transform hover:scale-[1.02] active:scale-[0.98]"
+                  className="group relative inline-flex items-center gap-3 rounded-full font-bold font-display tracking-tight text-base pl-7 pr-2.5 py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-lg transition-all transform hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <span>Jelajahi Katalog Merchandise</span>
                   <span className="grid h-9 w-9 place-items-center rounded-full bg-white/20 text-white transition-transform duration-300 group-hover:translate-x-1">
@@ -179,71 +170,68 @@ export default function LandingPage({
 
           </div>
 
-          {/* Right Hero Visual Showcase (Competzy Inspired Floating Card Frame) */}
-          <div className="relative mx-auto w-full max-w-[36rem] lg:max-w-none">
-            <div className="relative rounded-[2.2rem] bg-white p-4 sm:p-6 shadow-[0_24px_60px_-20px_rgba(86,39,255,0.25)] border border-purple-100/80">
-              
-              {/* Top Banner Tag */}
-              <div className="flex items-center justify-between pb-4 border-b border-gray-100">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-amber-500" />
-                  <span className="font-display font-black text-sm text-gray-900">REUNION KIT 100 THN</span>
-                </div>
-                <span className="px-3 py-1 rounded-full text-[10px] font-extrabold uppercase bg-purple-100 text-[#5627ff] border border-purple-200">
-                  OFFICIAL KIT
-                </span>
-              </div>
+          {/* Right Hero Visual Showcase (Countdown Timer Card) */}
+          <div className="relative mx-auto w-full max-w-[28rem] lg:max-w-[32rem]">
+            {preorderStatus === 'OPEN' && settings?.preorder_end ? (
+              <div className="relative rounded-[2.2rem] bg-white p-6 sm:p-8 shadow-[0_24px_60px_-20px_rgba(6,61,46,0.2)] border border-emerald-100/80 text-center space-y-6 overflow-hidden">
+                
+                {/* Glowing Accents */}
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-amber-400/20 blur-3xl rounded-full pointer-events-none" />
+                <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-emerald-400/20 blur-3xl rounded-full pointer-events-none" />
 
-              {/* Grid Images Mockup */}
-              <div className="grid grid-cols-2 gap-4 my-4">
-                <div className="relative group overflow-hidden rounded-2xl bg-gray-100 aspect-square shadow-sm border border-gray-100">
-                  <img 
-                    src="https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=600&q=80" 
-                    alt="Kaos Official 100 Tahun Gontor"
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent p-3 flex flex-col justify-end">
-                    <span className="text-[10px] font-bold text-amber-300 uppercase tracking-widest">T-Shirt Edition</span>
-                    <span className="text-xs font-bold text-white">Kaos Premium 30s</span>
+                <div className="relative z-10 space-y-2">
+                  <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-amber-50 border border-amber-100 mb-2 shadow-sm">
+                    <Clock className="w-6 h-6 text-amber-500" />
+                  </div>
+                  <h3 className="font-display font-black text-2xl sm:text-3xl text-gray-950 uppercase tracking-tight">
+                    Waktu Terbatas!
+                  </h3>
+                  <p className="text-sm text-gray-500 font-body">
+                    Pre-order akan segera ditutup. Jangan lewatkan kesempatan emas memiliki merchandise eksklusif ini.
+                  </p>
+                </div>
+
+                <div className="relative z-10 py-4">
+                  <CountdownTimer endDate={settings.preorder_end} />
+                </div>
+
+                <div className="relative z-10 pt-4 border-t border-gray-100">
+                  <div className="flex flex-wrap items-center justify-center gap-5 text-xs font-bold text-gray-600 font-display">
+                    <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-full">
+                      <Sparkles className="w-4 h-4 text-amber-500" />
+                      <span>Edisi Terbatas</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-full">
+                      <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                      <span>Resmi 100Th Gontor</span>
+                    </div>
                   </div>
                 </div>
 
-                <div className="relative group overflow-hidden rounded-2xl bg-gray-100 aspect-square shadow-sm border border-gray-100">
-                  <img 
-                    src="https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80" 
-                    alt="Varsity Jacket 100 Tahun Gontor"
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent p-3 flex flex-col justify-end">
-                    <span className="text-[10px] font-bold text-amber-300 uppercase tracking-widest">Varsity Jacket</span>
-                    <span className="text-xs font-bold text-white">Jaket Reuni Akbar</span>
-                  </div>
-                </div>
               </div>
-
-              {/* Bottom Feature Card */}
-              <div className="bg-purple-50/60 rounded-2xl p-3.5 border border-purple-100 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#5627ff] flex items-center justify-center text-white font-bold shrink-0">
-                  <Award className="w-5 h-5" />
+            ) : (
+              <div className="relative rounded-[2.2rem] bg-white p-8 shadow-xl border border-gray-200 text-center space-y-6">
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-50 border border-gray-100 mb-2">
+                  <span className="text-4xl">🔒</span>
                 </div>
-                <div>
-                  <div className="text-xs font-bold text-gray-950 font-display">Peringatan 100 Tahun Gontor</div>
-                  <div className="text-[11px] text-gray-600">Cenderamata kenangan Reuni Akbar 19-20 September 2026.</div>
-                </div>
+                <h3 className="font-display font-black text-2xl sm:text-3xl text-gray-950 uppercase tracking-tight">
+                  Pre-Order Ditutup
+                </h3>
+                <p className="text-sm text-gray-500 font-body">
+                  Mohon maaf, sesi pemesanan saat ini telah berakhir. Terima kasih atas partisipasi Anda.
+                </p>
               </div>
-
-            </div>
+            )}
           </div>
 
         </div>
       </section>
 
-      {/* 3. COMPETZY CATEGORY GRID ("Baru & Populer" 3-Card Group List) */}
+      {/* 3. PURCHASE STATISTICS SECTION */}
       <CompetzyCategoryGrid
-        products={products}
-        packages={packages}
-        onAddItem={addItem}
-        cartItems={cart.items}
+        productStats={productStats}
+        totalAlumni={mapPins.filter(p => p.isAlumni).length}
+        totalUmum={mapPins.filter(p => !p.isAlumni).length}
       />
 
       {/* 4. COMPETZY CATALOG SECTION ("Jelajahi Semua Merchandise") */}
@@ -255,29 +243,28 @@ export default function LandingPage({
             onAddItem={addItem}
             cart={cart}
             isOpen={preorderStatus === 'OPEN'}
+            productStats={productStats}
           />
         </section>
       )}
 
-      {/* 5. COMPETZY FEATURES ("Platform Lengkap") */}
-      <CompetzyFeatures />
+      {/* 5. INDONESIA MAP SECTION */}
+      <IndonesiaMapSection mapPins={mapPins} />
 
-      {/* 6. COMPETZY STATS COUNTER ("Lebih Dari Satu Abad") */}
-      <CompetzyStats />
-
-      {/* 7. COMPETZY ALUMNI TESTIMONIAL SHOWCASE */}
-      <CompetzyTestimonial />
-
-      {/* 8. COMPETZY CALL TO ACTION ("Koleksimu Menunggu." Full-Width Gold Banner) */}
+      {/* 6. COMPETZY CALL TO ACTION */}
       <CompetzyCallToAction
         isPreorderOpen={preorderStatus === 'OPEN'}
         onOpenCart={() => setIsCartOpen(true)}
       />
 
-      {/* 9. COMPETZY DARK FOOTER */}
+      {/* 7. COMPETZY DARK FOOTER */}
       <CompetzyFooter
         faviconUrl={faviconUrl}
         eventName={settings?.event_name}
+        footerTagline={settings?.footer_tagline}
+        footerHashtags={settings?.footer_hashtags}
+        contactWhatsapp={settings?.contact_whatsapp}
+        socialInstagram={settings?.social_instagram}
       />
 
       {/* Cart Drawer */}
@@ -296,7 +283,7 @@ export default function LandingPage({
         <div className="fixed bottom-4 left-4 right-4 z-40 sm:hidden">
           <button
             onClick={() => setIsCartOpen(true)}
-            className="w-full py-4 bg-[#5627ff] text-white rounded-full flex items-center justify-between px-6 shadow-2xl font-display"
+            className="w-full py-4 bg-[#063D2E] text-white rounded-full flex items-center justify-between px-6 shadow-2xl font-display"
           >
             <div className="flex items-center gap-2">
               <ShoppingBag className="w-5 h-5 text-amber-300" />
@@ -310,3 +297,4 @@ export default function LandingPage({
     </div>
   )
 }
+
