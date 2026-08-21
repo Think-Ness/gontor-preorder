@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { customerSchema, CustomerFormData } from '@/lib/validations/schemas'
 import { CheckoutDraft } from '@/types'
 import { normalizeWhatsApp } from '@/lib/utils'
-import { ChevronRight, User, GraduationCap, Users, MapPin, Navigation, Search } from 'lucide-react'
+import { ChevronRight, User, GraduationCap, Users, MapPin, Navigation, Search, CheckCircle } from 'lucide-react'
 import MapPickerModal from '../MapPickerModal'
 import { normalizeProvince, PROVINCES_LIST } from '../IndonesiaMapData'
 

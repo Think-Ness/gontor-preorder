@@ -11,7 +11,8 @@ interface ProductCatalogProps {
   packages: Package[]
   onAddItem: (item: Omit<CartItem, 'id'>) => void
   cart: { items: CartItem[] }
-  productStats?: { productId: string }[]
+  isOpen?: boolean
+  productStats?: { productId: string; totalQty: number }[]
 }
 
 export default function ProductCatalog({ products, packages, onAddItem, cart, isOpen, productStats }: ProductCatalogProps) {
@@ -54,7 +55,7 @@ export default function ProductCatalog({ products, packages, onAddItem, cart, is
                   pkg={pkg}
                   onAdd={onAddItem}
                   cartItems={cart.items}
-                  isOpen={isOpen}
+                  isOpen={!!isOpen}
                 />
               ))}
             </div>
@@ -82,7 +83,7 @@ export default function ProductCatalog({ products, packages, onAddItem, cart, is
                     product={product}
                     onAdd={onAddItem}
                     cartItems={cart.items}
-                    isOpen={isOpen}
+                    isOpen={!!isOpen}
                     isTopTier={topProductIds.includes(product.id)}
                   />
                 ))
