@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { EventSettings } from '@/types'
-import { Globe, Clock, Save, Loader2, Link2, Upload, FileText, Hash, Phone, Camera, Zap, Lock, CheckCircle2 } from 'lucide-react'
+import { Globe, Clock, Save, Loader2, Link2, Upload, FileText, Hash, Phone, Camera, Zap, Lock, CheckCircle2, KeyRound, Factory, Store, Truck } from 'lucide-react'
 import { compressImageFile, safeParseJsonResponse } from '@/lib/image-compression'
 
 interface Props { initialData: EventSettings | null }
@@ -20,6 +20,9 @@ export default function EventSettingsForm({ initialData }: Props) {
     footer_hashtags: initialData?.footer_hashtags ?? '',
     contact_whatsapp: initialData?.contact_whatsapp ?? '',
     social_instagram: initialData?.social_instagram ?? '',
+    pin_vendor: initialData?.pin_vendor ?? '1234',
+    pin_stand: initialData?.pin_stand ?? '1234',
+    pin_delivery: initialData?.pin_delivery ?? '1234',
   })
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -362,6 +365,59 @@ export default function EventSettingsForm({ initialData }: Props) {
               placeholder="@gontor_official"
               value={form.social_instagram}
               onChange={e => setForm(p => ({ ...p, social_instagram: e.target.value }))}
+              className={inputCls}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Display PIN Security Settings */}
+      <div className="p-5 bg-gradient-to-br from-[#063D2E] to-emerald-900 text-white rounded-2xl space-y-4 shadow-md border border-emerald-800">
+        <div className="flex items-center gap-2 mb-1">
+          <KeyRound className="w-5 h-5 text-amber-400" />
+          <span className="text-sm font-bold font-display text-white">PIN Keamanan Display Realtime Monitor (Public Link)</span>
+        </div>
+        <p className="text-xs text-emerald-200/80 leading-relaxed">
+          Atur PIN keamanan (default: 1234) untuk halaman publik monitor TV. Tim di lapangan cukup memasukkan PIN ini tanpa perlu akses login admin.
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-gray-900">
+          <div>
+            <label className="block text-xs font-bold text-emerald-100 mb-1.5 font-display flex items-center gap-1">
+              <Factory className="w-3.5 h-3.5 text-amber-400" /> PIN Display Vendor
+            </label>
+            <input
+              type="text"
+              maxLength={6}
+              value={form.pin_vendor}
+              onChange={e => setForm(p => ({ ...p, pin_vendor: e.target.value }))}
+              placeholder="1234"
+              className={inputCls}
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-emerald-100 mb-1.5 font-display flex items-center gap-1">
+              <Store className="w-3.5 h-3.5 text-amber-400" /> PIN Display Stand Bazar
+            </label>
+            <input
+              type="text"
+              maxLength={6}
+              value={form.pin_stand}
+              onChange={e => setForm(p => ({ ...p, pin_stand: e.target.value }))}
+              placeholder="1234"
+              className={inputCls}
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-emerald-100 mb-1.5 font-display flex items-center gap-1">
+              <Truck className="w-3.5 h-3.5 text-amber-400" /> PIN Display Logistik Kurir
+            </label>
+            <input
+              type="text"
+              maxLength={6}
+              value={form.pin_delivery}
+              onChange={e => setForm(p => ({ ...p, pin_delivery: e.target.value }))}
+              placeholder="1234"
               className={inputCls}
             />
           </div>

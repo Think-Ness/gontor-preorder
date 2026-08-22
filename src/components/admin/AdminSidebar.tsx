@@ -67,9 +67,9 @@ const nav: NavGroup[] = [
     label: 'Display Realtime TV',
     icon: Tv,
     children: [
-      { label: 'Vendor Konveksi', href: '/admin/display/vendor', icon: Factory },
-      { label: 'Stand Bazar Gontor', href: '/admin/display/stand', icon: Store },
-      { label: 'Logistik Pengiriman', href: '/admin/display/delivery', icon: Truck },
+      { label: 'Vendor Konveksi', href: '/display/vendor', icon: Factory },
+      { label: 'Stand Bazar Gontor', href: '/display/stand', icon: Store },
+      { label: 'Logistik Pengiriman', href: '/display/delivery', icon: Truck },
     ],
   },
   {

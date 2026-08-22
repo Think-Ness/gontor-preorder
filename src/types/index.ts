@@ -183,6 +183,10 @@ export interface EventSettings {
   footer_hashtags: string | null
   contact_whatsapp: string | null
   social_instagram: string | null
+  // Display Security PINs
+  pin_vendor?: string | null
+  pin_stand?: string | null
+  pin_delivery?: string | null
   created_at: string
   updated_at: string
 }
