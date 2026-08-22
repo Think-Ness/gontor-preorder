@@ -260,7 +260,10 @@ export async function sendOrderStatusUpdatedEmail(toEmail: string, order: {
   let title = 'Update Pesanan Anda'
   let bodyText = ''
 
-  if (order.status === 'READY_FOR_PICKUP') {
+  if (order.status === 'PROCESSING') {
+    title = 'Pesanan Sedang Diproses Panitia 📦'
+    bodyText = `<p>Pesanan Anda <strong>${order.orderNumber}</strong> sedang disiapkan oleh tim panitia 100 Tahun Gontor.</p>`
+  } else if (order.status === 'READY_FOR_PICKUP') {
     title = 'Siap Diambil di Stand Panitia! 🎒'
     bodyText = `<p>Pesanan Anda <strong>${order.orderNumber}</strong> sudah siap diambil! Silakan tunjukkan email atau nomor order ini kepada petugas di stand merchandise 100 Tahun Gontor.</p>`
   } else if (order.status === 'SHIPPED') {
