@@ -14,6 +14,9 @@ interface Props {
 
 // Calculate individual cart item weight in grams
 function getItemWeightGram(item: CartItem): number {
+  if (item.weightGram && item.weightGram > 0) {
+    return item.weightGram * item.quantity
+  }
   const nameLower = item.name.toLowerCase()
   if (item.itemType === 'PACKAGE' || nameLower.includes('paket') || nameLower.includes('bundling')) {
     return 1000 * item.quantity

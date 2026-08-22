@@ -53,6 +53,7 @@ export interface Product {
   has_variants: boolean
   stock_enabled: boolean
   stock: number | null
+  weight_gram?: number | null
   is_active: boolean
   display_order: number
   created_at: string
@@ -223,6 +224,7 @@ export interface CartItem {
   variantName?: string
   unitPrice: number
   quantity: number
+  weightGram?: number | null
   imageUrl?: string | null
   maxStock?: number | null
 }

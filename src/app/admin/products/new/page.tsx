@@ -25,6 +25,7 @@ function NewProductFormContent() {
     description: '',
     product_type: 'SIMPLE' as 'SIMPLE' | 'VARIABLE',
     price: '',
+    weight_gram: '',
     has_variants: false,
     stock_enabled: true,
     stock: '',
@@ -151,6 +152,7 @@ function NewProductFormContent() {
       const payload = {
         ...form,
         price: Number(form.price),
+        weight_gram: form.weight_gram !== '' ? Number(form.weight_gram) : null,
         stock: computedTotalStock,
         variants: form.has_variants ? variants.map(v => ({
           ...v,
@@ -273,7 +275,7 @@ function NewProductFormContent() {
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1 font-display">Harga (Rp) *</label>
               <input
@@ -287,8 +289,21 @@ function NewProductFormContent() {
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1 font-display">
+                Berat (Gram)
+                <span className="text-xs font-normal text-gray-400 ml-1">(Opsional)</span>
+              </label>
+              <input
+                type="number"
+                value={form.weight_gram}
+                onChange={e => setForm(p => ({ ...p, weight_gram: e.target.value }))}
+                placeholder="Auto Estimasi"
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1 font-display">
                 Stok Total
-                {form.has_variants && <span className="text-xs font-normal text-gray-400 ml-2">(Otomatis dari varian)</span>}
+                {form.has_variants && <span className="text-xs font-normal text-gray-400 ml-2">(Otomatis)</span>}
               </label>
               <input
                 type="number"

@@ -119,6 +119,7 @@ export const productSchema = z.object({
   has_variants: z.boolean(),
   stock_enabled: z.boolean(),
   stock: z.number().int().min(0).optional().nullable(),
+  weight_gram: z.number().int().min(0).optional().nullable(),
   is_active: z.boolean(),
   display_order: z.number().int().min(0),
   image_drive_file_id: z.string().optional().nullable(),

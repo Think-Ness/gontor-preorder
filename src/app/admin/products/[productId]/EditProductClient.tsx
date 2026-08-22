@@ -26,6 +26,7 @@ export default function EditProductClient({ initialProduct }: Props) {
     description: initialProduct.description ?? '',
     product_type: initialProduct.product_type ?? 'SIMPLE',
     price: initialProduct.price ? String(initialProduct.price) : '',
+    weight_gram: initialProduct.weight_gram !== null && initialProduct.weight_gram !== undefined ? String(initialProduct.weight_gram) : '',
     has_variants: initialProduct.has_variants ?? false,
     stock_enabled: initialProduct.stock_enabled ?? true,
     stock: initialProduct.stock !== null ? String(initialProduct.stock) : '',
@@ -106,6 +107,7 @@ export default function EditProductClient({ initialProduct }: Props) {
       const payload = {
         ...form,
         price: Number(form.price),
+        weight_gram: form.weight_gram !== '' ? Number(form.weight_gram) : null,
         stock: computedTotalStock,
         variants: form.has_variants ? variants.map(v => ({
           ...v,
@@ -243,7 +245,7 @@ export default function EditProductClient({ initialProduct }: Props) {
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1 font-display">Harga (Rp) *</label>
               <input
@@ -256,8 +258,21 @@ export default function EditProductClient({ initialProduct }: Props) {
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1 font-display">
+                Berat (Gram)
+                <span className="text-xs font-normal text-gray-400 ml-1">(Opsional)</span>
+              </label>
+              <input
+                type="number"
+                value={form.weight_gram}
+                onChange={e => setForm(p => ({ ...p, weight_gram: e.target.value }))}
+                placeholder="Auto Estimasi"
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1 font-display">
                 Stok Total
-                {form.has_variants && <span className="text-xs font-normal text-gray-400 ml-2">(Otomatis dari varian)</span>}
+                {form.has_variants && <span className="text-xs font-normal text-gray-400 ml-2">(Otomatis)</span>}
               </label>
               <input
                 type="number"
