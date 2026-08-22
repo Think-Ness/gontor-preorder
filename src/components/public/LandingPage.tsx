@@ -13,6 +13,7 @@ import CountdownTimer from './CountdownTimer'
 import { useCart } from '@/hooks/useCart'
 import { formatRupiah } from '@/lib/utils'
 import { ShoppingBag, ArrowRight, Clock, ShieldCheck, Sparkles, Award, CheckCircle2, Lock } from 'lucide-react'
+import { ProductStat, MapPinData } from '@/app/page'
 
 interface LandingPageProps {
   settings: EventSettings | null
