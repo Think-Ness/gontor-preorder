@@ -47,15 +47,27 @@ const COURIER_MULTIPLIERS = [
   { id: 'wahana', name: 'Wahana Express', est: '3–5 Hari', multiplier: 0.85 },
 ]
 
+const PACKAGING_WEIGHT_GRAMS = 150 // Standard packaging & protective wrap weight
+
 export default function StepFulfillment({ draft, cart, onSave, onBack }: Props) {
   const [method, setMethod] = useState<FulfillmentMethod>(draft?.fulfillmentMethod || 'PICKUP')
   
-  // Calculate total cart weight (grams and rounded billable Kg)
+  // Calculate total cart weight (items + packaging + courier 200g tolerance rule)
   const cartWeight = useMemo(() => {
     const items = cart?.items || []
-    const totalGrams = items.reduce((sum, item) => sum + getItemWeightGram(item), 0)
-    const billableKg = Math.max(1, Math.ceil(totalGrams / 1000))
-    return { totalGrams, billableKg }
+    const itemsGrams = items.reduce((sum, item) => sum + getItemWeightGram(item), 0)
+    const packagingGrams = itemsGrams > 0 ? PACKAGING_WEIGHT_GRAMS : 0
+    const totalActualGrams = itemsGrams + packagingGrams
+    
+    // Standard courier weight tolerance (up to 200g extra within 1 kg boundary)
+    // e.g. <= 1200g -> 1 Kg. 1201g - 2200g -> 2 Kg. 2201g - 3200g -> 3 Kg.
+    let billableKg = 1
+    if (totalActualGrams > 1200) {
+      billableKg = Math.ceil((totalActualGrams - 200) / 1000)
+    }
+    billableKg = Math.max(1, billableKg)
+
+    return { itemsGrams, packagingGrams, totalActualGrams, billableKg }
   }, [cart?.items])
 
   // Menentukan active zone berdasarkan provinsi yang diinput di Step 1
@@ -225,21 +237,36 @@ export default function StepFulfillment({ draft, cart, onSave, onBack }: Props) 
             <p className="text-xs text-gray-500 mt-2 italic">*Diambil dari data Tahap 1</p>
           </div>
 
-          {/* Weight & Zone Breakdown Card */}
-          <div className="bg-blue-50/70 p-4 rounded-xl border border-blue-100 mb-6 text-xs text-blue-900 space-y-1.5">
+          {/* Detailed Weight & Zone Breakdown Card */}
+          <div className="bg-blue-50/70 p-4 rounded-xl border border-blue-100 mb-6 text-xs text-blue-900 space-y-2">
             <div className="flex justify-between items-center font-bold">
               <span className="flex items-center gap-1.5">
-                <Scale className="w-4 h-4 text-blue-600" /> Total Berat Paket:
+                <Scale className="w-4 h-4 text-blue-600" /> Berat Paket Tarif:
               </span>
-              <span className="text-blue-950 font-display font-black text-sm">{cartWeight.totalGrams} Gram ({cartWeight.billableKg} Kg)</span>
+              <span className="text-blue-950 font-display font-black text-sm">
+                {cartWeight.billableKg} Kg ({cartWeight.totalActualGrams} Gram)
+              </span>
             </div>
-            <div className="flex justify-between items-center text-blue-800">
+
+            <div className="text-[11px] text-blue-800 space-y-1 bg-white/70 p-2.5 rounded-lg border border-blue-100/70">
+              <div className="flex justify-between">
+                <span>&bull; Berat Bersih Produk:</span>
+                <span className="font-semibold">{cartWeight.itemsGrams} gram</span>
+              </div>
+              <div className="flex justify-between">
+                <span>&bull; Packaging &amp; Dus Pelindung:</span>
+                <span className="font-semibold">+{cartWeight.packagingGrams} gram</span>
+              </div>
+              <div className="flex justify-between border-t border-blue-100 pt-1 font-bold text-blue-950">
+                <span>&bull; Total Paket Aktual:</span>
+                <span>{cartWeight.totalActualGrams} gram (Dihitung Tarif {cartWeight.billableKg} Kg)</span>
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center text-blue-800 pt-1">
               <span>📍 Zona Lokasi:</span>
               <span className="font-semibold">{ZONE_BASE_RATES_PER_KG[activeZone]?.zoneName}</span>
             </div>
-            <p className="text-[11px] text-blue-700/80 pt-1 italic border-t border-blue-100/60 mt-1">
-              *Tarif ongkir dihitung presisi berdasarkan berat paket ({cartWeight.billableKg} kg) &amp; tarif zona lokasi pengiriman.
-            </p>
           </div>
 
           <h3 className="font-display font-bold text-gray-800 text-base mb-4 flex items-center justify-between">
