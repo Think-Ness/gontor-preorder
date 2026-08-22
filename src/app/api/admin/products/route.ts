@@ -41,9 +41,9 @@ export async function POST(req: NextRequest) {
       prodErr = retry.error
     }
 
-    if (prodErr) {
+    if (prodErr || !product) {
       console.error('[POST /api/admin/products]', prodErr)
-      return NextResponse.json({ error: prodErr.message }, { status: 500 })
+      return NextResponse.json({ error: prodErr?.message || 'Gagal membuat produk' }, { status: 500 })
     }
 
     // Insert variants if any
