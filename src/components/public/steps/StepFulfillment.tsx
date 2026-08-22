@@ -35,11 +35,11 @@ function getItemWeightGram(item: CartItem): number {
 
 // Base shipping rates per Kg for each zone
 const ZONE_BASE_RATES_PER_KG: Record<string, { baseCostPerKg: number; zoneName: string }> = {
-  ZONA_1: { baseCostPerKg: 10000, zoneName: 'Jawa Timur & Jawa Tengah' },
-  ZONA_2: { baseCostPerKg: 15000, zoneName: 'DKI Jakarta, Jabar, DIY, Banten, Bali' },
-  ZONA_3: { baseCostPerKg: 25000, zoneName: 'Sumatera & NTB' },
-  ZONA_4: { baseCostPerKg: 35000, zoneName: 'Kalimantan, Sulawesi, NTT' },
-  ZONA_5: { baseCostPerKg: 48000, zoneName: 'Maluku & Papua' },
+  ZONA_1: { baseCostPerKg: 10000, zoneName: 'Zona 1: Jawa Timur & Jawa Tengah' },
+  ZONA_2: { baseCostPerKg: 15000, zoneName: 'Zona 2: DKI Jakarta, Jabar, DIY, Banten, Bali' },
+  ZONA_3: { baseCostPerKg: 25000, zoneName: 'Zona 3: Pulau Sumatera & NTB' },
+  ZONA_4: { baseCostPerKg: 35000, zoneName: 'Zona 4: Kalimantan, Sulawesi, NTT' },
+  ZONA_5: { baseCostPerKg: 48000, zoneName: 'Zona 5: Maluku & Papua' },
 }
 
 const COURIER_MULTIPLIERS = [
@@ -267,8 +267,10 @@ export default function StepFulfillment({ draft, cart, onSave, onBack }: Props) 
             </div>
 
             <div className="flex justify-between items-center text-blue-800 pt-1">
-              <span>📍 Zona Lokasi:</span>
-              <span className="font-semibold">{ZONE_BASE_RATES_PER_KG[activeZone]?.zoneName}</span>
+              <span>📍 Zona Lokasi Terdeteksi:</span>
+              <span className="font-semibold text-right">
+                {ZONE_BASE_RATES_PER_KG[activeZone]?.zoneName} {draft?.address?.province ? `(Prov. ${draft.address.province})` : ''}
+              </span>
             </div>
           </div>
 
