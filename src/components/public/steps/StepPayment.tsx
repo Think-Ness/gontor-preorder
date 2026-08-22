@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback } from 'react'
 import { CheckoutDraft, PaymentMethod, CartItem } from '@/types'
 import { formatRupiah, formatNumber } from '@/lib/utils'
+import { compressImageFile, safeParseJsonResponse } from '@/lib/image-compression'
 import {
   CreditCard, Copy, Check, Upload, X, ChevronLeft,
   Loader2, AlertTriangle, FileImage, Info
@@ -58,19 +59,16 @@ export default function StepPayment({ draft, cart, paymentMethods, sessionId, is
     setTimeout(() => setCopiedAmount(false), 2000)
   }
 
-  const handleFileChange = useCallback(async (file: File) => {
+  const handleFileChange = useCallback(async (rawFile: File) => {
     setUploadError(null)
     setUploadedProof(null)
 
-    if (!ACCEPTED.includes(file.type)) {
+    if (!ACCEPTED.includes(rawFile.type)) {
       setUploadError('Format file tidak didukung. Gunakan JPG, PNG, atau WEBP.')
       return
     }
-    if (file.size > MAX_MB * 1024 * 1024) {
-      setUploadError(`Ukuran file melebihi ${MAX_MB} MB.`)
-      return
-    }
 
+    const file = await compressImageFile(rawFile)
     const preview = URL.createObjectURL(file)
     setProof({ file, preview })
 
@@ -85,8 +83,7 @@ export default function StepPayment({ draft, cart, paymentMethods, sessionId, is
       }
 
       const res = await fetch('/api/upload/payment-proof', { method: 'POST', body: formData })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Upload gagal')
+      const data = await safeParseJsonResponse(res)
       setUploadedProof(data)
     } catch (err) {
       setUploadError(err instanceof Error ? err.message : 'Upload gagal. Coba lagi.')

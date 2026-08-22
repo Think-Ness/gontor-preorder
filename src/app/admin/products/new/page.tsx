@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { ChevronLeft, Loader2, Plus, Trash2, Upload, Shirt, Copy } from 'lucide-react'
 import { slugify } from '@/lib/utils'
 import { buildDriveImageUrl } from '@/lib/drive-urls'
+import { compressImageFile, safeParseJsonResponse } from '@/lib/image-compression'
 
 function NewProductFormContent() {
   const router = useRouter()
@@ -102,12 +103,13 @@ function NewProductFormContent() {
   }
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const rawFile = e.target.files?.[0]
+    if (!rawFile) return
     setUploadingImage(true)
     setError('')
 
     try {
+      const file = await compressImageFile(rawFile)
       const fd = new FormData()
       fd.append('file', file)
       if (form.name) {
@@ -119,13 +121,12 @@ function NewProductFormContent() {
         body: fd,
       })
 
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Gagal upload gambar')
+      const data = await safeParseJsonResponse(res)
 
       setForm(p => ({
         ...p,
         image_drive_file_id: data.file_id,
-        image_url: data.thumbnail_url,
+        image_url: data.url,
         image_filename: data.filename,
       }))
     } catch (err) {

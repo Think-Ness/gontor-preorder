@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { EventSettings } from '@/types'
-import { Loader2, Save, Clock, Upload, Globe, Link2, Camera, Phone, FileText, Hash } from 'lucide-react'
+import { Globe, Clock, Save, Loader2, Link2, Upload, FileText, Hash, Phone, Camera } from 'lucide-react'
+import { compressImageFile, safeParseJsonResponse } from '@/lib/image-compression'
 
 interface Props { initialData: EventSettings | null }
 
@@ -49,12 +50,13 @@ export default function EventSettingsForm({ initialData }: Props) {
   }
 
   const handleFaviconFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const rawFile = e.target.files?.[0]
+    if (!rawFile) return
     setUploading(true)
     setError('')
 
     try {
+      const file = await compressImageFile(rawFile)
       const fd = new FormData()
       fd.append('file', file)
       fd.append('product_name', 'Website-Favicon')
@@ -64,8 +66,7 @@ export default function EventSettingsForm({ initialData }: Props) {
         body: fd,
       })
 
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Gagal mengupload favicon')
+      const data = await safeParseJsonResponse(res)
 
       if (data.file_id) {
         setForm(p => ({ ...p, favicon_url: `/api/drive/public-preview/${data.file_id}` }))

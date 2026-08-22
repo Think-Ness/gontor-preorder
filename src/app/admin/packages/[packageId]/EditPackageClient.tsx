@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { ChevronLeft, Loader2, PackageIcon, Save, Trash2, Upload } from 'lucide-react'
 import { Package } from '@/types'
 import { buildDriveImageUrl } from '@/lib/drive-urls'
+import { compressImageFile, safeParseJsonResponse } from '@/lib/image-compression'
 
 interface Props {
   initialPackage: Package
@@ -31,12 +32,13 @@ export default function EditPackageClient({ initialPackage }: Props) {
   })
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const rawFile = e.target.files?.[0]
+    if (!rawFile) return
     setUploadingImage(true)
     setError('')
 
     try {
+      const file = await compressImageFile(rawFile)
       const fd = new FormData()
       fd.append('file', file)
       if (form.name) {
@@ -48,8 +50,7 @@ export default function EditPackageClient({ initialPackage }: Props) {
         body: fd,
       })
 
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Gagal upload gambar')
+      const data = await safeParseJsonResponse(res)
 
       setForm(p => ({
         ...p,

@@ -7,6 +7,7 @@ import { ChevronLeft, Loader2, Plus, Save, Trash2, Upload, Shirt, Copy } from 'l
 import { slugify } from '@/lib/utils'
 import { Product, ProductVariant } from '@/types'
 import { buildDriveImageUrl } from '@/lib/drive-urls'
+import { compressImageFile, safeParseJsonResponse } from '@/lib/image-compression'
 
 interface Props {
   initialProduct: Product & { variants?: ProductVariant[] }
@@ -56,12 +57,13 @@ export default function EditProductClient({ initialProduct }: Props) {
   }
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const rawFile = e.target.files?.[0]
+    if (!rawFile) return
     setUploadingImage(true)
     setError('')
 
     try {
+      const file = await compressImageFile(rawFile)
       const fd = new FormData()
       fd.append('file', file)
       if (form.name) {
@@ -73,8 +75,7 @@ export default function EditProductClient({ initialProduct }: Props) {
         body: fd,
       })
 
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Gagal upload gambar')
+      const data = await safeParseJsonResponse(res)
 
       setForm(p => ({
         ...p,
