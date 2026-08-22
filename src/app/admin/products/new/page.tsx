@@ -60,6 +60,7 @@ function NewProductFormContent() {
             description: prod.description || '',
             product_type: prod.product_type || 'SIMPLE',
             price: prod.price ? String(prod.price) : '',
+            weight_gram: prod.weight_gram !== null && prod.weight_gram !== undefined ? String(prod.weight_gram) : '',
             has_variants: Boolean(prod.has_variants),
             stock_enabled: prod.stock_enabled ?? true,
             stock: prod.stock !== null && prod.stock !== undefined ? String(prod.stock) : '',
