@@ -28,8 +28,8 @@ export default async function ProductsPage() {
         </Link>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="divide-y divide-gray-50">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
+        <div className="divide-y divide-gray-50 min-w-[500px]">
           {(products ?? []).map((product: any) => (
             <div key={product.id} className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 transition-colors">
               {/* Image placeholder */}

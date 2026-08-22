@@ -117,24 +117,24 @@ export default function ProductCard({ product, onAdd, cartItems, isOpen, isTopTi
       </div>
 
       {/* Content */}
-      <div className="p-4 flex flex-col flex-1">
-        <h3 className="font-display font-bold text-gray-900 mb-1 text-sm leading-tight">
+      <div className="p-3.5 sm:p-4 flex flex-col flex-1">
+        <h3 className="font-display font-bold text-gray-900 mb-1 text-xs sm:text-sm leading-snug line-clamp-2">
           {product.name}
         </h3>
 
         {product.description && (
-          <p className="text-xs text-gray-500 mb-3 line-clamp-2">{product.description}</p>
+          <p className="text-[11px] sm:text-xs text-gray-500 mb-2 sm:mb-3 line-clamp-2">{product.description}</p>
         )}
 
         {/* Price */}
-        <div className="font-display font-bold mb-3" style={{ color: 'var(--gontor-green)', fontSize: '1rem' }}>
+        <div className="font-display font-bold mb-2 sm:mb-3 text-sm sm:text-base" style={{ color: 'var(--gontor-green)' }}>
           {formatRupiah(activePrice)}
         </div>
 
         {/* Variant selector */}
         {product.has_variants && product.variants && product.variants.length > 0 && (
           <div className="mb-3">
-            <div className="text-xs text-gray-500 mb-1.5 font-semibold">Ukuran</div>
+            <div className="text-[11px] sm:text-xs text-gray-500 mb-1.5 font-semibold">Ukuran</div>
             <div className="flex flex-wrap gap-1.5">
               {product.variants.filter(v => v.is_active).map(variant => {
                 const outOfStock = variant.stock !== null && variant.stock !== undefined && variant.stock <= 0
@@ -143,9 +143,9 @@ export default function ProductCard({ product, onAdd, cartItems, isOpen, isTopTi
                     key={variant.id}
                     onClick={() => !outOfStock && setSelectedVariant(variant)}
                     disabled={outOfStock}
-                    className={`px-2.5 py-1 rounded text-xs font-display font-semibold border transition-all ${
+                    className={`px-3 py-1.5 min-h-[36px] rounded text-xs font-display font-semibold border transition-all flex items-center justify-center ${
                       selectedVariant?.id === variant.id
-                        ? 'border-green-600 bg-green-50 text-green-700'
+                        ? 'border-green-600 bg-green-50 text-green-700 font-bold'
                         : outOfStock
                           ? 'border-gray-200 bg-gray-50 text-gray-300 cursor-not-allowed line-through'
                           : 'border-gray-200 hover:border-green-400 text-gray-600'
@@ -161,29 +161,29 @@ export default function ProductCard({ product, onAdd, cartItems, isOpen, isTopTi
 
         {/* Stock info */}
         {!product.has_variants && product.stock_enabled && product.stock !== null && (
-          <div className="text-xs text-gray-400 mb-3 flex items-center gap-1">
+          <div className="text-[11px] sm:text-xs text-gray-400 mb-3 flex items-center gap-1">
             <AlertCircle className="w-3 h-3" />
             Stok: {product.stock} tersisa
           </div>
         )}
 
         {/* Add button */}
-        <div className="mt-auto">
+        <div className="mt-auto pt-1">
           {qty > 0 ? (
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-xs text-gray-500 font-display font-semibold">
-                {qty}x di keranjang
+            <div className="flex items-center justify-between gap-1.5">
+              <span className="text-[11px] sm:text-xs text-gray-500 font-display font-semibold truncate">
+                {qty}x di cart
               </span>
               <button
                 onClick={handleAdd}
                 disabled={isOutOfStock || !isOpen || isMaxStockReached}
-                className={`px-3 py-2 text-xs flex items-center gap-1 font-semibold rounded-lg ${
+                className={`px-3 py-2.5 min-h-[40px] text-xs flex items-center gap-1 font-semibold rounded-lg shrink-0 ${
                   isMaxStockReached ? 'bg-gray-100 text-gray-400 cursor-not-allowed border' : 'btn-primary'
                 }`}
               >
                 {isMaxStockReached ? 'Stok Maksimal' : (
                   <>
-                    <Plus className="w-3 h-3" />
+                    <Plus className="w-3.5 h-3.5" />
                     Tambah
                   </>
                 )}
@@ -193,7 +193,7 @@ export default function ProductCard({ product, onAdd, cartItems, isOpen, isTopTi
             <button
               onClick={handleAdd}
               disabled={isOutOfStock || !isOpen}
-              className={`w-full py-2.5 rounded-lg text-sm font-display font-semibold flex items-center justify-center gap-2 transition-all ${
+              className={`w-full py-2.5 min-h-[44px] rounded-lg text-xs sm:text-sm font-display font-semibold flex items-center justify-center gap-1.5 transition-all ${
                 isOutOfStock || !isOpen
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   : 'btn-primary'
@@ -206,7 +206,7 @@ export default function ProductCard({ product, onAdd, cartItems, isOpen, isTopTi
               ) : (
                 <>
                   <Plus className="w-4 h-4" />
-                  Tambah ke Keranjang
+                  <span>Keranjang</span>
                 </>
               )}
             </button>

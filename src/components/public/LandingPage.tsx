@@ -280,16 +280,16 @@ export default function LandingPage({
 
       {/* Mobile Sticky Cart Button */}
       {totalItems > 0 && preorderStatus === 'OPEN' && (
-        <div className="fixed bottom-4 left-4 right-4 z-40 sm:hidden">
+        <div className="fixed bottom-4 left-4 right-4 z-40 sm:hidden pb-[env(safe-area-inset-bottom,0px)]">
           <button
             onClick={() => setIsCartOpen(true)}
-            className="w-full py-4 bg-[#063D2E] text-white rounded-full flex items-center justify-between px-6 shadow-2xl font-display"
+            className="w-full py-4 bg-[#063D2E] text-white rounded-full flex items-center justify-between px-6 shadow-2xl font-display min-h-[48px] active:scale-[0.98] transition-transform"
           >
             <div className="flex items-center gap-2">
-              <ShoppingBag className="w-5 h-5 text-amber-300" />
-              <span className="font-bold text-sm">{totalItems} item dalam keranjang</span>
+              <ShoppingBag className="w-5 h-5 text-amber-300 flex-shrink-0" />
+              <span className="font-bold text-sm truncate">{totalItems} item dalam keranjang</span>
             </div>
-            <span className="font-black text-amber-300 text-sm">{formatRupiah(cart.subtotal)}</span>
+            <span className="font-black text-amber-300 text-sm flex-shrink-0">{formatRupiah(cart.subtotal)}</span>
           </button>
         </div>
       )}

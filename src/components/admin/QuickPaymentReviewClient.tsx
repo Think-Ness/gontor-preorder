@@ -333,7 +333,7 @@ export default function QuickPaymentReviewClient({ pendingOrders, initialSelecte
                     <button
                       onClick={() => handleAction(selectedOrder.id, 'APPROVE')}
                       disabled={!!loadingAction}
-                      className="py-3.5 px-4 rounded-xl bg-green-600 hover:bg-green-700 text-white font-display font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg disabled:opacity-50"
+                      className="py-3.5 px-4 min-h-[44px] rounded-xl bg-green-600 hover:bg-green-700 text-white font-display font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg disabled:opacity-50"
                     >
                       {loadingAction === 'APPROVE' ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -347,7 +347,7 @@ export default function QuickPaymentReviewClient({ pendingOrders, initialSelecte
                     <button
                       onClick={() => setShowRejectModal('REQUEST_REUPLOAD')}
                       disabled={!!loadingAction}
-                      className="py-3.5 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 border border-blue-300 text-blue-700 font-display font-bold text-xs flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
+                      className="py-3.5 px-3 min-h-[44px] rounded-xl bg-blue-50 hover:bg-blue-100 border border-blue-300 text-blue-700 font-display font-bold text-xs flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
                     >
                       <RefreshCw className="w-4 h-4" />
                       Re-upload Bukti
@@ -357,7 +357,7 @@ export default function QuickPaymentReviewClient({ pendingOrders, initialSelecte
                     <button
                       onClick={() => handleAction(selectedOrder.id, 'NEEDS_REVIEW')}
                       disabled={!!loadingAction}
-                      className="py-3.5 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-800 font-display font-bold text-xs flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
+                      className="py-3.5 px-3 min-h-[44px] rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-800 font-display font-bold text-xs flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
                     >
                       <AlertTriangle className="w-4 h-4" />
                       Needs Review
@@ -367,7 +367,7 @@ export default function QuickPaymentReviewClient({ pendingOrders, initialSelecte
                     <button
                       onClick={() => setShowRejectModal('REJECT')}
                       disabled={!!loadingAction}
-                      className="py-3.5 px-3 rounded-xl bg-red-50 hover:bg-red-100 border border-red-300 text-red-700 font-display font-bold text-xs flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
+                      className="py-3.5 px-3 min-h-[44px] rounded-xl bg-red-50 hover:bg-red-100 border border-red-300 text-red-700 font-display font-bold text-xs flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
                     >
                       <XCircle className="w-4 h-4" />
                       Tolak Pembayaran

@@ -145,31 +145,32 @@ function TrackingContent() {
     <div className="min-h-screen bg-gray-50 pb-20">
       {/* Header */}
       <header className="bg-white border-b border-gray-100 shadow-sm sticky top-0 z-30">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800">
-            <ChevronLeft className="w-4 h-4" />
-            Beranda
+        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
+          <Link href="/" className="flex items-center gap-1 text-xs sm:text-sm text-gray-600 hover:text-gray-900 shrink-0 font-medium">
+            <ChevronLeft className="w-4 h-4 text-gray-500" />
+            <span className="hidden xs:inline">Beranda</span>
           </Link>
-          <div className="font-display font-bold text-sm" style={{ color: 'var(--gontor-green)' }}>
-            Lacak Pesanan — 100 Tahun Gontor
+          <div className="font-display font-bold text-xs sm:text-sm text-[#063D2E] text-center truncate px-1">
+            Lacak Pesanan
           </div>
-          <Link href="/order" className="btn-primary px-3 py-1.5 text-xs font-display font-semibold rounded-lg flex items-center gap-1">
-            Pesan Kit
-            <ArrowRight className="w-3 h-3" />
+          <Link href="/order" className="btn-primary px-3 py-2 min-h-[40px] text-xs font-display font-bold rounded-xl flex items-center justify-center gap-1 shrink-0">
+            <span>Pesan</span>
+            <span className="hidden sm:inline">Kit</span>
+            <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
       </header>
 
-      <main className="max-w-xl mx-auto px-4 pt-8">
+      <main className="max-w-xl mx-auto px-4 pt-6 sm:pt-8">
         {/* Search Box */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
+        <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100 mb-6">
           <div className="text-center mb-5">
             <div className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3"
               style={{ background: 'rgba(13,74,43,0.1)' }}>
               <Search className="w-6 h-6" style={{ color: 'var(--gontor-green)' }} />
             </div>
-            <h1 className="font-display font-bold text-xl text-gray-900">Lacak Status Pesanan</h1>
-            <p className="text-sm text-gray-500 mt-1">Masukkan Stambuk, Nomor Order, atau No. WhatsApp Anda</p>
+            <h1 className="font-display font-bold text-lg sm:text-xl text-gray-900">Lacak Status Pesanan</h1>
+            <p className="text-xs sm:text-sm text-gray-500 mt-1">Masukkan Stambuk, Nomor Order, atau No. WhatsApp Anda</p>
           </div>
 
           <form onSubmit={handleSearch} className="flex gap-2">
@@ -177,16 +178,17 @@ function TrackingContent() {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Contoh: Stambuk (66820), No. WA, atau MCH-2026-00011"
-              className="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100 font-display"
+              placeholder="Stambuk, No. WA, atau MCH-..."
+              className="flex-1 min-w-0 px-3.5 py-3 rounded-xl border border-gray-200 text-xs sm:text-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100 font-display"
               required
             />
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary px-6 py-3 rounded-xl font-display font-bold text-sm flex items-center gap-2"
+              className="btn-primary px-4 sm:px-6 py-3 min-h-[44px] rounded-xl font-display font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 shrink-0"
             >
-              {loading ? 'Mencari...' : 'Cari'}
+              <Search className="w-4 h-4" />
+              <span>{loading ? 'Mencari...' : 'Cari'}</span>
             </button>
           </form>
         </div>

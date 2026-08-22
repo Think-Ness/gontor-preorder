@@ -1,6 +1,7 @@
 'use client'
 
-import { Globe, ZoomIn, ZoomOut, Maximize } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Globe, ZoomIn, ZoomOut, Maximize, Info, ChevronDown } from 'lucide-react'
 import { MapPinData } from '@/app/page'
 import { INDONESIA_ISLAND_PATHS } from './IndonesiaMapData'
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch"
@@ -19,6 +20,14 @@ function project(lng: number, lat: number): [number, number] {
 }
 
 export default function IndonesiaMapSection({ mapPins }: Props) {
+  const [isLegendOpen, setIsLegendOpen] = useState(false)
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
+      setIsLegendOpen(true)
+    }
+  }, [])
+
   if (!mapPins) {
     return null
   }
@@ -34,6 +43,19 @@ export default function IndonesiaMapSection({ mapPins }: Props) {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 3)
     .map(entry => entry[0])
+
+  // Deduplicate pins with identical GPS coordinates so pins never stack on top of each other
+  const uniquePinsMap = new Map<string, MapPinData>()
+  mapPins.forEach(pin => {
+    const key = `${Number(pin.lat).toFixed(5)},${Number(pin.lng).toFixed(5)}`
+    const existing = uniquePinsMap.get(key)
+    if (!existing) {
+      uniquePinsMap.set(key, pin)
+    } else if (pin.isAlumni && !existing.isAlumni) {
+      uniquePinsMap.set(key, pin)
+    }
+  })
+  const uniqueMapPins = Array.from(uniquePinsMap.values())
 
   return (
     <section className="py-12 lg:py-16 bg-white border-b border-gray-100">
@@ -85,7 +107,7 @@ export default function IndonesiaMapSection({ mapPins }: Props) {
                 >
                   <svg
                     viewBox="0 0 900 420"
-                    preserveAspectRatio="xMidYMid slice"
+                    preserveAspectRatio="xMidYMid meet"
                     className="w-full h-full"
                   >
                     {/* Sea background grid */}
@@ -114,8 +136,8 @@ export default function IndonesiaMapSection({ mapPins }: Props) {
                       />
                     ))}
 
-                    {/* Individual Pins */}
-                    {mapPins.map((pin, i) => {
+                    {/* Individual Unique Pins */}
+                    {uniqueMapPins.map((pin, i) => {
                       const [x, y] = project(pin.lng, pin.lat)
                       const color = pin.isAlumni ? '#eab308' : '#10b981' // Yellow for Alumni, Green for Umum
                       const glowColor = pin.isAlumni ? 'rgba(234, 179, 8, 0.4)' : 'rgba(16, 185, 129, 0.4)'
@@ -142,36 +164,59 @@ export default function IndonesiaMapSection({ mapPins }: Props) {
             )}
           </TransformWrapper>
 
-          {/* Legend */}
-          <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm rounded-2xl p-4 border border-emerald-100 shadow-xl text-xs space-y-4 max-w-[200px]">
-            {topProvinces.length > 0 && (
-              <div>
-                <div className="font-display font-bold text-emerald-900 text-[10px] uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                  Top Provinsi
+          {/* Minimizable Legend Card */}
+          {isLegendOpen ? (
+            <div className="absolute bottom-3 right-3 z-20 bg-white/95 backdrop-blur-md rounded-2xl p-3.5 border border-emerald-100 shadow-2xl text-xs space-y-3 max-w-[210px] animate-in fade-in duration-200">
+              <div className="flex items-center justify-between border-b border-gray-100 pb-1.5">
+                <span className="font-display font-bold text-[10px] text-emerald-900 uppercase tracking-wider flex items-center gap-1">
+                  <Info className="w-3.5 h-3.5 text-emerald-600" /> Info Peta
+                </span>
+                <button
+                  onClick={() => setIsLegendOpen(false)}
+                  className="p-1 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                  title="Tutup Legenda"
+                >
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+              </div>
+
+              {topProvinces.length > 0 && (
+                <div>
+                  <div className="font-display font-bold text-emerald-900 text-[10px] uppercase tracking-wider mb-1 flex items-center gap-1">
+                    Top Provinsi
+                  </div>
+                  <ul className="space-y-1">
+                    {topProvinces.map((prov, idx) => (
+                      <li key={prov} className="flex items-start gap-1.5 text-gray-600 font-medium text-[11px]">
+                        <span className="font-bold text-emerald-700">{idx + 1}.</span>
+                        <span className="leading-tight line-clamp-2">{prov}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <ul className="space-y-1">
-                  {topProvinces.map((prov, idx) => (
-                    <li key={prov} className="flex items-start gap-1.5 text-gray-600 font-medium">
-                      <span className="font-bold text-emerald-700">{idx + 1}.</span>
-                      <span className="leading-tight line-clamp-2">{prov}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            
-            <div className="pt-2 border-t border-gray-100">
-              <div className="font-display font-bold text-gray-700 text-[10px] uppercase tracking-wider mb-2">Keterangan Pin</div>
-              <div className="flex items-center gap-2 mb-2">
-                 <div className="w-3 h-3 rounded-full bg-[#eab308] border-[1.5px] border-white shadow-sm" />
-                 <span className="text-gray-600 font-semibold text-[11px]">Alumni</span>
-              </div>
-              <div className="flex items-center gap-2">
-                 <div className="w-3 h-3 rounded-full bg-[#10b981] border-[1.5px] border-white shadow-sm" />
-                 <span className="text-gray-600 font-semibold text-[11px]">Umum</span>
+              )}
+              
+              <div className="pt-2 border-t border-gray-100">
+                <div className="font-display font-bold text-gray-700 text-[10px] uppercase tracking-wider mb-1.5">Keterangan Pin</div>
+                <div className="flex items-center gap-2 mb-1.5">
+                   <div className="w-3 h-3 rounded-full bg-[#eab308] border-[1.5px] border-white shadow-sm" />
+                   <span className="text-gray-600 font-semibold text-[11px]">Alumni</span>
+                </div>
+                <div className="flex items-center gap-2">
+                   <div className="w-3 h-3 rounded-full bg-[#10b981] border-[1.5px] border-white shadow-sm" />
+                   <span className="text-gray-600 font-semibold text-[11px]">Umum</span>
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <button
+              onClick={() => setIsLegendOpen(true)}
+              className="absolute bottom-3 right-3 z-20 bg-white/90 backdrop-blur-md rounded-full px-3 py-1.5 border border-emerald-200 shadow-lg text-xs font-display font-bold text-[#063D2E] flex items-center gap-1.5 hover:bg-emerald-50 transition-all"
+            >
+              <Info className="w-4 h-4 text-emerald-600" />
+              <span>Info Peta</span>
+            </button>
+          )}
         </div>
       </div>
     </section>

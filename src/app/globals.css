@@ -316,6 +316,30 @@ input, select, textarea {
   font-family: var(--font-body);
 }
 
+/* Prevent unwanted iOS browser zoom on input focus by setting min font-size to 16px on mobile */
+@media (max-width: 639px) {
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="password"],
+  input[type="search"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Safe area inset utilities */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 16px);
+}
+
+/* Prevent horizontal overflow on root */
+body {
+  overflow-x: clip;
+}
+
 /* Smooth transitions globally */
 a, button {
   transition: color 0.15s ease, background-color 0.15s ease, opacity 0.15s ease;

@@ -38,6 +38,7 @@ const STEPS = [
 export default function OrderFlow({
   settings, preorderStatus, products: initialProducts, packages, paymentMethods
 }: OrderFlowProps) {
+  const [isMounted, setIsMounted] = useState(false)
   const [step, setStep] = useState(1)
   const [localProducts, setLocalProducts] = useState<Product[]>(initialProducts)
   const [orderNumber, setOrderNumber] = useState<string | null>(null)
@@ -51,10 +52,20 @@ export default function OrderFlow({
 
   const hasCheckedResume = useRef(false)
 
+  // Hydration safety flag
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
   // Realtime Stock Updates
   useEffect(() => {
     setLocalProducts(initialProducts)
   }, [initialProducts])
+
+  // Scroll to top on step transition
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [step])
 
   useEffect(() => {
     const supabase = createClient()
@@ -94,79 +105,30 @@ export default function OrderFlow({
     }
   }, [])
 
-  // Check for existing draft on load
+  // Check for existing draft on load (only after mounted)
   useEffect(() => {
-    if (isLoaded && !hasCheckedResume.current) {
+    if (isMounted && isLoaded && !hasCheckedResume.current) {
       hasCheckedResume.current = true
       if (draft && draft.stambuk) {
         setShowResume(true)
       }
     }
-  }, [isLoaded, draft])
+  }, [isMounted, isLoaded, draft])
 
   // Guard: pre-order must be OPEN
   if (preorderStatus !== 'OPEN') {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="text-center max-w-sm">
+      <div className="min-h-screen flex items-center justify-center p-6 bg-gray-50">
+        <div className="text-center max-w-sm bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
           <div className="text-5xl mb-4">🔒</div>
           <h1 className="font-display font-bold text-2xl mb-2" style={{ color: 'var(--gontor-green)' }}>
             {preorderStatus === 'CLOSED' ? 'Pre-Order Ditutup' : 'Pre-Order Belum Dibuka'}
           </h1>
-          <p className="text-gray-500 mb-6">Pemesanan tidak dapat dilakukan saat ini.</p>
-          <Link href="/" className="btn-primary inline-flex items-center gap-2 px-6 py-3">
+          <p className="text-gray-500 text-sm mb-6">Pemesanan tidak dapat dilakukan saat ini.</p>
+          <Link href="/" className="btn-primary inline-flex items-center gap-2 px-6 py-3 text-sm">
             <ChevronLeft className="w-4 h-4" />
             Kembali ke Beranda
           </Link>
-        </div>
-      </div>
-    )
-  }
-
-  // Resume dialog
-  if (showResume && draft) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-6 bg-gray-50">
-        <div className="bg-white rounded-2xl p-8 max-w-sm w-full shadow-xl">
-          <div className="text-center mb-6">
-            <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-              style={{ background: 'rgba(13,74,43,0.1)' }}>
-              <ShoppingBag className="w-8 h-8" style={{ color: 'var(--gontor-green)' }} />
-            </div>
-            <h2 className="font-display font-bold text-xl mb-2">Pesanan Sebelumnya Ditemukan</h2>
-            <p className="text-sm text-gray-500 mb-1">
-              Atas nama: <strong>{draft.name}</strong>
-            </p>
-            {draft.cart.length > 0 && (
-              <p className="text-xs text-gray-400">{draft.cart.reduce((s, i) => s + i.quantity, 0)} item di keranjang</p>
-            )}
-          </div>
-          <div className="flex flex-col gap-2">
-            <button
-              onClick={() => {
-                // Restore cart from draft
-                if (draft.cart.length > 0) {
-                  clearCart()
-                  draft.cart.forEach(item => addItem(item))
-                }
-                setStep(draft.paymentStep || 1)
-                setShowResume(false)
-              }}
-              className="btn-primary w-full py-3 font-display font-semibold"
-            >
-              Lanjutkan Pesanan
-            </button>
-            <button
-              onClick={() => {
-                clearDraft()
-                clearCart()
-                setShowResume(false)
-              }}
-              className="w-full py-3 rounded-lg border border-gray-200 text-gray-600 font-semibold font-display hover:bg-gray-50"
-            >
-              Mulai Baru
-            </button>
-          </div>
         </div>
       </div>
     )
@@ -234,20 +196,63 @@ export default function OrderFlow({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 relative">
+      {/* Resume Draft Modal Overlay */}
+      {isMounted && showResume && draft && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+                style={{ background: 'rgba(13,74,43,0.1)' }}>
+                <ShoppingBag className="w-8 h-8" style={{ color: 'var(--gontor-green)' }} />
+              </div>
+              <h2 className="font-display font-bold text-xl mb-2">Pesanan Sebelumnya Ditemukan</h2>
+              <p className="text-sm text-gray-500 mb-1">
+                Atas nama: <strong>{draft.name}</strong>
+              </p>
+              {draft.cart.length > 0 && (
+                <p className="text-xs text-gray-400">{draft.cart.reduce((s, i) => s + i.quantity, 0)} item di keranjang</p>
+              )}
+            </div>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={() => {
+                  if (draft.cart.length > 0) {
+                    clearCart()
+                    draft.cart.forEach(item => addItem(item))
+                  }
+                  setStep(draft.paymentStep || 1)
+                  setShowResume(false)
+                }}
+                className="btn-primary w-full py-3 font-display font-semibold text-sm"
+              >
+                Lanjutkan Pesanan
+              </button>
+              <button
+                onClick={() => {
+                  clearDraft()
+                  clearCart()
+                  setShowResume(false)
+                }}
+                className="w-full py-3 rounded-lg border border-gray-200 text-gray-600 font-semibold font-display hover:bg-gray-50 text-sm"
+              >
+                Mulai Baru
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700">
-            <ChevronLeft className="w-4 h-4" />
-            Kembali
+          <Link href="/" className="flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors shrink-0">
+            <ChevronLeft className="w-4 h-4 text-gray-500" />
+            <span>Kembali</span>
           </Link>
-          <div className="font-display font-bold text-sm" style={{ color: 'var(--gontor-green)' }}>
+          <div className="font-display font-bold text-sm text-[#063D2E] text-center truncate px-2">
             Pre-Order Reunion Kit
           </div>
-          <div className="text-xs text-gray-400 font-semibold">
-            {step}/4
-          </div>
+          <div className="w-16 shrink-0" aria-hidden="true" />
         </div>
 
         {/* Progress Steps */}
@@ -258,7 +263,7 @@ export default function OrderFlow({
               const isDone = step > s.id
               const isActive = step === s.id
               return (
-                <div key={s.id} className="flex items-center flex-1">
+                <div key={s.id} className="flex items-center flex-1 last:flex-none">
                   <div className="flex flex-col items-center">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
                       isDone ? 'step-done' : isActive ? 'step-active' : 'step-pending'
@@ -266,12 +271,12 @@ export default function OrderFlow({
                       {isDone ? <CheckCircle className="w-4 h-4" /> : <Icon className="w-4 h-4" />}
                     </div>
                     <span className={`text-[10px] sm:text-xs mt-1 font-display font-semibold hidden sm:block ${
-                      isActive ? 'text-green-700' : isDone ? 'text-green-600' : 'text-gray-400'
+                      isActive ? 'text-green-700 font-bold' : isDone ? 'text-green-600' : 'text-gray-400'
                     }`}>{s.label}</span>
                   </div>
                   {i < 3 && (
-                    <div className={`flex-1 h-0.5 mx-1 sm:mx-2 mb-1 sm:mb-5 rounded ${
-                      step > s.id ? 'bg-green-400' : 'bg-gray-200'
+                    <div className={`flex-1 h-0.5 mx-1.5 sm:mx-3 rounded transition-colors ${
+                      step > s.id ? 'bg-green-600' : 'bg-gray-200'
                     }`} />
                   )}
                 </div>

@@ -70,12 +70,13 @@ export default function CompetzyHeader({
           {isPreorderOpen && (
             <button
               onClick={onOpenCart}
-              className="group inline-flex items-center gap-2 rounded-full bg-[#063D2E] hover:bg-[#043e2b] text-white pl-4 pr-3 py-2 shadow-[0_8px_24px_-8px_rgba(6,61,46,0.5)] transition-all duration-300 hover:scale-[1.03] active:scale-[0.97]"
-              style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '0.88rem' }}
+              className="group relative inline-flex items-center justify-center gap-1.5 rounded-full bg-[#063D2E] hover:bg-[#043e2b] text-white px-3 sm:px-4 py-2.5 min-h-[44px] shadow-[0_8px_24px_-8px_rgba(6,61,46,0.5)] transition-all duration-300 hover:scale-[1.03] active:scale-[0.97]"
+              aria-label="Keranjang Belanja"
             >
-              <span>Keranjang ({totalItems})</span>
-              <span className="inline-flex items-center justify-center rounded-full bg-white/20 w-5 h-5 text-xs transition-transform group-hover:translate-x-0.5">
-                →
+              <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-300 shrink-0" />
+              <span className="hidden sm:inline font-display font-bold text-xs sm:text-sm">Keranjang</span>
+              <span className="inline-flex items-center justify-center rounded-full bg-amber-400 text-gray-900 font-extrabold text-[11px] px-1.5 min-w-[20px] h-5 shadow-xs">
+                {totalItems}
               </span>
             </button>
           )}
@@ -84,7 +85,7 @@ export default function CompetzyHeader({
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="bg-white/[0.92] ring-1 ring-black/[0.06] shadow-md backdrop-blur-2xl rounded-2xl p-2.5 text-gray-800 lg:hidden"
+            className="bg-white/[0.92] ring-1 ring-black/[0.06] shadow-md backdrop-blur-2xl rounded-2xl min-w-[44px] min-h-[44px] inline-flex items-center justify-center text-gray-800 lg:hidden"
             aria-label="Buka Menu"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -98,13 +99,13 @@ export default function CompetzyHeader({
       {mobileMenuOpen && (
         <div className="lg:hidden mt-3 max-w-[80rem] mx-auto bg-white/95 backdrop-blur-2xl rounded-3xl p-5 shadow-2xl border border-gray-100 space-y-3 animate-in fade-in slide-in-from-top-3">
           <div className="flex flex-col gap-2 font-display font-bold text-sm">
-            <a href="#" onClick={() => setMobileMenuOpen(false)} className="px-4 py-2.5 rounded-xl bg-emerald-50 text-[#063D2E]">
+            <a href="#" onClick={() => setMobileMenuOpen(false)} className="px-4 py-3 min-h-[44px] flex items-center rounded-xl bg-emerald-50 text-[#063D2E]">
               Beranda
             </a>
-            <a href="#catalog" onClick={() => setMobileMenuOpen(false)} className="px-4 py-2.5 rounded-xl hover:bg-gray-50 text-gray-700">
+            <a href="#catalog" onClick={() => setMobileMenuOpen(false)} className="px-4 py-3 min-h-[44px] flex items-center rounded-xl hover:bg-gray-50 text-gray-700">
               Katalog Merchandise
             </a>
-            <Link href="/track" onClick={() => setMobileMenuOpen(false)} className="px-4 py-2.5 rounded-xl hover:bg-gray-50 text-gray-700 flex items-center justify-between">
+            <Link href="/track" onClick={() => setMobileMenuOpen(false)} className="px-4 py-3 min-h-[44px] rounded-xl hover:bg-gray-50 text-gray-700 flex items-center justify-between">
               <span>Lacak Pesanan</span>
               <Search className="w-4 h-4 text-emerald-700" />
             </Link>

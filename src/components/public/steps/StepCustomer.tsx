@@ -125,7 +125,7 @@ export default function StepCustomer({ draft, onSave }: Props) {
   }
 
   const inputCls = (err?: { message?: string }) =>
-    `w-full px-4 py-3 rounded-xl border text-sm outline-none transition-all font-body ${
+    `w-full px-4 py-3 min-h-[44px] rounded-xl border text-sm outline-none transition-all font-body ${
       err
         ? 'border-red-300 bg-red-50 focus:ring-2 focus:ring-red-200'
         : 'border-gray-200 bg-white focus:border-green-500 focus:ring-2 focus:ring-green-100'
@@ -155,14 +155,14 @@ export default function StepCustomer({ draft, onSave }: Props) {
             Status Pemesan <span className="text-red-400">*</span>
           </label>
           <div className="flex flex-col sm:grid sm:grid-cols-2 gap-3">
-            <label className={`cursor-pointer flex flex-col items-center justify-center gap-2 p-4 sm:p-3 border-2 rounded-xl transition-all ${isAlumni ? 'border-green-800 bg-green-50' : 'border-gray-200 hover:border-green-200 bg-white'}`}>
+            <label className={`cursor-pointer flex flex-col items-center justify-center gap-2 p-4 sm:p-3 min-h-[52px] border-2 rounded-xl transition-all ${isAlumni ? 'border-green-800 bg-green-50' : 'border-gray-200 hover:border-green-200 bg-white'}`}>
               <input type="radio" {...register('is_alumni')} value="true" className="hidden" 
                 onChange={() => setValue('is_alumni', true, { shouldValidate: true })} 
               />
               <GraduationCap className={`w-6 h-6 ${isAlumni ? 'text-green-800' : 'text-gray-400'}`} />
               <span className={`font-display font-bold text-sm ${isAlumni ? 'text-green-900' : 'text-gray-600'}`}>Alumni Gontor</span>
             </label>
-            <label className={`cursor-pointer flex flex-col items-center justify-center gap-2 p-4 sm:p-3 border-2 rounded-xl transition-all ${!isAlumni ? 'border-green-800 bg-green-50' : 'border-gray-200 hover:border-green-200 bg-white'}`}>
+            <label className={`cursor-pointer flex flex-col items-center justify-center gap-2 p-4 sm:p-3 min-h-[52px] border-2 rounded-xl transition-all ${!isAlumni ? 'border-green-800 bg-green-50' : 'border-gray-200 hover:border-green-200 bg-white'}`}>
               <input type="radio" {...register('is_alumni')} value="false" className="hidden" 
                 onChange={() => setValue('is_alumni', false, { shouldValidate: true })} 
               />
@@ -264,7 +264,7 @@ export default function StepCustomer({ draft, onSave }: Props) {
               type="button"
               onClick={handleGetCurrentLocation}
               disabled={gettingLocation}
-              className="flex-1 flex items-center justify-center gap-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 py-3 px-4 rounded-xl font-semibold text-sm transition-all"
+              className="flex-1 flex items-center justify-center gap-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 py-3 px-4 rounded-xl font-semibold text-sm transition-all min-h-[44px]"
             >
               {gettingLocation ? (
                 <span className="flex items-center gap-2">
@@ -284,7 +284,7 @@ export default function StepCustomer({ draft, onSave }: Props) {
             <button
               type="button"
               onClick={() => setIsMapModalOpen(true)}
-              className="flex-1 flex items-center justify-center gap-2 bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 py-3 px-4 rounded-xl font-semibold text-sm transition-all"
+              className="flex-1 flex items-center justify-center gap-2 bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 py-3 px-4 rounded-xl font-semibold text-sm transition-all min-h-[44px]"
             >
               <Search className="w-4 h-4" />
               Cari di Peta Google
@@ -376,7 +376,7 @@ export default function StepCustomer({ draft, onSave }: Props) {
         </div>
       </div>
 
-      <button type="submit" className="btn-primary w-full py-4 font-display font-bold flex items-center justify-center gap-2 text-base">
+      <button type="submit" className="btn-primary w-full py-4 min-h-[48px] font-display font-bold flex items-center justify-center gap-2 text-base">
         Lanjut — Pilih Merchandise
         <ChevronRight className="w-5 h-5" />
       </button>

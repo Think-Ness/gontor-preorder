@@ -25,18 +25,18 @@ export default async function AuditLogsPage() {
         <p className="text-gray-500 text-sm">Riwayat aktivitas admin (100 log terakhir)</p>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-4 border-b border-gray-100 bg-gray-50 flex items-center gap-3">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input 
-              placeholder="Cari log..." 
-              className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
-            />
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
+        <div className="p-4 border-b border-gray-100 bg-gray-50 flex items-center gap-3 min-w-[550px]">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input 
+                placeholder="Cari log..." 
+                className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
+              />
+            </div>
           </div>
-        </div>
 
-        <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-gray-50">
           {(logs ?? []).map((log: any) => (
             <div key={log.id} className="p-4 flex gap-4 hover:bg-gray-50 transition-colors">
               <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">

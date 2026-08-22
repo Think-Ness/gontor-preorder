@@ -155,7 +155,7 @@ export default function StepPayment({ draft, cart, paymentMethods, sessionId, is
             {/* Account number */}
             <div className="mb-6">
               <div className="text-white/50 text-xs mb-1 font-display">Nomor Rekening</div>
-              <div className="font-display font-black text-white text-2xl tracking-widest">
+              <div className="font-display font-black text-white text-lg xs:text-xl sm:text-2xl tracking-widest break-all">
                 {primaryMethod.account_number.replace(/(\d{4})(?=\d)/g, '$1 ')}
               </div>
             </div>
@@ -169,7 +169,7 @@ export default function StepPayment({ draft, cart, paymentMethods, sessionId, is
             {/* Copy button */}
             <button
               onClick={copyAccount}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-display font-semibold transition-all"
+              className="flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-xl text-sm font-display font-semibold transition-all active:scale-95"
               style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.25)', color: 'white' }}
             >
               {copiedAccount ? <Check className="w-4 h-4 text-green-300" /> : <Copy className="w-4 h-4" />}
@@ -181,17 +181,17 @@ export default function StepPayment({ draft, cart, paymentMethods, sessionId, is
 
       {/* Copy Amount */}
       <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3">
           <div>
             <div className="text-xs text-gray-500 font-semibold uppercase tracking-widest mb-1">Total Pembayaran</div>
-            <div className="font-display font-black text-2xl" style={{ color: 'var(--gontor-green)' }}>
+            <div className="font-display font-black text-xl sm:text-2xl" style={{ color: 'var(--gontor-green)' }}>
               {formatRupiah(total)}
             </div>
             <div className="text-xs text-gray-400 mt-0.5">Transfer tepat sejumlah ini</div>
           </div>
           <button
             onClick={copyAmount}
-            className="flex items-center gap-2 px-4 py-3 rounded-xl font-display font-semibold text-sm transition-all"
+            className="flex items-center gap-2 px-4 py-3 min-h-[44px] rounded-xl font-display font-semibold text-sm transition-all active:scale-95 shrink-0"
             style={{
               background: copiedAmount ? 'rgba(22,163,74,0.1)' : 'rgba(13,74,43,0.08)',
               border: '1px solid rgba(13,74,43,0.15)',
@@ -240,7 +240,7 @@ export default function StepPayment({ draft, cart, paymentMethods, sessionId, is
         {!proof && !uploading && (
           <div
             onClick={() => fileRef.current?.click()}
-            className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center cursor-pointer hover:border-green-400 hover:bg-green-50 transition-all"
+            className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center cursor-pointer hover:border-green-400 hover:bg-green-50 transition-all min-h-[120px] flex flex-col items-center justify-center"
           >
             <Upload className="w-8 h-8 text-gray-300 mx-auto mb-2" />
             <p className="text-sm font-display font-semibold text-gray-500">Klik untuk upload bukti transfer</p>
@@ -264,11 +264,11 @@ export default function StepPayment({ draft, cart, paymentMethods, sessionId, is
 
         {proof && !uploading && (
           <div className="space-y-3">
-            <div className="relative rounded-xl overflow-hidden aspect-video bg-gray-50">
+            <div className="relative rounded-xl overflow-hidden aspect-video bg-gray-50 max-h-[300px]">
               <Image src={proof.preview} alt="Bukti pembayaran" fill className="object-contain" />
               <button
                 onClick={() => { setProof(null); setUploadedProof(null); setUploadError(null) }}
-                className="absolute top-2 right-2 w-7 h-7 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600"
+                className="absolute top-2 right-2 min-w-[36px] min-h-[36px] rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 shadow-md"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -309,30 +309,27 @@ export default function StepPayment({ draft, cart, paymentMethods, sessionId, is
         <button
           onClick={onBack}
           disabled={isSubmitting}
-          className="flex items-center gap-2 px-5 py-3 rounded-xl border border-gray-200 text-gray-600 font-display font-semibold hover:bg-gray-50 disabled:opacity-50"
+          className="flex items-center justify-center gap-2 px-5 py-3.5 min-h-[48px] rounded-xl border border-gray-200 text-gray-600 font-display font-semibold hover:bg-gray-50 disabled:opacity-50"
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
         <button
           onClick={() => uploadedProof && onSubmit(uploadedProof)}
           disabled={!canSubmit}
-          className={`flex-1 py-4 rounded-xl font-display font-bold flex items-center justify-center gap-2 text-base transition-all ${
+          className={`flex-1 py-4 min-h-[48px] rounded-xl font-display font-bold flex items-center justify-center gap-2 text-base transition-all ${
             canSubmit
               ? 'btn-primary'
               : 'bg-gray-100 text-gray-400 cursor-not-allowed'
           }`}
         >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="w-5 h-5 animate-spin" />
-              Memproses...
-            </>
-          ) : (
-            <>
-              <Check className="w-5 h-5" />
-              Submit Pesanan
-            </>
-          )}
+          <span className="flex items-center justify-center gap-2">
+            {isSubmitting ? (
+              <Loader2 className="w-5 h-5 animate-spin shrink-0" />
+            ) : (
+              <Check className="w-5 h-5 shrink-0" />
+            )}
+            <span>{isSubmitting ? 'Memproses...' : 'Submit Pesanan'}</span>
+          </span>
         </button>
       </div>
     </div>

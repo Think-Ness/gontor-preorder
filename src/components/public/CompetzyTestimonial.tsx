@@ -19,7 +19,7 @@ const TESTIMONIALS: Testimonial[] = [
     name: 'Ustadz Ahmad Fauzi',
     stambuk: 'Alumni 2012 (Consulat Jakarta)',
     district: 'DKI Jakarta',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
+    avatar: 'https://ui-avatars.com/api/?name=Ahmad+Fauzi&background=063D2E&color=fff&size=200',
   },
   {
     id: 2,
@@ -27,7 +27,7 @@ const TESTIMONIALS: Testimonial[] = [
     name: 'Muhammad Hidayat',
     stambuk: 'Alumni 2018 (Consulat Surabaya)',
     district: 'Jawa Timur',
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80',
+    avatar: 'https://ui-avatars.com/api/?name=Muhammad+Hidayat&background=0d4a2b&color=fff&size=200',
   },
   {
     id: 3,
@@ -35,7 +35,7 @@ const TESTIMONIALS: Testimonial[] = [
     name: 'Rahmat Syarifuddin',
     stambuk: 'Alumni 2015 (Consulat Medan)',
     district: 'Sumatera Utara',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=300&q=80',
+    avatar: 'https://ui-avatars.com/api/?name=Rahmat+Syarifuddin&background=166534&color=fff&size=200',
   },
 ]
 

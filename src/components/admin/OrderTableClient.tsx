@@ -165,8 +165,9 @@ export default function OrderTableClient({ orders }: { orders: any[] }) {
         </div>
       )}
 
-      <div className="overflow-x-auto select-none rounded-xl" style={{ userSelect: isDragging ? 'none' : 'auto' }}>
-        <table className="w-full text-left border-collapse">
+      {/* Scrollable Table View for Mobile & Desktop */}
+      <div className="overflow-x-auto select-none rounded-xl border border-gray-100 bg-white shadow-xs" style={{ userSelect: isDragging ? 'none' : 'auto' }}>
+        <table className="w-full text-left border-collapse min-w-[720px]">
           <thead>
             <tr className="bg-gray-50/80 border-b border-gray-100 uppercase tracking-widest text-[10px] font-black text-gray-500">
               <th className="px-5 py-4 w-12 text-center">

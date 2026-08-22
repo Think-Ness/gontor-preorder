@@ -52,27 +52,27 @@ export default function CountdownTimer({ endDate }: CountdownTimerProps) {
   ]
 
   return (
-    <div className="flex items-center justify-center gap-1.5 sm:gap-4">
+    <div className="flex items-center justify-center gap-1 xs:gap-2 sm:gap-4">
       {units.map(({ label, value }, i) => (
-        <div key={label} className="flex items-center gap-1.5 sm:gap-4">
+        <div key={label} className="flex items-center gap-1 xs:gap-2 sm:gap-4">
           <div className="text-center">
             <div
-              className="w-14 h-14 sm:w-20 sm:h-20 flex items-center justify-center rounded-xl sm:rounded-2xl shadow-lg border border-emerald-800"
+              className="w-11 h-11 xs:w-14 xs:h-14 sm:w-20 sm:h-20 flex items-center justify-center rounded-lg xs:rounded-xl sm:rounded-2xl shadow-lg border border-emerald-800"
               style={{
                 background: 'linear-gradient(135deg, #063D2E, #0d6041)',
                 color: 'white',
               }}
             >
-              <span className="font-display font-black text-2xl sm:text-4xl tabular-nums drop-shadow-md">
+              <span className="font-display font-black text-lg xs:text-2xl sm:text-4xl tabular-nums drop-shadow-md">
                 {pad(value)}
               </span>
             </div>
-            <div className="text-emerald-800 text-[10px] sm:text-xs font-display font-bold mt-1.5 sm:mt-2 tracking-widest uppercase">
+            <div className="text-emerald-800 text-[9px] xs:text-[10px] sm:text-xs font-display font-bold mt-1 xs:mt-1.5 sm:mt-2 tracking-widest uppercase">
               {label}
             </div>
           </div>
           {i < units.length - 1 && (
-            <span className="font-display font-black text-amber-500 mb-5 text-xl sm:text-3xl">:</span>
+            <span className="font-display font-black text-amber-500 mb-4 xs:mb-5 text-base xs:text-xl sm:text-3xl">:</span>
           )}
         </div>
       ))}

@@ -69,7 +69,7 @@ export default function ProductCatalog({ products, packages, onAddItem, cart, is
               <ShirtIcon className="w-5 h-5 text-[#063D2E]" />
               Katalog Produk Satuan
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-6">
               {products.length === 0 ? (
                 <div className="col-span-full text-center py-16 text-gray-400">
                   <ShirtIcon className="w-12 h-12 mx-auto mb-3 opacity-30" />

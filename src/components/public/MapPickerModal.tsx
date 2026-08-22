@@ -432,34 +432,34 @@ export default function MapPickerModal({ isOpen, onClose, onSelect }: MapPickerM
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="bg-white w-full sm:max-w-4xl h-[92vh] sm:h-auto sm:max-h-[90vh] rounded-t-3xl sm:rounded-2xl flex flex-col overflow-hidden shadow-2xl animate-in fade-in slide-in-from-bottom-6 sm:slide-in-from-bottom-0 duration-200">
+      <div className="bg-white w-full sm:max-w-4xl h-[92dvh] sm:h-auto sm:max-h-[90vh] rounded-t-3xl sm:rounded-2xl flex flex-col overflow-hidden shadow-2xl animate-in fade-in slide-in-from-bottom-6 sm:slide-in-from-bottom-0 duration-200">
 
         {/* Modal Header */}
         <div className="p-4 sm:p-5 border-b border-gray-100 flex items-center justify-between"
           style={{ background: 'var(--gontor-ivory, #F8F5ED)' }}>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-xs"
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-xs shrink-0"
               style={{ background: 'var(--gontor-green, #063D2E)' }}>
               <MapPin className="w-5 h-5" style={{ color: 'var(--gontor-gold, #D4AF37)' }} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="font-display font-bold text-base sm:text-lg text-gray-900 leading-tight">
-                  Pilih Lokasi Pengiriman Google Maps
+                <h2 className="font-display font-bold text-sm sm:text-lg text-gray-900 leading-tight">
+                  Pilih Lokasi Google Maps
                 </h2>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-800 flex items-center gap-1">
-                  🗺️ Google Maps
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-800 hidden xs:inline-flex items-center gap-1">
+                  🗺️ Maps
                 </span>
               </div>
-              <p className="text-xs text-gray-500 mt-0.5 font-body">
-                Cari jalan atau geser pin penanda Google Maps ke lokasi rumah Anda
+              <p className="text-[11px] sm:text-xs text-gray-500 mt-0.5 font-body line-clamp-1">
+                Cari jalan atau geser pin penanda Google Maps ke lokasi rumah
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
             aria-label="Tutup"
-            className="w-9 h-9 rounded-full bg-white hover:bg-gray-100 text-gray-500 flex items-center justify-center transition-all border border-gray-200"
+            className="min-w-[44px] min-h-[44px] rounded-full bg-white hover:bg-gray-100 text-gray-500 flex items-center justify-center transition-all border border-gray-200 shrink-0"
           >
             <X className="w-4 h-4" />
           </button>
@@ -473,8 +473,8 @@ export default function MapPickerModal({ isOpen, onClose, onSelect }: MapPickerM
               type="text"
               value={query}
               onChange={e => setQuery(e.target.value)}
-              placeholder="Cari jalan, desa, kecamatan, kota, di Google Maps..."
-              className="w-full pl-9 pr-10 py-2.5 rounded-xl border border-gray-200 text-xs sm:text-sm font-body outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition-all"
+              placeholder="Cari jalan, desa, kecamatan, kota di Google Maps..."
+              className="w-full pl-9 pr-10 py-2.5 rounded-xl border border-gray-200 text-xs sm:text-sm font-body outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition-all min-h-[44px]"
             />
             {isSearching && (
               <Loader2 className="w-4 h-4 animate-spin text-green-700 absolute right-3.5 top-3.5" />
@@ -488,7 +488,7 @@ export default function MapPickerModal({ isOpen, onClose, onSelect }: MapPickerM
                 <button
                   key={item.place_id}
                   onClick={() => handleSelectSearchResult(item)}
-                  className="w-full text-left p-3 hover:bg-green-50/80 text-gray-800 transition-colors flex items-start gap-2.5"
+                  className="w-full text-left p-3 min-h-[44px] hover:bg-green-50/80 text-gray-800 transition-colors flex items-start gap-2.5"
                 >
                   <MapPin className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
                   <span className="line-clamp-2 leading-relaxed">{item.display_name}</span>
@@ -499,13 +499,13 @@ export default function MapPickerModal({ isOpen, onClose, onSelect }: MapPickerM
         </div>
 
         {/* Map Container Area */}
-        <div className="relative flex-1 min-h-[300px] sm:min-h-[380px] bg-gray-100">
-          <div ref={mapContainerRef} className="w-full h-full min-h-[300px] sm:min-h-[380px] z-0" />
+        <div className="relative flex-1 min-h-[260px] sm:min-h-[380px] bg-gray-100">
+          <div ref={mapContainerRef} className="w-full h-full min-h-[260px] sm:min-h-[380px] z-0" />
 
           {/* Map Instruction Overlay */}
           {!hasInteracted && (
-            <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 bg-white/95 backdrop-blur-xs px-4 py-2 rounded-xl text-xs font-display font-semibold text-gray-800 shadow-md border border-gray-200 text-center pointer-events-none animate-bounce">
-              📍 Klik Google Maps atau geser penanda pin merah ke lokasi rumah
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 bg-white/95 backdrop-blur-xs px-3.5 py-1.5 rounded-xl text-[11px] sm:text-xs font-display font-semibold text-gray-800 shadow-md border border-gray-200 text-center pointer-events-none animate-bounce">
+              📍 Klik Google Maps atau geser penanda pin ke lokasi
             </div>
           )}
 
@@ -515,7 +515,7 @@ export default function MapPickerModal({ isOpen, onClose, onSelect }: MapPickerM
             onClick={handleGetCurrentLocation}
             disabled={gettingGPS}
             title="Gunakan Lokasi Saya Saat Ini"
-            className="absolute bottom-4 right-4 z-10 px-3.5 py-2.5 rounded-xl bg-white hover:bg-green-50 text-green-900 border border-gray-200 shadow-md font-display font-bold text-xs flex items-center gap-2 transition-all active:scale-95"
+            className="absolute bottom-3 right-3 z-10 px-3.5 py-2.5 min-h-[44px] rounded-xl bg-white hover:bg-green-50 text-green-900 border border-gray-200 shadow-md font-display font-bold text-xs flex items-center gap-2 transition-all active:scale-95"
           >
             <Navigation className={`w-4 h-4 text-green-700 ${gettingGPS ? 'animate-spin' : ''}`} />
             <span>{gettingGPS ? 'Mencari GPS...' : '◎ Gunakan Lokasi Saya'}</span>
@@ -531,7 +531,7 @@ export default function MapPickerModal({ isOpen, onClose, onSelect }: MapPickerM
         )}
 
         {/* Selected Location Panel & Manual Address Detail */}
-        <div className="p-4 sm:p-5 border-t border-gray-100 bg-white space-y-3 overflow-y-auto max-h-[35vh] sm:max-h-none">
+        <div className="p-4 sm:p-5 border-t border-gray-100 bg-white space-y-3 overflow-y-auto max-h-[35vh] sm:max-h-none pb-[calc(1rem+env(safe-area-inset-bottom,0px))]">
           <div className="p-3.5 rounded-xl border border-green-200 bg-green-50/60 font-body">
             <div className="flex items-center justify-between mb-1">
               <span className="text-[11px] font-bold text-green-800 uppercase tracking-wider font-display">
@@ -550,7 +550,7 @@ export default function MapPickerModal({ isOpen, onClose, onSelect }: MapPickerM
             </p>
 
             {selectedPos && (
-              <p className="text-[11px] text-gray-500 mt-1 font-mono">
+              <p className="text-[11px] text-gray-500 mt-1 font-mono break-all">
                 Link Koordinat Pin: https://maps.google.com/?q={selectedPos.lat.toFixed(6)},{selectedPos.lng.toFixed(6)}
               </p>
             )}
@@ -565,8 +565,8 @@ export default function MapPickerModal({ isOpen, onClose, onSelect }: MapPickerM
               type="text"
               value={manualDetail}
               onChange={e => setManualDetail(e.target.value)}
-              placeholder="Contoh: Rumah No. 12, RT 02/RW 04, Pagar Hijau (Dekat Masjid Al-Hidayah)"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs sm:text-sm outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 font-body"
+              placeholder="Contoh: Rumah No. 12, RT 02/RW 04, Pagar Hijau (Dekat Masjid)"
+              className="w-full px-3.5 py-2.5 min-h-[44px] rounded-xl border border-gray-200 text-xs sm:text-sm outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 font-body"
             />
           </div>
 
@@ -574,14 +574,14 @@ export default function MapPickerModal({ isOpen, onClose, onSelect }: MapPickerM
           <div className="flex gap-2.5 pt-1">
             <button
               onClick={onClose}
-              className="px-5 py-3 rounded-xl border border-gray-200 text-gray-600 font-display font-semibold text-xs sm:text-sm hover:bg-gray-50 transition-all"
+              className="px-5 py-3 min-h-[44px] rounded-xl border border-gray-200 text-gray-600 font-display font-semibold text-xs sm:text-sm hover:bg-gray-50 transition-all flex items-center justify-center"
             >
               Batal
             </button>
             <button
               onClick={handleConfirm}
               disabled={!selectedPos || isGeocoding}
-              className="flex-1 py-3 text-xs sm:text-sm font-display font-bold flex items-center justify-center gap-2 rounded-xl text-white shadow-sm transition-all disabled:opacity-50"
+              className="flex-1 py-3 min-h-[44px] text-xs sm:text-sm font-display font-bold flex items-center justify-center gap-2 rounded-xl text-white shadow-sm transition-all disabled:opacity-50"
               style={{ background: 'var(--gontor-green, #063D2E)' }}
             >
               <Check className="w-4 h-4 text-[#D4AF37]" />

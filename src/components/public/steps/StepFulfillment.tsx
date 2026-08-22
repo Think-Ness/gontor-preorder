@@ -299,10 +299,10 @@ export default function StepFulfillment({ draft, onSave, onBack }: Props) {
       )}
 
       <div className="flex gap-3 pt-4 border-t border-gray-100">
-        <button type="button" onClick={onBack} className="px-6 py-4 rounded-xl border border-gray-200 font-display font-bold text-gray-600 hover:bg-gray-50 transition-all">
+        <button type="button" onClick={onBack} className="px-6 py-4 min-h-[48px] rounded-xl border border-gray-200 font-display font-bold text-gray-600 hover:bg-gray-50 transition-all flex items-center justify-center">
           Kembali
         </button>
-        <button onClick={handleNext} className="flex-1 btn-primary py-4 font-display font-bold">
+        <button onClick={handleNext} className="flex-1 btn-primary py-4 min-h-[48px] font-display font-bold flex items-center justify-center">
           Lanjut ke Pembayaran
         </button>
       </div>

@@ -75,13 +75,13 @@ export default function CartDrawer({
             {!isEmpty && (
               <button
                 onClick={onClear}
-                className="text-xs text-red-400 hover:text-red-600 flex items-center gap-1 font-semibold"
+                className="text-xs text-red-400 hover:text-red-600 flex items-center gap-1 font-semibold min-h-[44px] px-2"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 Kosongkan
               </button>
             )}
-            <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100">
+            <button onClick={onClose} aria-label="Tutup Keranjang" className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-gray-100">
               <X className="w-5 h-5 text-gray-500" />
             </button>
           </div>
@@ -123,21 +123,21 @@ export default function CartDrawer({
                   <div className="flex items-center gap-2 mt-2">
                     <button
                       onClick={() => item.quantity <= 1 ? onRemove(item.id) : onUpdateQty(item.id, item.quantity - 1)}
-                      className="w-6 h-6 rounded flex items-center justify-center bg-white border border-gray-200 hover:border-red-300 text-gray-600 hover:text-red-500 transition-colors"
+                      className="w-8 h-8 rounded-lg flex items-center justify-center bg-white border border-gray-200 hover:border-red-300 text-gray-600 hover:text-red-500 transition-colors active:scale-95"
                     >
-                      {item.quantity <= 1 ? <Trash2 className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
+                      {item.quantity <= 1 ? <Trash2 className="w-3.5 h-3.5" /> : <Minus className="w-3.5 h-3.5" />}
                     </button>
                     <span className="font-display font-bold text-sm w-6 text-center">{item.quantity}</span>
                     <button
                       onClick={() => onUpdateQty(item.id, item.quantity + 1)}
                       disabled={item.maxStock !== undefined && item.maxStock !== null && item.quantity >= item.maxStock}
-                      className={`w-6 h-6 rounded flex items-center justify-center border transition-colors ${
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-colors active:scale-95 ${
                         item.maxStock !== undefined && item.maxStock !== null && item.quantity >= item.maxStock
                           ? 'bg-gray-100 border-gray-200 text-gray-300 cursor-not-allowed'
                           : 'bg-white border-gray-200 hover:border-green-400 text-gray-600 hover:text-green-600'
                       }`}
                     >
-                      <Plus className="w-3 h-3" />
+                      <Plus className="w-3.5 h-3.5" />
                     </button>
                     {item.maxStock !== undefined && item.maxStock !== null && (
                       <span className="text-[10px] text-gray-400 font-semibold">
@@ -156,7 +156,7 @@ export default function CartDrawer({
 
         {/* Footer */}
         {!isEmpty && (
-          <div className="border-t border-gray-100 px-5 py-4 space-y-3">
+          <div className="border-t border-gray-100 px-5 py-4 space-y-3 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]">
             <div className="flex justify-between items-center">
               <span className="text-gray-600 font-semibold">Subtotal</span>
               <span className="font-display font-bold text-lg" style={{ color: 'var(--gontor-green)' }}>
@@ -168,7 +168,7 @@ export default function CartDrawer({
               <Link
                 href="/order"
                 onClick={onClose}
-                className="btn-primary w-full py-4 flex items-center justify-center gap-2 font-display font-bold"
+                className="btn-primary w-full py-4 min-h-[48px] flex items-center justify-center gap-2 font-display font-bold"
               >
                 Lanjut Pemesanan
                 <ArrowRight className="w-4 h-4" />
