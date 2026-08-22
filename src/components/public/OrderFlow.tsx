@@ -326,6 +326,7 @@ export default function OrderFlow({
         {step === 3 && (
           <StepFulfillment
             draft={draft}
+            cart={cart}
             onSave={(data) => {
               saveDraft({ ...data, paymentStep: 4 })
               setStep(4)

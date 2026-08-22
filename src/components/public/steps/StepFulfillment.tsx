@@ -1,107 +1,63 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { CheckoutDraft, FulfillmentMethod } from '@/types'
-import { Truck, Navigation, CheckCircle2, MapPin } from 'lucide-react'
+import { CheckoutDraft, FulfillmentMethod, Cart, CartItem } from '@/types'
+import { Truck, Navigation, CheckCircle2, MapPin, Scale } from 'lucide-react'
 import { formatRupiah } from '@/lib/utils'
 
 interface Props {
   draft: CheckoutDraft | null
+  cart?: Cart | null
   onSave: (data: Partial<CheckoutDraft>) => void
   onBack: () => void
 }
 
-// Preset Indonesian Destination Cities & Provinces for Quick Auto-Fill & Zone Shipping Calculation
-interface DestinationCity {
-  city: string
-  province: string
-  postalCode: string
-  zone: 'ZONA_1' | 'ZONA_2' | 'ZONA_3' | 'ZONA_4' | 'ZONA_5'
-  zoneName: string
+// Calculate individual cart item weight in grams
+function getItemWeightGram(item: CartItem): number {
+  const nameLower = item.name.toLowerCase()
+  if (item.itemType === 'PACKAGE' || nameLower.includes('paket') || nameLower.includes('bundling')) {
+    return 1000 * item.quantity
+  }
+  if (nameLower.includes('jaket') || nameLower.includes('varsity') || nameLower.includes('hoodie')) {
+    return 700 * item.quantity
+  }
+  if (nameLower.includes('kaos') || nameLower.includes('t-shirt') || nameLower.includes('baju')) {
+    return 300 * item.quantity
+  }
+  if (nameLower.includes('peci') || nameLower.includes('topi') || nameLower.includes('songkok')) {
+    return 150 * item.quantity
+  }
+  return 250 * item.quantity
 }
 
-const DESTINATION_CITIES: DestinationCity[] = [
-  // Zona 1: Jatim & Jateng
-  { city: 'Kab. Ponorogo', province: 'Jawa Timur', postalCode: '63411', zone: 'ZONA_1', zoneName: 'Jawa Timur & Jawa Tengah' },
-  { city: 'Kota Surabaya', province: 'Jawa Timur', postalCode: '60111', zone: 'ZONA_1', zoneName: 'Jawa Timur & Jawa Tengah' },
-  { city: 'Kota Malang', province: 'Jawa Timur', postalCode: '65111', zone: 'ZONA_1', zoneName: 'Jawa Timur & Jawa Tengah' },
-  { city: 'Kota Solo / Surakarta', province: 'Jawa Tengah', postalCode: '57111', zone: 'ZONA_1', zoneName: 'Jawa Timur & Jawa Tengah' },
-  { city: 'Kota Semarang', province: 'Jawa Tengah', postalCode: '50111', zone: 'ZONA_1', zoneName: 'Jawa Timur & Jawa Tengah' },
-  { city: 'Kab. Madiun', province: 'Jawa Timur', postalCode: '63111', zone: 'ZONA_1', zoneName: 'Jawa Timur & Jawa Tengah' },
+// Base shipping rates per Kg for each zone
+const ZONE_BASE_RATES_PER_KG: Record<string, { baseCostPerKg: number; zoneName: string }> = {
+  ZONA_1: { baseCostPerKg: 10000, zoneName: 'Jawa Timur & Jawa Tengah' },
+  ZONA_2: { baseCostPerKg: 15000, zoneName: 'DKI Jakarta, Jabar, DIY, Banten, Bali' },
+  ZONA_3: { baseCostPerKg: 25000, zoneName: 'Sumatera & NTB' },
+  ZONA_4: { baseCostPerKg: 35000, zoneName: 'Kalimantan, Sulawesi, NTT' },
+  ZONA_5: { baseCostPerKg: 48000, zoneName: 'Maluku & Papua' },
+}
 
-  // Zona 2: Jabar, DKI, Banten, DIY, Bali
-  { city: 'Kota Yogyakarta', province: 'DI Yogyakarta', postalCode: '55111', zone: 'ZONA_2', zoneName: 'DKI Jakarta, Jabar, DIY, Banten, Bali' },
-  { city: 'Kota Bandung', province: 'Jawa Barat', postalCode: '40111', zone: 'ZONA_2', zoneName: 'DKI Jakarta, Jabar, DIY, Banten, Bali' },
-  { city: 'Jakarta Selatan', province: 'DKI Jakarta', postalCode: '12111', zone: 'ZONA_2', zoneName: 'DKI Jakarta, Jabar, DIY, Banten, Bali' },
-  { city: 'Jakarta Barat / Pusat / Utara / Timur', province: 'DKI Jakarta', postalCode: '10111', zone: 'ZONA_2', zoneName: 'DKI Jakarta, Jabar, DIY, Banten, Bali' },
-  { city: 'Kota Tangerang / Selatan', province: 'Banten', postalCode: '15111', zone: 'ZONA_2', zoneName: 'DKI Jakarta, Jabar, DIY, Banten, Bali' },
-  { city: 'Kota Bekasi / Depok / Bogor', province: 'Jawa Barat', postalCode: '17111', zone: 'ZONA_2', zoneName: 'DKI Jakarta, Jabar, DIY, Banten, Bali' },
-  { city: 'Kota Denpasar', province: 'Bali', postalCode: '80111', zone: 'ZONA_2', zoneName: 'DKI Jakarta, Jabar, DIY, Banten, Bali' },
-
-  // Zona 3: Sumatera & NTB
-  { city: 'Kota Medan', province: 'Sumatera Utara', postalCode: '20111', zone: 'ZONA_3', zoneName: 'Sumatera & NTB' },
-  { city: 'Kota Palembang', province: 'Sumatera Selatan', postalCode: '30111', zone: 'ZONA_3', zoneName: 'Sumatera & NTB' },
-  { city: 'Kota Pekanbaru', province: 'Riau', postalCode: '28111', zone: 'ZONA_3', zoneName: 'Sumatera & NTB' },
-  { city: 'Kota Padang', province: 'Sumatera Barat', postalCode: '25111', zone: 'ZONA_3', zoneName: 'Sumatera & NTB' },
-  { city: 'Kota Bandar Lampung', province: 'Lampung', postalCode: '35111', zone: 'ZONA_3', zoneName: 'Sumatera & NTB' },
-  { city: 'Kota Mataram / Lombok', province: 'Nusa Tenggara Barat', postalCode: '83111', zone: 'ZONA_3', zoneName: 'Sumatera & NTB' },
-
-  // Zona 4: Kalimantan, Sulawesi, NTT
-  { city: 'Kota Banjarmasin', province: 'Kalimantan Selatan', postalCode: '70111', zone: 'ZONA_4', zoneName: 'Kalimantan, Sulawesi, NTT' },
-  { city: 'Kota Balikpapan / Samarinda', province: 'Kalimantan Timur', postalCode: '75111', zone: 'ZONA_4', zoneName: 'Kalimantan, Sulawesi, NTT' },
-  { city: 'Kota Pontianak', province: 'Kalimantan Barat', postalCode: '78111', zone: 'ZONA_4', zoneName: 'Kalimantan, Sulawesi, NTT' },
-  { city: 'Kota Makassar', province: 'Sulawesi Selatan', postalCode: '90111', zone: 'ZONA_4', zoneName: 'Kalimantan, Sulawesi, NTT' },
-  { city: 'Kota Manado', province: 'Sulawesi Utara', postalCode: '95111', zone: 'ZONA_4', zoneName: 'Kalimantan, Sulawesi, NTT' },
-  { city: 'Kota Kupang', province: 'Nusa Tenggara Timur', postalCode: '85111', zone: 'ZONA_4', zoneName: 'Kalimantan, Sulawesi, NTT' },
-
-  // Zona 5: Maluku & Papua
-  { city: 'Kota Ambon', province: 'Maluku', postalCode: '97111', zone: 'ZONA_5', zoneName: 'Maluku & Papua' },
-  { city: 'Kota Jayapura', province: 'Papua', postalCode: '99111', zone: 'ZONA_5', zoneName: 'Maluku & Papua' },
-  { city: 'Kota Sorong', province: 'Papua Barat', postalCode: '98411', zone: 'ZONA_5', zoneName: 'Maluku & Papua' },
+const COURIER_MULTIPLIERS = [
+  { id: 'pos', name: 'POS Indonesia — Kilat Khusus', est: '1–3 Hari', multiplier: 1.0, isDefault: true },
+  { id: 'jne', name: 'JNE Express — REG', est: '2–3 Hari', multiplier: 1.2 },
+  { id: 'jnt', name: 'J&T Express — Reguler', est: '1–3 Hari', multiplier: 1.15 },
+  { id: 'sicepat', name: 'SiCepat — REG', est: '2–3 Hari', multiplier: 1.1 },
+  { id: 'wahana', name: 'Wahana Express', est: '3–5 Hari', multiplier: 0.85 },
 ]
 
-// Dynamic Zone Rates per Courier
-const ZONE_RATES = {
-  ZONA_1: [
-    { id: 'jnt', name: 'J&T Express — Reguler', est: '1 Hari', cost: 12000 },
-    { id: 'jne', name: 'JNE Express — REG', est: '1–2 Hari', cost: 14000 },
-    { id: 'pos', name: 'POS Indonesia — Kilat Khusus', est: '1–2 Hari', cost: 10000 },
-    { id: 'sicepat', name: 'SiCepat — REG', est: '1–2 Hari', cost: 12000 },
-    { id: 'wahana', name: 'Wahana Express', est: '2–3 Hari', cost: 8000 },
-  ],
-  ZONA_2: [
-    { id: 'jnt', name: 'J&T Express — Reguler', est: '1–2 Hari', cost: 18000 },
-    { id: 'jne', name: 'JNE Express — REG', est: '2 Hari', cost: 20000 },
-    { id: 'pos', name: 'POS Indonesia — Kilat Khusus', est: '2–3 Hari', cost: 15000 },
-    { id: 'sicepat', name: 'SiCepat — REG', est: '2 Hari', cost: 17000 },
-    { id: 'wahana', name: 'Wahana Express', est: '3 Hari', cost: 12000 },
-  ],
-  ZONA_3: [
-    { id: 'jnt', name: 'J&T Express — Reguler', est: '2–3 Hari', cost: 28000 },
-    { id: 'jne', name: 'JNE Express — REG', est: '3 Hari', cost: 32000 },
-    { id: 'pos', name: 'POS Indonesia — Kilat Khusus', est: '3–4 Hari', cost: 25000 },
-    { id: 'sicepat', name: 'SiCepat — REG', est: '2–3 Hari', cost: 27000 },
-    { id: 'wahana', name: 'Wahana Express', est: '4 Hari', cost: 22000 },
-  ],
-  ZONA_4: [
-    { id: 'jnt', name: 'J&T Express — Reguler', est: '3–4 Hari', cost: 38000 },
-    { id: 'jne', name: 'JNE Express — REG', est: '3–4 Hari', cost: 42000 },
-    { id: 'pos', name: 'POS Indonesia — Kilat Khusus', est: '4–5 Hari', cost: 35000 },
-    { id: 'sicepat', name: 'SiCepat — REG', est: '3–4 Hari', cost: 36000 },
-    { id: 'wahana', name: 'Wahana Express', est: '5 Hari', cost: 30000 },
-  ],
-  ZONA_5: [
-    { id: 'jnt', name: 'J&T Express — Reguler', est: '4–5 Hari', cost: 55000 },
-    { id: 'jne', name: 'JNE Express — REG', est: '4–6 Hari', cost: 60000 },
-    { id: 'pos', name: 'POS Indonesia — Kilat Khusus', est: '5–7 Hari', cost: 48000 },
-    { id: 'sicepat', name: 'SiCepat — REG', est: '4–5 Hari', cost: 52000 },
-    { id: 'wahana', name: 'Wahana Express', est: '6–8 Hari', cost: 45000 },
-  ],
-}
-
-export default function StepFulfillment({ draft, onSave, onBack }: Props) {
+export default function StepFulfillment({ draft, cart, onSave, onBack }: Props) {
   const [method, setMethod] = useState<FulfillmentMethod>(draft?.fulfillmentMethod || 'PICKUP')
   
+  // Calculate total cart weight (grams and rounded billable Kg)
+  const cartWeight = useMemo(() => {
+    const items = cart?.items || []
+    const totalGrams = items.reduce((sum, item) => sum + getItemWeightGram(item), 0)
+    const billableKg = Math.max(1, Math.ceil(totalGrams / 1000))
+    return { totalGrams, billableKg }
+  }, [cart?.items])
+
   // Menentukan active zone berdasarkan provinsi yang diinput di Step 1
   const determineZone = (province: string) => {
     const p = province.toLowerCase()
@@ -125,7 +81,7 @@ export default function StepFulfillment({ draft, onSave, onBack }: Props) {
     return 'ZONA_2' // default fallback
   }
 
-  const [activeZone, setActiveZone] = useState<keyof typeof ZONE_RATES>('ZONA_2')
+  const [activeZone, setActiveZone] = useState<keyof typeof ZONE_BASE_RATES_PER_KG>('ZONA_2')
 
   useEffect(() => {
     if (draft?.address?.province) {
@@ -133,8 +89,20 @@ export default function StepFulfillment({ draft, onSave, onBack }: Props) {
     }
   }, [draft?.address?.province])
 
-  // Dynamic Available Couriers based on Active Zone
-  const currentCouriers = useMemo(() => ZONE_RATES[activeZone], [activeZone])
+  // Calculate dynamic weight-based tariff per courier
+  const currentCouriers = useMemo(() => {
+    const zoneInfo = ZONE_BASE_RATES_PER_KG[activeZone] || ZONE_BASE_RATES_PER_KG.ZONA_2
+    return COURIER_MULTIPLIERS.map(c => {
+      const calculatedCost = Math.round((zoneInfo.baseCostPerKg * c.multiplier * cartWeight.billableKg) / 1000) * 1000
+      return {
+        id: c.id,
+        name: c.name,
+        est: c.est,
+        cost: calculatedCost,
+        isDefault: c.isDefault || false,
+      }
+    })
+  }, [activeZone, cartWeight.billableKg])
 
   // POS Indonesia is default courier
   const defaultPos = useMemo(() => {
@@ -144,7 +112,7 @@ export default function StepFulfillment({ draft, onSave, onBack }: Props) {
   const [selectedCourier, setSelectedCourier] = useState(draft?.address?.courierName || defaultPos.name)
   const [shippingCost, setShippingCost] = useState<number>(draft?.address?.shippingCost ?? defaultPos.cost)
 
-  // Keep shipping cost updated with active zone tariff for selected courier
+  // Keep shipping cost updated with active zone tariff & total weight for selected courier
   useEffect(() => {
     const activeCourier = currentCouriers.find(c => c.name === selectedCourier)
     if (activeCourier) {
@@ -233,7 +201,7 @@ export default function StepFulfillment({ draft, onSave, onBack }: Props) {
             Barang dikirim ke alamat Anda melalui kurir ekspedisi. Cocok untuk yang berhalangan hadir.
           </p>
           <div className="mt-4 inline-block bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full font-display tracking-wide">
-            SESUAI TARIF KURIR
+            DIHITUNG PER BERAT (KG)
           </div>
         </div>
       </div>
@@ -247,7 +215,7 @@ export default function StepFulfillment({ draft, onSave, onBack }: Props) {
             </span>
           </h3>
 
-          <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-6">
+          <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-5">
             <p className="text-sm text-gray-700 font-semibold mb-1">{draft?.name}</p>
             <p className="text-sm text-gray-600 leading-relaxed">
               {draft?.address?.fullAddress}<br/>
@@ -257,10 +225,27 @@ export default function StepFulfillment({ draft, onSave, onBack }: Props) {
             <p className="text-xs text-gray-500 mt-2 italic">*Diambil dari data Tahap 1</p>
           </div>
 
+          {/* Weight & Zone Breakdown Card */}
+          <div className="bg-blue-50/70 p-4 rounded-xl border border-blue-100 mb-6 text-xs text-blue-900 space-y-1.5">
+            <div className="flex justify-between items-center font-bold">
+              <span className="flex items-center gap-1.5">
+                <Scale className="w-4 h-4 text-blue-600" /> Total Berat Paket:
+              </span>
+              <span className="text-blue-950 font-display font-black text-sm">{cartWeight.totalGrams} Gram ({cartWeight.billableKg} Kg)</span>
+            </div>
+            <div className="flex justify-between items-center text-blue-800">
+              <span>📍 Zona Lokasi:</span>
+              <span className="font-semibold">{ZONE_BASE_RATES_PER_KG[activeZone]?.zoneName}</span>
+            </div>
+            <p className="text-[11px] text-blue-700/80 pt-1 italic border-t border-blue-100/60 mt-1">
+              *Tarif ongkir dihitung presisi berdasarkan berat paket ({cartWeight.billableKg} kg) &amp; tarif zona lokasi pengiriman.
+            </p>
+          </div>
+
           <h3 className="font-display font-bold text-gray-800 text-base mb-4 flex items-center justify-between">
             <span className="flex items-center gap-2">
               <Truck className="w-4 h-4 text-blue-600" />
-              Pilih Ekspedisi (Zona: {activeZone.replace('_', ' ')})
+              Pilih Ekspedisi
             </span>
           </h3>
           <div className="space-y-2.5">
@@ -278,14 +263,20 @@ export default function StepFulfillment({ draft, onSave, onBack }: Props) {
                     {selectedCourier === c.name && <div className="w-2.5 h-2.5 rounded-full bg-blue-500" />}
                   </div>
                   <div>
-                    <div className="font-bold text-sm text-gray-800">{c.name}</div>
-                    <div className="text-xs text-gray-500">Estimasi: {c.est}</div>
+                    <div className="font-bold text-sm text-gray-800 flex items-center gap-2">
+                      <span>{c.name}</span>
+                      {c.isDefault && (
+                        <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">
+                          Default
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs text-gray-500">Estimasi: {c.est} &bull; {cartWeight.billableKg} Kg</div>
                   </div>
                 </div>
-                <div className="font-display font-bold text-blue-700">
+                <div className="font-display font-bold text-blue-700 text-sm sm:text-base">
                   {formatRupiah(c.cost)}
                 </div>
-                {/* Hidden radio just for a11y & logical flow if needed */}
                 <input 
                   type="radio" 
                   name="courier" 
