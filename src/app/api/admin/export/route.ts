@@ -82,11 +82,71 @@ export async function GET(req: NextRequest) {
           'Content-Disposition': `attachment; filename="Laporan_Pesanan_Gontor100_${statusFilter}_${Date.now()}.xlsx"`,
         },
       })
+    } else if (exportType === 'recap') {
+      // Export Production & Distribution Recap (Vendor vs Stand Pickup vs Delivery)
+      const { data: items, error } = await supabase
+        .from('order_items')
+        .select('item_name_snapshot, variant_name_snapshot, quantity, orders!inner(payment_status, fulfillment_method)')
+        .eq('orders.payment_status', 'PAID')
+
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 })
+      }
+
+      const recapMap: Record<string, { product: string; variant: string; total: number; pickup: number; delivery: number }> = {}
+
+      items?.forEach((i: any) => {
+        const product = i.item_name_snapshot || 'Unknown'
+        const variant = i.variant_name_snapshot || 'Tanpa Varian'
+        const key = `${product} || ${variant}`
+        const qty = i.quantity || 0
+        const method = i.orders?.fulfillment_method === 'DELIVERY' ? 'DELIVERY' : 'PICKUP'
+
+        if (!recapMap[key]) {
+          recapMap[key] = { product, variant, total: 0, pickup: 0, delivery: 0 }
+        }
+        recapMap[key].total += qty
+        if (method === 'PICKUP') recapMap[key].pickup += qty
+        else recapMap[key].delivery += qty
+      })
+
+      const recapRows = Object.values(recapMap)
+        .sort((a, b) => b.total - a.total)
+        .map((stat, idx) => ({
+          'No': idx + 1,
+          'Nama Produk / Merchandise': stat.product,
+          'Varian / Ukuran': stat.variant,
+          'Total Majmuk Vendor (Pcs)': stat.total,
+          '📦 Qty Ambil di Stand (Pcs)': stat.pickup,
+          '🚚 Qty Kirim Alamat (Pcs)': stat.delivery,
+        }))
+
+      const worksheet = XLSX.utils.json_to_sheet(recapRows)
+      worksheet['!cols'] = [
+        { wch: 6 },
+        { wch: 36 },
+        { wch: 20 },
+        { wch: 26 },
+        { wch: 26 },
+        { wch: 26 },
+      ]
+
+      const workbook = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Rekap Produksi & Distribusi')
+
+      const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'buffer' })
+
+      return new NextResponse(excelBuffer, {
+        headers: {
+          'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'Content-Disposition': `attachment; filename="Rekap_Vendor_Distribusi_Gontor100_${Date.now()}.xlsx"`,
+        },
+      })
     } else {
       // Export Items Breakdown
       const { data: items, error } = await supabase
         .from('order_items')
-        .select('*, order:orders(order_number, full_name, stambuk, whatsapp, created_at, order_status)')
+        .select('*, order:orders(order_number, full_name, stambuk, whatsapp, fulfillment_method, created_at, order_status, payment_status)')
         .order('created_at', { ascending: false })
 
       if (error) {
@@ -99,12 +159,14 @@ export async function GET(req: NextRequest) {
         'Nama Pemesan': i.order?.full_name || '-',
         'Stambuk': i.order?.stambuk || '-',
         'WhatsApp': i.order?.whatsapp || '-',
+        'Fulfillment': i.order?.fulfillment_method === 'PICKUP' ? 'Ambil di Stand' : 'Kirim Alamat',
         'Tipe Item': i.item_type,
         'Nama Produk / Paket': i.item_name_snapshot,
         'Ukuran / Varian': i.variant_name_snapshot || '-',
         'Jumlah Qty': i.quantity,
         'Harga Satuan (Rp)': Number(i.unit_price_snapshot || 0),
         'Subtotal (Rp)': Number(i.subtotal || 0),
+        'Status Bayar': i.order?.payment_status || '-',
         'Status Pesanan': i.order?.order_status || '-',
       }))
 
@@ -116,13 +178,15 @@ export async function GET(req: NextRequest) {
         { wch: 24 },  // Name
         { wch: 12 },  // Stambuk
         { wch: 16 },  // WA
+        { wch: 16 },  // Fulfillment
         { wch: 10 },  // Type
         { wch: 30 },  // Product
         { wch: 18 },  // Variant
         { wch: 12 },  // Qty
         { wch: 16 },  // Price
         { wch: 16 },  // Subtotal
-        { wch: 18 },  // Status
+        { wch: 14 },  // Payment Status
+        { wch: 18 },  // Order Status
       ]
 
       const workbook = XLSX.utils.book_new()
