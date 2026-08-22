@@ -76,23 +76,23 @@ export default async function OrdersPage({
 
   return (
     <div className="space-y-5 max-w-7xl">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="font-display font-bold text-2xl text-gray-900">Orders</h1>
-          <p className="text-gray-500 text-sm">
+          <h1 className="font-display font-bold text-xl sm:text-2xl text-gray-900">Orders</h1>
+          <p className="text-gray-500 text-xs sm:text-sm">
             {count?.toLocaleString('id-ID')} total order{' '}
             {methodFilter ? `(${methodFilter === 'PICKUP' ? 'Ambil di Stand' : 'Kirim Alamat'})` : ''}
           </p>
         </div>
         <Link href="/admin/reports/export"
-          className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50">
+          className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-gray-200 text-xs sm:text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors w-full sm:w-auto">
           <Download className="w-4 h-4" />
           Export Excel
         </Link>
       </div>
 
       {/* Primary Fulfillment Method Tabs (Pickup vs Delivery) */}
-      <div className="flex border-b border-gray-200">
+      <div className="flex border-b border-gray-200 overflow-x-auto min-w-full">
         {[
           { id: '', label: 'Semua Metode', icon: Filter },
           { id: 'PICKUP', label: 'Ambil di Stand (Pickup)', icon: Package },
@@ -104,7 +104,7 @@ export default async function OrdersPage({
             <Link
               key={tab.id}
               href={buildUrl(tab.id, undefined, 1)}
-              className={`flex items-center gap-2 py-3 px-5 border-b-2 font-display font-bold text-sm transition-all ${
+              className={`flex items-center gap-2 py-2.5 sm:py-3 px-4 sm:px-5 border-b-2 font-display font-bold text-xs sm:text-sm whitespace-nowrap transition-all flex-shrink-0 ${
                 isActive
                   ? 'border-green-600 text-green-800 bg-green-50/50'
                   : 'border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300'

@@ -200,20 +200,20 @@ export default function ProductsListClient({ initialProducts }: Props) {
   return (
     <div className="space-y-5 max-w-5xl">
       {/* Header Bar */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="font-display font-bold text-2xl text-gray-900">Produk</h1>
-          <p className="text-gray-500 text-sm">
-            {products.length} produk terdaftar — Geser (drag) atau panah panah untuk mengatur urutan
+          <h1 className="font-display font-bold text-xl sm:text-2xl text-gray-900">Produk</h1>
+          <p className="text-gray-500 text-xs sm:text-sm">
+            {products.length} produk terdaftar — Geser (drag) atau panah untuk mengatur urutan
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           {selectedIds.length > 0 && (
             <button
               onClick={handleBulkDelete}
               disabled={deleting}
-              className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition-colors shadow-sm"
+              className="flex-1 sm:flex-none justify-center flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-semibold rounded-xl bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition-colors shadow-sm"
             >
               {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
               Hapus ({selectedIds.length}) Terpilih
@@ -222,7 +222,7 @@ export default function ProductsListClient({ initialProducts }: Props) {
 
           <Link
             href="/admin/products/new"
-            className="btn-primary flex items-center gap-2 px-4 py-2.5 text-sm"
+            className="btn-primary flex-1 sm:flex-none justify-center flex items-center gap-2 px-4 py-2 sm:py-2.5 text-xs sm:text-sm"
           >
             <Plus className="w-4 h-4" />
             Tambah Produk
@@ -232,25 +232,25 @@ export default function ProductsListClient({ initialProducts }: Props) {
 
       {/* Floating Alert for Order Change */}
       {isOrderChanged && (
-        <div className="bg-amber-50 border border-amber-200 text-amber-900 text-sm p-4 rounded-xl flex items-center justify-between shadow-sm">
+        <div className="bg-amber-50 border border-amber-200 text-amber-900 text-xs sm:text-sm p-4 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
           <div className="flex items-center gap-2.5">
-            <GripVertical className="w-5 h-5 text-amber-600 animate-pulse" />
+            <GripVertical className="w-5 h-5 text-amber-600 animate-pulse flex-shrink-0" />
             <span>
-              Urutan tampilan produk telah diubah. Klik <strong>Simpan Urutan</strong> untuk menerapkan ke halaman catalog user.
+              Urutan tampilan produk telah diubah. Klik <strong>Simpan Urutan</strong> untuk menerapkan ke catalog user.
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
             <button
               onClick={handleResetOrder}
               disabled={savingOrder}
-              className="px-3 py-1.5 rounded-lg border border-amber-300 text-xs font-semibold text-amber-800 hover:bg-amber-100 transition-colors"
+              className="flex-1 sm:flex-none px-3 py-1.5 rounded-lg border border-amber-300 text-xs font-semibold text-amber-800 hover:bg-amber-100 transition-colors"
             >
               Batal
             </button>
             <button
               onClick={handleSaveOrder}
               disabled={savingOrder}
-              className="btn-primary flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold shadow-sm"
+              className="btn-primary flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-1.5 text-xs font-bold shadow-sm"
             >
               {savingOrder ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
               {savingOrder ? 'Menyimpan...' : 'Simpan Urutan'}
@@ -266,12 +266,12 @@ export default function ProductsListClient({ initialProducts }: Props) {
       )}
 
       {/* Main List Container */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
         {/* Table Header / Selection Control */}
         {products.length > 0 && (
-          <div className="flex items-center justify-between px-5 py-3 bg-gray-50/80 border-b border-gray-100 text-xs font-semibold text-gray-500">
+          <div className="flex items-center justify-between px-4 sm:px-5 py-3 bg-gray-50/80 border-b border-gray-100 text-xs font-semibold text-gray-500 min-w-[650px]">
             <div className="flex items-center gap-4">
-              <span className="w-12 text-center font-mono">Urutan</span>
+              <span className="w-16 text-center font-mono">Urutan</span>
               <button
                 onClick={handleToggleSelectAll}
                 className="flex items-center gap-2.5 hover:text-gray-900 transition-colors"
@@ -294,7 +294,7 @@ export default function ProductsListClient({ initialProducts }: Props) {
         )}
 
         {/* Product Items */}
-        <div className="divide-y divide-gray-50 min-w-[500px]">
+        <div className="divide-y divide-gray-50 min-w-[650px]">
           {products.map((product, index) => {
             const isSelected = selectedIds.includes(product.id)
 

@@ -16,12 +16,12 @@ export default async function PackagesPage() {
 
   return (
     <div className="space-y-5 max-w-4xl">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="font-display font-bold text-2xl text-gray-900">Paket Promo</h1>
-          <p className="text-gray-500 text-sm">{packages?.length ?? 0}/5 paket</p>
+          <h1 className="font-display font-bold text-xl sm:text-2xl text-gray-900">Paket Promo</h1>
+          <p className="text-gray-500 text-xs sm:text-sm">{packages?.length ?? 0}/5 paket</p>
         </div>
-        <Link href="/admin/packages/new" className="btn-primary flex items-center gap-2 px-4 py-2.5 text-sm">
+        <Link href="/admin/packages/new" className="btn-primary flex items-center justify-center gap-2 px-4 py-2 sm:py-2.5 text-xs sm:text-sm w-full sm:w-auto">
           <Plus className="w-4 h-4" />
           Tambah Paket
         </Link>
