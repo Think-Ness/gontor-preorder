@@ -372,19 +372,19 @@ export default function EventSettingsForm({ initialData }: Props) {
       </div>
 
       {/* Display PIN Security Settings */}
-      <div className="p-5 bg-gradient-to-br from-[#063D2E] to-emerald-900 text-white rounded-2xl space-y-4 shadow-md border border-emerald-800">
+      <div className="p-5 bg-gray-50/80 rounded-2xl border border-gray-200/80 space-y-4">
         <div className="flex items-center gap-2 mb-1">
-          <KeyRound className="w-5 h-5 text-amber-400" />
-          <span className="text-sm font-bold font-display text-white">PIN Keamanan Display Realtime Monitor (Public Link)</span>
+          <KeyRound className="w-4 h-4 text-[#063D2E]" />
+          <span className="text-sm font-bold text-gray-800 font-display">PIN Keamanan Display Realtime Monitor (Public Link)</span>
         </div>
-        <p className="text-xs text-emerald-200/80 leading-relaxed">
+        <p className="text-xs text-gray-500">
           Atur PIN keamanan (default: 1234) untuk halaman publik monitor TV. Tim di lapangan cukup memasukkan PIN ini tanpa perlu akses login admin.
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-gray-900">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="block text-xs font-bold text-emerald-100 mb-1.5 font-display flex items-center gap-1">
-              <Factory className="w-3.5 h-3.5 text-amber-400" /> PIN Display Vendor
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5 font-display flex items-center gap-1.5">
+              <Factory className="w-3.5 h-3.5 text-emerald-700" /> PIN Display Vendor
             </label>
             <input
               type="text"
@@ -396,8 +396,8 @@ export default function EventSettingsForm({ initialData }: Props) {
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-emerald-100 mb-1.5 font-display flex items-center gap-1">
-              <Store className="w-3.5 h-3.5 text-amber-400" /> PIN Display Stand Bazar
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5 font-display flex items-center gap-1.5">
+              <Store className="w-3.5 h-3.5 text-emerald-700" /> PIN Display Stand Bazar
             </label>
             <input
               type="text"
@@ -409,8 +409,8 @@ export default function EventSettingsForm({ initialData }: Props) {
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-emerald-100 mb-1.5 font-display flex items-center gap-1">
-              <Truck className="w-3.5 h-3.5 text-amber-400" /> PIN Display Logistik Kurir
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5 font-display flex items-center gap-1.5">
+              <Truck className="w-3.5 h-3.5 text-emerald-700" /> PIN Display Logistik Kurir
             </label>
             <input
               type="text"

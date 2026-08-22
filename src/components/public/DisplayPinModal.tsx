@@ -42,8 +42,14 @@ export default function DisplayPinModal({ role, title, onSuccess }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#063D2E]/90 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-emerald-100 text-center space-y-6 animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 bg-[#f8faf9]/90 backdrop-blur-md flex items-center justify-center p-4">
+      {/* Ambient background decoration */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-emerald-100/50 blur-3xl" />
+        <div className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-amber-100/40 blur-3xl" />
+      </div>
+
+      <div className="relative z-10 w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 shadow-[0_20px_50px_-12px_rgba(6,61,46,0.15)] border border-emerald-100 text-center space-y-6 animate-in fade-in zoom-in-95 duration-200">
         
         {/* Top Header Badge */}
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-100 text-[#063D2E] mx-auto shadow-sm">
