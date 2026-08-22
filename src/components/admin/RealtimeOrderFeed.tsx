@@ -91,7 +91,7 @@ export default function RealtimeOrderFeed() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-display font-bold text-xs text-gray-800">
-                  {n.type === 'new_order' ? '🔔 Order Baru' : '📎 Bukti Pembayaran'}
+                  {n.type === 'new_order' ? 'Order Baru' : 'Bukti Pembayaran'}
                 </div>
                 <div className="text-xs text-gray-600 truncate">{n.orderNumber} — {n.name}</div>
                 <div className="text-xs font-semibold" style={{ color: 'var(--gontor-green)' }}>

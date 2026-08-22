@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Warehouse, Boxes, Package, Truck, FileSpreadsheet, Check } from 'lucide-react'
+import { Warehouse, Boxes, Package, Truck, FileSpreadsheet, Check, Factory, Store, BarChart3, Info } from 'lucide-react'
 import Link from 'next/link'
 
 interface VariantStats {
@@ -29,31 +29,35 @@ export default function ReportsTabbedView({ productRecap }: Props) {
   const tabList = [
     {
       id: 'VENDOR' as TabType,
-      label: '🏭 Vendor Konveksi',
+      label: 'Vendor Konveksi',
+      icon: Factory,
       desc: 'Khusus Rekap Total Produksi Majmuk',
-      badgeBg: 'bg-blue-600 text-white',
-      activeBorder: 'border-blue-600 bg-blue-50 text-blue-900',
+      activeBorder: 'border-blue-600 bg-blue-50/80 text-blue-950 shadow-sm',
+      iconColor: 'text-blue-600',
     },
     {
       id: 'PICKUP' as TabType,
-      label: '📦 PJ Stand Bazar',
+      label: 'PJ Stand Bazar',
+      icon: Store,
       desc: 'Khusus Alokasi Ambil di Stand',
-      badgeBg: 'bg-emerald-600 text-white',
-      activeBorder: 'border-emerald-600 bg-emerald-50 text-emerald-900',
+      activeBorder: 'border-emerald-600 bg-emerald-50/80 text-emerald-950 shadow-sm',
+      iconColor: 'text-emerald-600',
     },
     {
       id: 'DELIVERY' as TabType,
-      label: '🚚 PJ Kirim Alamat',
+      label: 'PJ Kirim Alamat',
+      icon: Truck,
       desc: 'Khusus Alokasi Pengiriman Kurir',
-      badgeBg: 'bg-purple-600 text-white',
-      activeBorder: 'border-purple-600 bg-purple-50 text-purple-900',
+      activeBorder: 'border-purple-600 bg-purple-50/80 text-purple-950 shadow-sm',
+      iconColor: 'text-purple-600',
     },
     {
       id: 'ALL' as TabType,
-      label: '📊 Semuanya (Overview)',
+      label: 'Semuanya (Overview)',
+      icon: BarChart3,
       desc: 'Tampilan Matriks Gabungan',
-      badgeBg: 'bg-gray-700 text-white',
-      activeBorder: 'border-gray-600 bg-gray-50 text-gray-900',
+      activeBorder: 'border-gray-600 bg-gray-50/80 text-gray-950 shadow-sm',
+      iconColor: 'text-gray-700',
     },
   ]
 
@@ -110,24 +114,28 @@ export default function ReportsTabbedView({ productRecap }: Props) {
       </div>
 
       {/* Tabs Selection Buttons */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 bg-gray-100/70 p-1.5 rounded-2xl border border-gray-200/60">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5 bg-gray-100/70 p-2 rounded-2xl border border-gray-200/60">
         {tabList.map(tab => {
           const isActive = activeTab === tab.id
+          const TabIcon = tab.icon
           return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`p-3 rounded-xl text-left transition-all relative ${
+              className={`p-3.5 rounded-xl text-left transition-all relative ${
                 isActive
-                  ? `${tab.activeBorder} shadow-sm border-2 font-bold`
-                  : 'bg-transparent border-2 border-transparent text-gray-600 hover:bg-white/60 hover:text-gray-900 font-semibold'
+                  ? `${tab.activeBorder} border-2 font-bold`
+                  : 'bg-white/80 border-2 border-transparent text-gray-600 hover:bg-white hover:text-gray-900 font-semibold'
               }`}
             >
               <div className="font-display text-xs sm:text-sm font-bold flex items-center justify-between">
-                <span>{tab.label}</span>
+                <span className="flex items-center gap-2">
+                  <TabIcon className={`w-4 h-4 ${tab.iconColor}`} />
+                  {tab.label}
+                </span>
                 {isActive && <Check className="w-4 h-4 text-emerald-600" />}
               </div>
-              <p className="text-[11px] text-gray-500 font-normal mt-0.5 leading-tight">
+              <p className="text-[11px] text-gray-500 font-normal mt-1 leading-tight">
                 {tab.desc}
               </p>
             </button>
@@ -136,27 +144,30 @@ export default function ReportsTabbedView({ productRecap }: Props) {
       </div>
 
       {/* Tab Context Banner Info */}
-      <div className={`p-3.5 rounded-xl border text-xs font-medium ${
+      <div className={`p-3.5 rounded-xl border text-xs font-medium flex items-center gap-2.5 ${
         activeTab === 'VENDOR' 
-          ? 'bg-blue-50 border-blue-200 text-blue-900'
+          ? 'bg-blue-50/80 border-blue-200 text-blue-950'
           : activeTab === 'PICKUP'
-          ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+          ? 'bg-emerald-50/80 border-emerald-200 text-emerald-950'
           : activeTab === 'DELIVERY'
-          ? 'bg-purple-50 border-purple-200 text-purple-900'
+          ? 'bg-purple-50/80 border-purple-200 text-purple-950'
           : 'bg-gray-50 border-gray-200 text-gray-800'
       }`}>
-        {activeTab === 'VENDOR' && (
-          <span>🏭 <strong>Tampilan Khusus Vendor Konveksi:</strong> Menampilkan total Qty majmuk yang wajib diproduksi pabrik/konveksi tanpa alokasi pengiriman.</span>
-        )}
-        {activeTab === 'PICKUP' && (
-          <span>📦 <strong>Tampilan Khusus PJ Stand Bazar (Gontor Pusat):</strong> Menampilkan hanya barang & varian yang dipilih pemesan untuk diambil langsung di Stand.</span>
-        )}
-        {activeTab === 'DELIVERY' && (
-          <span>🚚 <strong>Tampilan Khusus PJ Pengiriman (Ekspedisi/Kurir):</strong> Menampilkan hanya barang & varian yang perlu dipacking & dikirim via kurir ekspedisi.</span>
-        )}
-        {activeTab === 'ALL' && (
-          <span>📊 <strong>Tampilan Matriks Gabungan:</strong> Menampilkan perbandingan utuh antara Total Vendor, Qty Stand Bazar, dan Qty Kirim Alamat.</span>
-        )}
+        <Info className="w-4 h-4 flex-shrink-0 opacity-80" />
+        <div>
+          {activeTab === 'VENDOR' && (
+            <span><strong>Tampilan Khusus Vendor Konveksi:</strong> Menampilkan total Qty majmuk yang wajib diproduksi pabrik/konveksi tanpa alokasi pengiriman.</span>
+          )}
+          {activeTab === 'PICKUP' && (
+            <span><strong>Tampilan Khusus PJ Stand Bazar (Gontor Pusat):</strong> Menampilkan hanya barang & varian yang dipilih pemesan untuk diambil langsung di Stand.</span>
+          )}
+          {activeTab === 'DELIVERY' && (
+            <span><strong>Tampilan Khusus PJ Pengiriman (Ekspedisi/Kurir):</strong> Menampilkan hanya barang & varian yang perlu dipacking & dikirim via kurir ekspedisi.</span>
+          )}
+          {activeTab === 'ALL' && (
+            <span><strong>Tampilan Matriks Gabungan:</strong> Menampilkan perbandingan utuh antara Total Vendor, Qty Stand Bazar, dan Qty Kirim Alamat.</span>
+          )}
+        </div>
       </div>
 
       {/* Tables View */}
@@ -169,19 +180,28 @@ export default function ReportsTabbedView({ productRecap }: Props) {
               
               {(activeTab === 'VENDOR' || activeTab === 'ALL') && (
                 <th className="py-3 px-3 text-center bg-blue-50/70 text-blue-950 font-black">
-                  Total Produksi Vendor
+                  <span className="inline-flex items-center gap-1.5 justify-center">
+                    <Factory className="w-3.5 h-3.5 text-blue-700" />
+                    Total Produksi Vendor
+                  </span>
                 </th>
               )}
               
               {(activeTab === 'PICKUP' || activeTab === 'ALL') && (
                 <th className="py-3 px-3 text-center bg-emerald-50/70 text-emerald-950 font-black">
-                  📦 Qty Ambil Stand
+                  <span className="inline-flex items-center gap-1.5 justify-center">
+                    <Store className="w-3.5 h-3.5 text-emerald-700" />
+                    Qty Ambil Stand
+                  </span>
                 </th>
               )}
               
               {(activeTab === 'DELIVERY' || activeTab === 'ALL') && (
                 <th className="py-3 px-3 text-center bg-purple-50/70 text-purple-950 font-black">
-                  🚚 Qty Kirim Alamat
+                  <span className="inline-flex items-center gap-1.5 justify-center">
+                    <Truck className="w-3.5 h-3.5 text-purple-700" />
+                    Qty Kirim Alamat
+                  </span>
                 </th>
               )}
             </tr>

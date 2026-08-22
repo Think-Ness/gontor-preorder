@@ -267,7 +267,10 @@ export default function StepFulfillment({ draft, cart, onSave, onBack }: Props) 
             </div>
 
             <div className="flex justify-between items-center text-blue-800 pt-1">
-              <span>📍 Zona Lokasi Terdeteksi:</span>
+              <span className="flex items-center gap-1.5 font-semibold">
+                <MapPin className="w-3.5 h-3.5 text-blue-600" />
+                Zona Lokasi Terdeteksi:
+              </span>
               <span className="font-semibold text-right">
                 {ZONE_BASE_RATES_PER_KG[activeZone]?.zoneName} {draft?.address?.province ? `(Prov. ${draft.address.province})` : ''}
               </span>

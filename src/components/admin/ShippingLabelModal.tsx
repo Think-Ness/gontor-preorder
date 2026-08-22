@@ -269,7 +269,7 @@ export default function ShippingLabelModal({ order, isOpen, onClose }: ShippingL
                       {recipientName} <span className="text-sm text-gray-600 font-normal">(Stambuk: {stambuk})</span>
                     </p>
                     <p className="text-base font-bold text-green-800">
-                      📞 HP / WA: {phone}
+                      HP / WA: {phone}
                     </p>
                   </div>
                   {/* Small QR Code Container */}
@@ -285,7 +285,7 @@ export default function ShippingLabelModal({ order, isOpen, onClose }: ShippingL
                   </div>
                 </div>
                 <div className="p-3 flex-1 min-h-0 overflow-hidden">
-                  <p className="text-sm font-semibold text-gray-900 mb-1">📍 Alamat Pengiriman Lengkap:</p>
+                  <p className="text-sm font-semibold text-gray-900 mb-1">Alamat Pengiriman Lengkap:</p>
                   <p className="font-bold text-gray-900 text-base leading-snug whitespace-pre-wrap break-words">{cleanAddressText}</p>
                 </div>
               </div>

@@ -447,8 +447,8 @@ export default function MapPickerModal({ isOpen, onClose, onSelect }: MapPickerM
                 <h2 className="font-display font-bold text-sm sm:text-lg text-gray-900 leading-tight">
                   Pilih Lokasi Google Maps
                 </h2>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-800 hidden xs:inline-flex items-center gap-1">
-                  🗺️ Maps
+                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-red-100 text-red-800 hidden xs:inline-flex items-center gap-1">
+                  <MapPin className="w-3 h-3 text-red-600" /> Google Maps
                 </span>
               </div>
               <p className="text-[11px] sm:text-xs text-gray-500 mt-0.5 font-body line-clamp-1">
@@ -504,8 +504,9 @@ export default function MapPickerModal({ isOpen, onClose, onSelect }: MapPickerM
 
           {/* Map Instruction Overlay */}
           {!hasInteracted && (
-            <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 bg-white/95 backdrop-blur-xs px-3.5 py-1.5 rounded-xl text-[11px] sm:text-xs font-display font-semibold text-gray-800 shadow-md border border-gray-200 text-center pointer-events-none animate-bounce">
-              📍 Klik Google Maps atau geser penanda pin ke lokasi
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 bg-white/95 backdrop-blur-xs px-3.5 py-1.5 rounded-xl text-[11px] sm:text-xs font-display font-semibold text-gray-800 shadow-md border border-gray-200 text-center pointer-events-none animate-bounce flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Klik Google Maps atau geser penanda pin ke lokasi</span>
             </div>
           )}
 
@@ -545,8 +546,9 @@ export default function MapPickerModal({ isOpen, onClose, onSelect }: MapPickerM
               )}
             </div>
 
-            <p className="font-semibold text-xs sm:text-sm text-gray-900 leading-snug line-clamp-2">
-              📍 {selectedAddress || 'Sedang memuat titik lokasi Google Maps...'}
+            <p className="font-semibold text-xs sm:text-sm text-gray-900 leading-snug line-clamp-2 flex items-start gap-1.5">
+              <MapPin className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+              <span>{selectedAddress || 'Sedang memuat titik lokasi Google Maps...'}</span>
             </p>
 
             {selectedPos && (

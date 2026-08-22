@@ -117,8 +117,8 @@ export async function GET(req: NextRequest) {
           'Nama Produk / Merchandise': stat.product,
           'Varian / Ukuran': stat.variant,
           'Total Majmuk Vendor (Pcs)': stat.total,
-          '📦 Qty Ambil di Stand (Pcs)': stat.pickup,
-          '🚚 Qty Kirim Alamat (Pcs)': stat.delivery,
+          'Qty Ambil di Stand (Pcs)': stat.pickup,
+          'Qty Kirim Alamat (Pcs)': stat.delivery,
         }))
 
       const worksheet = XLSX.utils.json_to_sheet(recapRows)

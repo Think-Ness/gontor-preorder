@@ -250,8 +250,9 @@ export default function StepCustomer({ draft, onSave }: Props) {
           </h3>
         </div>
         
-        <p className="text-xs text-gray-500 mb-4 leading-relaxed bg-amber-50 p-3 rounded-lg border border-amber-100">
-          📍 Alamat ini akan digunakan sebagai alamat pengiriman default dan titik Anda di <b>Peta Sebaran Pemesan</b>. Wajib diisi meskipun Anda nantinya memilih opsi "Ambil di Stand".
+        <p className="text-xs text-gray-500 mb-4 leading-relaxed bg-amber-50 p-3.5 rounded-xl border border-amber-100 flex items-start gap-2">
+          <MapPin className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+          <span>Alamat ini akan digunakan sebagai alamat pengiriman default dan titik Anda di <b>Peta Sebaran Pemesan</b>. Wajib diisi meskipun Anda nantinya memilih opsi "Ambil di Stand".</span>
         </p>
 
         {/* Google Maps Embed / Link Result */}

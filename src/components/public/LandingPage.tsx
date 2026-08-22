@@ -12,8 +12,7 @@ import CartDrawer from './CartDrawer'
 import CountdownTimer from './CountdownTimer'
 import { useCart } from '@/hooks/useCart'
 import { formatRupiah } from '@/lib/utils'
-import { ShoppingBag, ArrowRight, Clock, ShieldCheck, Sparkles, Award, CheckCircle2 } from 'lucide-react'
-import { ProductStat, MapPinData } from '@/app/page'
+import { ShoppingBag, ArrowRight, Clock, ShieldCheck, Sparkles, Award, CheckCircle2, Lock } from 'lucide-react'
 
 interface LandingPageProps {
   settings: EventSettings | null
@@ -146,7 +145,7 @@ export default function LandingPage({
                 </a>
               ) : (
                 <div className="inline-flex items-center gap-3 px-6 py-3.5 rounded-full bg-white border border-gray-200 shadow-md">
-                  <span className="text-xl">🔒</span>
+                  <Lock className="w-5 h-5 text-amber-600" />
                   <span className="text-sm font-bold text-gray-800">Pre-Order Saat Ini Ditutup</span>
                 </div>
               )}
@@ -211,8 +210,8 @@ export default function LandingPage({
               </div>
             ) : (
               <div className="relative rounded-[2.2rem] bg-white p-8 shadow-xl border border-gray-200 text-center space-y-6">
-                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-50 border border-gray-100 mb-2">
-                  <span className="text-4xl">🔒</span>
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-rose-50 border border-rose-100 mb-2">
+                  <Lock className="w-9 h-9 text-rose-600" />
                 </div>
                 <h3 className="font-display font-black text-2xl sm:text-3xl text-gray-950 uppercase tracking-tight">
                   Pre-Order Ditutup
