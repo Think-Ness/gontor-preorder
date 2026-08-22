@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 
 import AdminLayoutWrapper from '@/components/admin/AdminLayoutWrapper'
+import { checkIsAdmin } from '@/lib/auth'
 
 export const metadata: Metadata = {
   title: { default: 'Admin Panel', template: '%s — Admin Gontor Pre-Order' },
@@ -20,7 +21,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) redirect('/admin/login')
+  if (!user || !checkIsAdmin(user)) redirect('/admin/login')
 
   return (
     <AdminLayoutWrapper user={user}>

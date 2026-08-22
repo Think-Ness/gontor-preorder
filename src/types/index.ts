@@ -187,6 +187,12 @@ export interface EventSettings {
   pin_vendor?: string | null
   pin_stand?: string | null
   pin_delivery?: string | null
+  // Shipping & Couriers Config
+  allow_pickup?: boolean
+  allow_delivery?: boolean
+  default_shipping_fee?: number
+  pickup_location_note?: string | null
+  allowed_couriers?: string | Record<string, boolean> | null
   created_at: string
   updated_at: string
 }

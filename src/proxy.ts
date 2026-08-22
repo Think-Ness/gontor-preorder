@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { checkIsAdmin } from '@/lib/auth'
 
 export async function proxy(req: NextRequest) {
   const supabase = await createClient()
@@ -11,7 +12,7 @@ export async function proxy(req: NextRequest) {
   const requestHeaders = new Headers(req.headers)
   requestHeaders.set('x-pathname', url.pathname)
 
-  if (isAdminRoute && !user) {
+  if (isAdminRoute && (!user || !checkIsAdmin(user))) {
     url.pathname = '/admin/login'
     return NextResponse.redirect(url)
   }

@@ -17,9 +17,34 @@ export default function ShippingSettingsPage() {
       wahana: true,   // Wahana Express
     }
   })
+  const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const res = await fetch('/api/admin/settings/shipping')
+        if (res.ok) {
+          const data = await res.json()
+          setForm(prev => ({
+            ...prev,
+            allow_pickup: data.allow_pickup ?? true,
+            allow_delivery: data.allow_delivery ?? true,
+            default_shipping_fee: data.default_shipping_fee ?? 0,
+            pickup_location_note: data.pickup_location_note || prev.pickup_location_note,
+            couriers: data.couriers ? { ...prev.couriers, ...data.couriers } : prev.couriers,
+          }))
+        }
+      } catch (err) {
+        console.error('Failed to load shipping settings', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadSettings()
+  }, [])
 
   const handleSave = async () => {
     setSaving(true)
@@ -59,8 +84,15 @@ export default function ShippingSettingsPage() {
       </div>
 
       <div className="card-premium p-6 space-y-6">
-        {error && <div className="bg-red-50 text-red-700 text-sm px-4 py-3 rounded-xl">{error}</div>}
-        {saved && <div className="bg-green-50 text-green-700 text-sm px-4 py-3 rounded-xl">✓ Pengaturan pengiriman berhasil disimpan</div>}
+        {loading ? (
+          <div className="flex items-center justify-center py-10 text-gray-400 gap-2">
+            <Loader2 className="w-5 h-5 animate-spin text-green-600" />
+            <span className="text-sm font-medium">Memuat pengaturan...</span>
+          </div>
+        ) : (
+          <>
+            {error && <div className="bg-red-50 text-red-700 text-sm px-4 py-3 rounded-xl">{error}</div>}
+            {saved && <div className="bg-green-50 text-green-700 text-sm px-4 py-3 rounded-xl">✓ Pengaturan pengiriman berhasil disimpan</div>}
 
         {/* Option 1: Pickup */}
         <div className="p-4 rounded-xl bg-gray-50 space-y-3">
@@ -153,6 +185,8 @@ export default function ShippingSettingsPage() {
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           {saving ? 'Menyimpan...' : 'Simpan Pengaturan Pengiriman'}
         </button>
+          </>
+        )}
       </div>
     </div>
   )

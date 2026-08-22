@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { checkIsAdmin } from '@/lib/auth'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 
 export async function PATCH(req: NextRequest) {
   try {
     const supabaseUser = await createClient()
     const { data: { user } } = await supabaseUser.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!user || !checkIsAdmin(user)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const supabase = await createAdminClient()
     const body = await req.json()

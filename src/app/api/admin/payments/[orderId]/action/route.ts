@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { checkIsAdmin } from '@/lib/auth'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 import { sendPaymentApprovedEmail, sendPaymentRejectedEmail } from '@/lib/email'
@@ -16,7 +17,7 @@ export async function POST(
 
   const supabaseUser = await createClient()
   const { data: { user } } = await supabaseUser.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!user || !checkIsAdmin(user)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const supabase = await createAdminClient()
 

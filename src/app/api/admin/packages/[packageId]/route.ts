@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { checkIsAdmin } from '@/lib/auth'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { packageSchema } from '@/lib/validations/schemas'
 
@@ -29,7 +30,7 @@ export async function PUT(
 
     const supabaseUser = await createClient()
     const { data: { user } } = await supabaseUser.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!user || !checkIsAdmin(user)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const supabase = await createAdminClient()
     const body = await req.json()
@@ -63,7 +64,7 @@ export async function DELETE(
 
     const supabaseUser = await createClient()
     const { data: { user } } = await supabaseUser.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!user || !checkIsAdmin(user)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const supabase = await createAdminClient()
     const { error } = await supabase.from('packages').delete().eq('id', packageId)
