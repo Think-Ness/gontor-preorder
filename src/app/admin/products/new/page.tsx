@@ -1,14 +1,20 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { Suspense, useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, Loader2, Plus, Trash2, Upload, Shirt } from 'lucide-react'
+import { ChevronLeft, Loader2, Plus, Trash2, Upload, Shirt, Copy } from 'lucide-react'
 import { slugify } from '@/lib/utils'
+import { buildDriveImageUrl } from '@/lib/drive-urls'
 
-export default function NewProductPage() {
+function NewProductFormContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const duplicateFrom = searchParams.get('duplicateFrom')
+
   const [loading, setLoading] = useState(false)
+  const [fetchingDuplicate, setFetchingDuplicate] = useState(false)
+  const [duplicatedSource, setDuplicatedSource] = useState<string | null>(null)
   const [uploadingImage, setUploadingImage] = useState(false)
   const [error, setError] = useState('')
 
@@ -35,6 +41,54 @@ export default function NewProductPage() {
     { name: 'L', sku: '', price: '', stock: '50' },
     { name: 'XL', sku: '', price: '', stock: '50' },
   ])
+
+  useEffect(() => {
+    if (!duplicateFrom) return
+
+    setFetchingDuplicate(true)
+    fetch(`/api/admin/products/${duplicateFrom}`)
+      .then(res => res.json())
+      .then(res => {
+        if (res.data) {
+          const prod = res.data
+          setDuplicatedSource(prod.name)
+          setForm({
+            product_code: prod.product_code ? `${prod.product_code}-COPY` : '',
+            name: prod.name ? `${prod.name} (Copy)` : '',
+            slug: prod.slug ? `${prod.slug}-copy` : '',
+            description: prod.description || '',
+            product_type: prod.product_type || 'SIMPLE',
+            price: prod.price ? String(prod.price) : '',
+            has_variants: Boolean(prod.has_variants),
+            stock_enabled: prod.stock_enabled ?? true,
+            stock: prod.stock !== null && prod.stock !== undefined ? String(prod.stock) : '',
+            is_active: prod.is_active ?? true,
+            display_order: prod.display_order ?? 0,
+            image_drive_file_id: prod.image_drive_file_id || '',
+            image_url: prod.image_drive_file_id ? buildDriveImageUrl(prod.image_drive_file_id) : (prod.image_url || ''),
+            image_filename: prod.image_filename || '',
+          })
+
+          if (prod.has_variants && Array.isArray(prod.variants) && prod.variants.length > 0) {
+            setVariants(
+              prod.variants.map((v: any) => ({
+                name: v.name || '',
+                sku: '',
+                price: v.price ? String(v.price) : '',
+                stock: v.stock !== null && v.stock !== undefined ? String(v.stock) : '',
+              }))
+            )
+          }
+        }
+      })
+      .catch(err => {
+        console.error('Gagal memuat data duplikat produk:', err)
+        setError('Gagal memuat data produk yang ingin diduplikat')
+      })
+      .finally(() => {
+        setFetchingDuplicate(false)
+      })
+  }, [duplicateFrom])
 
   const handleNameChange = (name: string) => {
     setForm(p => ({
@@ -132,10 +186,33 @@ export default function NewProductPage() {
           <ChevronLeft className="w-5 h-5" />
         </Link>
         <div>
-          <h1 className="font-display font-bold text-2xl text-gray-900">Tambah Produk Baru</h1>
-          <p className="text-gray-500 text-sm">Tambahkan official merchandise ke katalog pre-order</p>
+          <h1 className="font-display font-bold text-2xl text-gray-900">
+            {duplicatedSource ? 'Duplikat Produk' : 'Tambah Produk Baru'}
+          </h1>
+          <p className="text-gray-500 text-sm">
+            {duplicatedSource ? `Menduplikat dari "${duplicatedSource}"` : 'Tambahkan official merchandise ke katalog pre-order'}
+          </p>
         </div>
       </div>
+
+      {fetchingDuplicate && (
+        <div className="bg-blue-50 border border-blue-200 text-blue-700 text-sm p-4 rounded-xl flex items-center gap-3">
+          <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+          <span>Memuat data produk untuk diduplikat...</span>
+        </div>
+      )}
+
+      {duplicatedSource && !fetchingDuplicate && (
+        <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm p-4 rounded-xl flex items-start gap-3">
+          <Copy className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-semibold font-display">Mode Duplikat Produk</p>
+            <p className="text-xs text-emerald-700 mt-0.5">
+              Data, foto, dan varian telah diisi otomatis dari <strong>"{duplicatedSource}"</strong>. Silakan ubah nama (misal: Kaos Putih), varian, atau stok yang Anda inginkan lalu klik Simpan.
+            </p>
+          </div>
+        </div>
+      )}
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-4 rounded-xl">
@@ -318,9 +395,21 @@ export default function NewProductPage() {
           className="btn-primary w-full py-3.5 font-display font-bold flex items-center justify-center gap-2"
         >
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-          {loading ? 'Menyimpan Produk...' : 'Simpan & Publis Produk'}
+          {loading ? 'Menyimpan Produk...' : (duplicatedSource ? 'Simpan Produk Duplikat' : 'Simpan & Publis Produk')}
         </button>
       </form>
     </div>
+  )
+}
+
+export default function NewProductPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+      </div>
+    }>
+      <NewProductFormContent />
+    </Suspense>
   )
 }

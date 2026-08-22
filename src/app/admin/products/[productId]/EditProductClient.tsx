@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, Loader2, Plus, Save, Trash2, Upload, Shirt } from 'lucide-react'
+import { ChevronLeft, Loader2, Plus, Save, Trash2, Upload, Shirt, Copy } from 'lucide-react'
 import { slugify } from '@/lib/utils'
 import { Product, ProductVariant } from '@/types'
 import { buildDriveImageUrl } from '@/lib/drive-urls'
@@ -166,14 +166,23 @@ export default function EditProductClient({ initialProduct }: Props) {
           </div>
         </div>
 
-        <button
-          onClick={handleDelete}
-          disabled={deleting}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-50 text-red-600 border border-red-200 text-xs font-semibold hover:bg-red-100 disabled:opacity-50"
-        >
-          {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-          Hapus Produk
-        </button>
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/admin/products/new?duplicateFrom=${initialProduct.id}`}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gray-100 text-gray-700 border border-gray-200 text-xs font-semibold hover:bg-gray-200 transition-colors"
+          >
+            <Copy className="w-4 h-4 text-gray-600" />
+            Duplikat Produk
+          </Link>
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-50 text-red-600 border border-red-200 text-xs font-semibold hover:bg-red-100 disabled:opacity-50 transition-colors"
+          >
+            {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+            Hapus Produk
+          </button>
+        </div>
       </div>
 
       {error && (

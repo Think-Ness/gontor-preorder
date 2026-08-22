@@ -110,6 +110,14 @@ export async function DELETE(
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const supabase = await createAdminClient()
+
+    // 1. Unlink order_items reference so past customer order receipts remain intact (snapshot) without FK violation
+    await supabase.from('order_items').update({ product_id: null, variant_id: null }).eq('product_id', productId)
+
+    // 2. Remove package_items links
+    await supabase.from('package_items').delete().eq('product_id', productId)
+
+    // 3. Delete product
     const { error } = await supabase.from('products').delete().eq('id', productId)
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })

@@ -54,3 +54,41 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Gagal menambah produk' }, { status: 500 })
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const supabaseUser = await createClient()
+    const { data: { user } } = await supabaseUser.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    const supabase = await createAdminClient()
+    const body = await req.json()
+    const { ids } = body
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return NextResponse.json({ error: 'Pilih minimal satu produk untuk dihapus' }, { status: 400 })
+    }
+
+    // 1. Unlink order_items reference so past customer order receipts remain intact (snapshot) without FK violation
+    await supabase.from('order_items').update({ product_id: null, variant_id: null }).in('product_id', ids)
+
+    // 2. Remove package_items links
+    await supabase.from('package_items').delete().in('product_id', ids)
+
+    // 3. Delete products (product_variants will CASCADE)
+    const { error } = await supabase
+      .from('products')
+      .delete()
+      .in('id', ids)
+
+    if (error) {
+      console.error('[DELETE /api/admin/products]', error)
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    return NextResponse.json({ success: true, deletedCount: ids.length })
+  } catch (err) {
+    console.error('[DELETE /api/admin/products]', err)
+    return NextResponse.json({ error: 'Gagal menghapus produk' }, { status: 500 })
+  }
+}
