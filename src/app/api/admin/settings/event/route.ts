@@ -16,9 +16,10 @@ export async function POST(req: NextRequest) {
     is_active, favicon_url,
     footer_tagline, footer_hashtags,
     contact_whatsapp, social_instagram,
+    pin_vendor, pin_stand, pin_delivery,
   } = body
 
-  const updates = {
+  const updates: Record<string, any> = {
     event_name,
     event_description: event_description || null,
     preorder_start: preorder_start ? new Date(preorder_start).toISOString() : null,
@@ -30,11 +31,25 @@ export async function POST(req: NextRequest) {
     footer_hashtags: footer_hashtags || null,
     contact_whatsapp: contact_whatsapp || null,
     social_instagram: social_instagram || null,
+    pin_vendor: pin_vendor || '1234',
+    pin_stand: pin_stand || '1234',
+    pin_delivery: pin_delivery || '1234',
   }
 
-  const { error } = id
+  let { error } = id
     ? await supabase.from('event_settings').update(updates).eq('id', id)
     : await supabase.from('event_settings').insert(updates)
+
+  // Safe fallback if column pin_* does not exist in database table yet
+  if (error && (error.message?.includes('pin_') || error.code === 'PGRST204')) {
+    delete updates.pin_vendor
+    delete updates.pin_stand
+    delete updates.pin_delivery
+    const retry = id
+      ? await supabase.from('event_settings').update(updates).eq('id', id)
+      : await supabase.from('event_settings').insert(updates)
+    error = retry.error
+  }
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
