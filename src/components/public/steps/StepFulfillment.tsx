@@ -136,8 +136,24 @@ export default function StepFulfillment({ draft, onSave, onBack }: Props) {
   // Dynamic Available Couriers based on Active Zone
   const currentCouriers = useMemo(() => ZONE_RATES[activeZone], [activeZone])
 
-  const [selectedCourier, setSelectedCourier] = useState(draft?.address?.courierName || currentCouriers[0].name)
-  const [shippingCost, setShippingCost] = useState<number>(draft?.address?.shippingCost ?? currentCouriers[0].cost)
+  // POS Indonesia is default courier
+  const defaultPos = useMemo(() => {
+    return currentCouriers.find(c => c.id === 'pos') || currentCouriers[0]
+  }, [currentCouriers])
+
+  const [selectedCourier, setSelectedCourier] = useState(draft?.address?.courierName || defaultPos.name)
+  const [shippingCost, setShippingCost] = useState<number>(draft?.address?.shippingCost ?? defaultPos.cost)
+
+  // Keep shipping cost updated with active zone tariff for selected courier
+  useEffect(() => {
+    const activeCourier = currentCouriers.find(c => c.name === selectedCourier)
+    if (activeCourier) {
+      setShippingCost(activeCourier.cost)
+    } else {
+      setSelectedCourier(defaultPos.name)
+      setShippingCost(defaultPos.cost)
+    }
+  }, [activeZone, currentCouriers, defaultPos, selectedCourier])
 
   const handleNext = () => {
     onSave({

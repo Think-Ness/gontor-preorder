@@ -9,6 +9,13 @@ export default function ShippingSettingsPage() {
     allow_delivery: true,
     default_shipping_fee: 0,
     pickup_location_note: 'Stand Merchandise Utama 100 Tahun Gontor (Depan Balai Pertemuan)',
+    couriers: {
+      pos: true,      // POS Indonesia (Default)
+      jne: true,      // JNE Express
+      jnt: true,      // J&T Express
+      sicepat: true,  // SiCepat Express
+      wahana: true,   // Wahana Express
+    }
   })
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -36,11 +43,19 @@ export default function ShippingSettingsPage() {
 
   const inputCls = 'w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100 font-display'
 
+  const COURIER_LIST = [
+    { id: 'pos', name: 'POS Indonesia — Kilat Khusus', tag: 'Default Utama', default: true },
+    { id: 'jne', name: 'JNE Express — REG', tag: 'Ekspedisi Reguler' },
+    { id: 'jnt', name: 'J&T Express — Reguler', tag: 'Ekspedisi Reguler' },
+    { id: 'sicepat', name: 'SiCepat — REG', tag: 'Ekspedisi Reguler' },
+    { id: 'wahana', name: 'Wahana Express', tag: 'Ekspedisi Hemat' },
+  ]
+
   return (
     <div className="max-w-2xl space-y-6">
       <div>
-        <h1 className="font-display font-bold text-2xl text-gray-900">Pengaturan Pengiriman & Fulfillment</h1>
-        <p className="text-gray-500 text-sm">Kelola metode pengambilan di stand & opsi pengiriman alamat</p>
+        <h1 className="font-display font-bold text-2xl text-gray-900">Pengaturan Pengiriman &amp; Fulfillment</h1>
+        <p className="text-gray-500 text-sm">Kelola metode pengambilan di stand, ekspedisi kurir, &amp; opsi pengiriman alamat</p>
       </div>
 
       <div className="card-premium p-6 space-y-6">
@@ -73,8 +88,8 @@ export default function ShippingSettingsPage() {
           </div>
         </div>
 
-        {/* Option 2: Delivery */}
-        <div className="p-4 rounded-xl bg-gray-50 space-y-3">
+        {/* Option 2: Delivery & Couriers Selection */}
+        <div className="p-4 rounded-xl bg-gray-50 space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Truck className="w-5 h-5 text-blue-600" />
@@ -88,17 +103,46 @@ export default function ShippingSettingsPage() {
             </button>
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">Biaya Ongkir Flat (Rp):</label>
-            <input
-              type="number"
-              value={form.default_shipping_fee}
-              onChange={e => setForm(p => ({ ...p, default_shipping_fee: Number(e.target.value) }))}
-              placeholder="0 (Gratis Ongkir)"
-              className={inputCls}
-            />
-            <p className="text-[11px] text-gray-400 mt-1">* Masukkan 0 jika ongkos kirim ditanggung panitia / gratis.</p>
-          </div>
+          {form.allow_delivery && (
+            <div className="space-y-3 pt-2 border-t border-gray-200">
+              <label className="block text-xs font-bold text-gray-800 uppercase tracking-wider">
+                Pilih Ekspedisi Kurir yang Disediakan Panitia:
+              </label>
+
+              <div className="space-y-2">
+                {COURIER_LIST.map(c => {
+                  const isEnabled = form.couriers[c.id as keyof typeof form.couriers] ?? true
+                  return (
+                    <div
+                      key={c.id}
+                      className="flex items-center justify-between p-3 rounded-xl bg-white border border-gray-200"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="font-display font-semibold text-xs text-gray-800">{c.name}</span>
+                        {c.default && (
+                          <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">
+                            {c.tag}
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setForm(p => ({
+                            ...p,
+                            couriers: { ...p.couriers, [c.id]: !isEnabled },
+                          }))
+                        }
+                        className={`relative w-9 h-5 rounded-full transition-colors ${isEnabled ? 'bg-blue-600' : 'bg-gray-300'}`}
+                      >
+                        <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${isEnabled ? 'left-4.5' : 'left-0.5'}`} />
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         <button

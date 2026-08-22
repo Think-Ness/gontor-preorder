@@ -111,7 +111,7 @@ export default function CompetzyFooter({
                 <Globe className="w-4 h-4" />
               </a>
               <a
-                href="https://ikpm.gontor.ac.id"
+                href="https://ppikpm.gontor.ac.id/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-9 h-9 rounded-xl bg-emerald-900/40 border border-emerald-800/40 flex items-center justify-center text-emerald-400 hover:bg-emerald-700 hover:text-white transition-all"
@@ -214,7 +214,7 @@ export default function CompetzyFooter({
               </li>
               <li>
                 <a
-                  href="https://ikpm.gontor.ac.id"
+                  href="https://ppikpm.gontor.ac.id/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-white transition-colors flex items-center gap-2"
