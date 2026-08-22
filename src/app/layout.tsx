@@ -59,14 +59,26 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  let faviconUrl = 'https://gontor.ac.id/wp-content/uploads/2023/01/logo-gontor-1.png'
+  try {
+    const supabase = await createClient()
+    const { data: settings } = await supabase.from('event_settings').select('favicon_url').single()
+    if (settings?.favicon_url) {
+      faviconUrl = settings.favicon_url
+    }
+  } catch (err) {}
+
   return (
     <html lang="id">
       <head>
+        <link rel="icon" href={faviconUrl} key="favicon" />
+        <link rel="shortcut icon" href={faviconUrl} key="shortcut-favicon" />
+        <link rel="apple-touch-icon" href={faviconUrl} key="apple-favicon" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>

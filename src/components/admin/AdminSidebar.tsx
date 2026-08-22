@@ -89,6 +89,18 @@ export default function AdminSidebar({
   onClose?: () => void 
 }) {
   const pathname = usePathname()
+  const [logoUrl, setLogoUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch('/api/admin/settings/event')
+      .then(res => res.json())
+      .then(res => {
+        if (res.data?.favicon_url) {
+          setLogoUrl(res.data.favicon_url)
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   // Track expanded accordion groups (only expand current active route by default)
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
@@ -128,12 +140,23 @@ export default function AdminSidebar({
         {/* Logo */}
         <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center font-display font-black text-white text-base shadow-sm"
-              style={{ background: 'linear-gradient(135deg, var(--gontor-green), var(--gontor-green-light))' }}
-            >
-              G
-            </div>
+            {logoUrl ? (
+              <img
+                src={logoUrl}
+                alt="Logo Gontor"
+                className="w-9 h-9 object-contain rounded-xl bg-white p-1 border border-gray-200 shadow-2xs"
+                onError={(e) => {
+                  (e.target as HTMLElement).style.display = 'none'
+                }}
+              />
+            ) : (
+              <div
+                className="w-9 h-9 rounded-xl flex items-center justify-center font-display font-black text-white text-base shadow-sm"
+                style={{ background: 'linear-gradient(135deg, var(--gontor-green), var(--gontor-green-light))' }}
+              >
+                G
+              </div>
+            )}
             <div>
               <div className="font-display font-bold text-sm text-gray-900 leading-tight">
                 Gontor 100 Tahun
