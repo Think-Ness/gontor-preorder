@@ -44,13 +44,25 @@ export async function PUT(
       return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Data tidak valid' }, { status: 400 })
     }
 
-    const data = parsed.data
+    const data: any = { ...parsed.data }
+    if (data.weight_gram === undefined || data.weight_gram === null) {
+      delete data.weight_gram
+    }
 
-    // Update product
-    const { error: updateErr } = await supabase
+    // Update product with fallback if column not yet added in Supabase schema
+    let { error: updateErr } = await supabase
       .from('products')
       .update(data)
       .eq('id', productId)
+
+    if (updateErr && updateErr.message?.includes('weight_gram')) {
+      delete data.weight_gram
+      const retry = await supabase
+        .from('products')
+        .update(data)
+        .eq('id', productId)
+      updateErr = retry.error
+    }
 
     if (updateErr) return NextResponse.json({ error: updateErr.message }, { status: 500 })
 

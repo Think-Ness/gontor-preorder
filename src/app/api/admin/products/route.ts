@@ -18,14 +18,28 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Data tidak valid' }, { status: 400 })
     }
 
-    const data = parsed.data
+    const data: any = { ...parsed.data }
+    if (data.weight_gram === undefined || data.weight_gram === null) {
+      delete data.weight_gram
+    }
 
-    // Insert main product
-    const { data: product, error: prodErr } = await supabase
+    // Insert main product with fallback if column not yet added to Supabase schema
+    let { data: product, error: prodErr } = await supabase
       .from('products')
       .insert(data)
       .select('id')
       .single()
+
+    if (prodErr && prodErr.message?.includes('weight_gram')) {
+      delete data.weight_gram
+      const retry = await supabase
+        .from('products')
+        .insert(data)
+        .select('id')
+        .single()
+      product = retry.data
+      prodErr = retry.error
+    }
 
     if (prodErr) {
       console.error('[POST /api/admin/products]', prodErr)
