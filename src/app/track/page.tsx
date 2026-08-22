@@ -257,31 +257,31 @@ function TrackingContent() {
                 <div className="space-y-4 relative before:absolute before:left-3.5 before:top-3 before:bottom-3 before:w-0.5 before:bg-gray-200">
                   {/* Step 1: Proof Uploaded */}
                   <div className="flex items-start gap-3 relative z-10">
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
                       currentStep >= 1 ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-500'
                     }`}>
                       1
                     </div>
-                    <div>
+                    <div className="flex-1 min-w-0">
                       <p className={`text-sm font-display font-bold ${currentStep >= 1 ? 'text-green-800' : 'text-gray-400'}`}>
                         Bukti Pembayaran Diterima
                       </p>
-                      <p className="text-xs text-gray-500">Bukti transfer berhasil di-upload dan tersimpan di sistem.</p>
+                      <p className="text-xs text-gray-500 break-words">Bukti transfer berhasil di-upload dan tersimpan di sistem.</p>
                     </div>
                   </div>
 
                   {/* Step 2: Payment Review / Verified */}
                   <div className="flex items-start gap-3 relative z-10">
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
                       currentStep >= 2 ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-500'
                     }`}>
                       2
                     </div>
-                    <div>
+                    <div className="flex-1 min-w-0">
                       <p className={`text-sm font-display font-bold ${currentStep >= 2 ? 'text-green-800' : 'text-gray-400'}`}>
                         {currentStep >= 2 ? 'Pembayaran Terverifikasi & Diproses' : 'Verifikasi Pembayaran Panitia'}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-500 break-words">
                         {currentStep >= 2
                           ? 'Pembayaran valid! Pesanan sedang disiapkan oleh tim panitia.'
                           : 'Panitia keuangan sedang memverifikasi bukti pembayaran Anda.'}
@@ -291,16 +291,16 @@ function TrackingContent() {
 
                   {/* Step 3: Fulfillment */}
                   <div className="flex items-start gap-3 relative z-10">
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
                       currentStep >= 3 ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-500'
                     }`}>
                       3
                     </div>
-                    <div>
+                    <div className="flex-1 min-w-0">
                       <p className={`text-sm font-display font-bold ${currentStep >= 3 ? 'text-green-800' : 'text-gray-400'}`}>
                         {order.fulfillment_method === 'PICKUP' ? 'Siap Diambil di Stand Acara' : 'Dikirim ke Alamat'}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-500 break-words leading-relaxed">
                         {order.fulfillment_method === 'PICKUP'
                           ? 'Dapat diambil mandiri di stand merchandise 100 Tahun Gontor.'
                           : `Dikirimkan ke: ${order.shipping_address || 'Alamat pendaftaran'}`}
@@ -310,16 +310,16 @@ function TrackingContent() {
 
                   {/* Step 4: Complete */}
                   <div className="flex items-start gap-3 relative z-10">
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
                       currentStep >= 4 ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-500'
                     }`}>
                       4
                     </div>
-                    <div>
+                    <div className="flex-1 min-w-0">
                       <p className={`text-sm font-display font-bold ${currentStep >= 4 ? 'text-green-800' : 'text-gray-400'}`}>
                         Pesanan Selesai
                       </p>
-                      <p className="text-xs text-gray-500">Merchandise telah diserahterimakan secara lengkap.</p>
+                      <p className="text-xs text-gray-500 break-words">Merchandise telah diserahterimakan secara lengkap.</p>
                     </div>
                   </div>
                 </div>
