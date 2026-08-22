@@ -63,18 +63,30 @@ export default function PaymentActions({
 
   // If payment is already approved, show Order Status Progress Management
   if (currentPaymentStatus === 'PAID') {
-    const statuses = [
-      { id: 'PROCESSING', label: 'Sedang Diproses', desc: 'Pesanan sedang disiapkan panitia' },
-      { id: 'READY_FOR_PICKUP', label: 'Siap Diambil di Stand', desc: 'Merchandise dapat diambil di stand acara' },
-      { id: 'SHIPPED', label: 'Dalam Pengiriman', desc: 'Pesanan telah diserahkan ke ekspedisi/kurir' },
-      { id: 'COMPLETED', label: 'Pesanan Selesai', desc: 'Merchandise telah diserahterimakan' },
-    ]
+    const isPickup = fulfillmentMethod === 'PICKUP'
+
+    const statuses = isPickup
+      ? [
+          { id: 'PROCESSING', label: 'Sedang Diproses', desc: 'Pesanan sedang disiapkan panitia' },
+          { id: 'READY_FOR_PICKUP', label: 'Siap Diambil di Stand', desc: 'Merchandise siap diambil di stand acara' },
+          { id: 'COMPLETED', label: 'Pesanan Selesai', desc: 'Merchandise telah diserahterimakan di stand' },
+        ]
+      : [
+          { id: 'PROCESSING', label: 'Sedang Diproses', desc: 'Pesanan sedang disiapkan panitia' },
+          { id: 'SHIPPED', label: 'Dalam Pengiriman', desc: 'Pesanan telah diserahkan ke ekspedisi/kurir' },
+          { id: 'COMPLETED', label: 'Pesanan Selesai', desc: 'Merchandise telah diterima oleh pemesan' },
+        ]
 
     return (
       <div className="card-premium p-6 space-y-4 bg-white border border-gray-200 shadow-sm">
         <div>
           <div className="flex items-center justify-between">
-            <h2 className="font-display font-bold text-gray-900 text-base">Perbarui Status Progres Pesanan</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="font-display font-bold text-gray-900 text-base">Perbarui Status Progres Pesanan</h2>
+              <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${isPickup ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'}`}>
+                {isPickup ? '📦 Ambil di Stand (Pickup)' : '🚚 Dikirim Kurir (Delivery)'}
+              </span>
+            </div>
             <span className="text-xs px-2.5 py-1 rounded-full font-semibold bg-green-100 text-green-800 flex items-center gap-1">
               <CheckCircle className="w-3.5 h-3.5 text-green-700" />
               Pembayaran Disetujui
@@ -85,7 +97,7 @@ export default function PaymentActions({
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {statuses.map(st => {
             const isActive = currentStatus === st.id
             const isPending = loading === st.id
@@ -97,7 +109,7 @@ export default function PaymentActions({
                 disabled={isActive || !!loading}
                 className={`p-3.5 rounded-xl border text-left transition-all flex flex-col justify-between ${
                   isActive
-                    ? 'bg-green-50 border-green-500 text-green-900 shadow-sm'
+                    ? 'bg-green-50 border-green-500 text-green-900 shadow-sm ring-1 ring-green-400'
                     : 'bg-white border-gray-200 hover:border-green-300 text-gray-800 hover:bg-gray-50'
                 }`}
               >
