@@ -6,8 +6,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, ShoppingCart, Shirt, ShieldCheck,
   BarChart3, Settings, ScrollText, ChevronDown, ChevronRight,
-  Package, Truck, CheckCircle2, Clock, FileSpreadsheet,
-  Layers, Boxes, Tag, UserCheck, Shield
+  Package, Truck, Clock, FileSpreadsheet, Tv, Factory, Store
 } from 'lucide-react'
 
 interface NavGroup {
@@ -62,6 +61,15 @@ const nav: NavGroup[] = [
       { label: 'Penjualan', href: '/admin/reports' },
       { label: 'Fulfillment', href: '/admin/reports/fulfillment' },
       { label: 'Export Excel', href: '/admin/reports/export', icon: FileSpreadsheet },
+    ],
+  },
+  {
+    label: 'Display Realtime TV',
+    icon: Tv,
+    children: [
+      { label: 'Vendor Konveksi', href: '/admin/display/vendor', icon: Factory },
+      { label: 'Stand Bazar Gontor', href: '/admin/display/stand', icon: Store },
+      { label: 'Logistik Pengiriman', href: '/admin/display/delivery', icon: Truck },
     ],
   },
   {
