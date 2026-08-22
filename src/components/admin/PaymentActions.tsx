@@ -32,11 +32,14 @@ export default function PaymentActions({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action, admin_note: adminNote }),
       })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
+      const text = await res.text()
+      let data: any = {}
+      try { data = JSON.parse(text) } catch (e) {}
+
+      if (!res.ok) throw new Error(data.error || `Server error (${res.status})`)
       router.refresh()
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Gagal')
+      alert(err instanceof Error ? err.message : 'Gagal memperbarui pembayaran')
     } finally {
       setLoading(null)
       setShowRejectForm(false)
@@ -51,8 +54,11 @@ export default function PaymentActions({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
       })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
+      const text = await res.text()
+      let data: any = {}
+      try { data = JSON.parse(text) } catch (e) {}
+
+      if (!res.ok) throw new Error(data.error || `Server error (${res.status})`)
       router.refresh()
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Gagal memperbarui status')
