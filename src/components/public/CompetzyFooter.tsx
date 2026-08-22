@@ -1,7 +1,17 @@
 'use client'
 
 import Link from 'next/link'
-import { Search, Instagram, MessageCircle, Globe, Users, ArrowRight, ShieldCheck, Truck } from 'lucide-react'
+import { Search, MessageCircle, Globe, Users, ArrowRight, ShieldCheck, Truck } from 'lucide-react'
+
+function InstagramIcon({ className = "w-4 h-4" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+      <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+    </svg>
+  )
+}
 
 interface CompetzyFooterProps {
   faviconUrl?: string | null
@@ -89,7 +99,7 @@ export default function CompetzyFooter({
                 className="w-9 h-9 rounded-xl bg-emerald-900/40 border border-emerald-800/40 flex items-center justify-center text-emerald-400 hover:bg-pink-600 hover:text-white transition-all"
                 title={`Instagram ${igHandle}`}
               >
-                <Instagram className="w-4 h-4" />
+                <InstagramIcon className="w-4 h-4" />
               </a>
               <a
                 href="https://gontor.ac.id"
@@ -220,7 +230,7 @@ export default function CompetzyFooter({
                   rel="noopener noreferrer"
                   className="hover:text-white transition-colors flex items-center gap-2"
                 >
-                  <Instagram className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <InstagramIcon className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                   <span>Instagram {igHandle}</span>
                 </a>
               </li>
