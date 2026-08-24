@@ -323,50 +323,9 @@ export default function ProductDetailModal({
                         </div>
                       </div>
                     ) : (
-                      <div className="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-4 text-center space-y-1">
-                        <p className="text-xs font-bold text-amber-800">Foto Size Chart Belum Diupload</p>
-                        <p className="text-[11px] text-amber-700">Silakan lihat daftar ketersediaan stok & ukuran di bawah ini.</p>
-                      </div>
-                    )}
-
-                    {/* Table Grid of Variants */}
-                    {product.has_variants && sortedVariants.length > 0 && (
-                      <div className="pt-2">
-                        <div className="text-xs font-bold text-gray-700 mb-2 font-display">Rincian Stok Varian Ukuran</div>
-                        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-                          <table className="w-full text-xs text-left">
-                            <thead className="bg-gray-50 border-b border-gray-200 font-display font-bold text-gray-600 uppercase text-[10px]">
-                              <tr>
-                                <th className="px-4 py-2.5">Varian / Ukuran</th>
-                                <th className="px-4 py-2.5">Harga Unit</th>
-                                <th className="px-4 py-2.5 text-right">Status Stok</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
-                              {sortedVariants.map(v => (
-                                <tr key={v.id} className={selectedVariant?.id === v.id ? 'bg-emerald-50/60 font-semibold' : ''}>
-                                  <td className="px-4 py-2.5 font-bold text-gray-900">{v.name}</td>
-                                  <td className="px-4 py-2.5 text-gray-700">{formatRupiah(v.price)}</td>
-                                  <td className="px-4 py-2.5 text-right">
-                                    {v.stock !== null && v.stock !== undefined ? (
-                                      v.stock > 0 ? (
-                                        <span className="text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded text-[11px] font-bold">
-                                          Tersedia ({v.stock})
-                                        </span>
-                                      ) : (
-                                        <span className="text-red-600 bg-red-100 px-2 py-0.5 rounded text-[11px] font-bold">
-                                          Habis
-                                        </span>
-                                      )
-                                    ) : (
-                                      <span className="text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded text-[11px] font-bold">Ready</span>
-                                    )}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
+                      <div className="bg-emerald-50/60 border border-emerald-200/80 rounded-2xl p-6 text-center space-y-1">
+                        <p className="text-xs font-bold text-emerald-900 font-display">Foto Panduan Size Chart Belum Tersedia</p>
+                        <p className="text-[11px] text-emerald-700">Panitia belum mengunggah gambar tabel ukuran untuk produk ini. Silakan pilih varian ukuran langsung pada tab Spesifikasi.</p>
                       </div>
                     )}
                   </div>
