@@ -312,47 +312,49 @@ export default function SizeChartEditorModal({
           </div>
 
           {/* Live Preview Card */}
-          <div className="bg-slate-900 text-white p-5 rounded-2xl space-y-3 shadow-inner">
-            <div className="text-xs font-display font-bold text-amber-400 uppercase tracking-wider">
+          <div className="bg-slate-950 text-white p-5 rounded-2xl space-y-3 shadow-inner border border-slate-800">
+            <div className="text-xs font-display font-bold text-emerald-400 uppercase tracking-wider">
               Live Preview Tampilan di User Pembeli:
             </div>
 
-            <div className="bg-slate-950 p-4 rounded-xl space-y-3 overflow-x-auto border border-slate-800">
-              <div className="text-center font-display font-black text-amber-400 text-sm tracking-widest uppercase">
-                {name || 'TITEL SIZE CHART'}
-              </div>
-
-              <div className="flex items-center justify-between text-[11px] font-display font-black text-amber-300 border-b border-slate-800 pb-2">
-                <span className="w-36">KETERANGAN</span>
-                <div className="flex gap-2">
-                  {sizes.map(s => (
-                    <span key={s} className="w-12 text-center">{s}</span>
-                  ))}
+            <div className="bg-slate-900 text-white rounded-2xl p-4 sm:p-5 space-y-3.5 border border-slate-800 shadow-lg">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+                <div className="flex items-center gap-2">
+                  <Ruler className="w-4 h-4 text-emerald-400" />
+                  <h3 className="font-display font-black text-white text-xs sm:text-sm tracking-wide uppercase">
+                    {name || 'PANDUAN UKURAN'}
+                  </h3>
                 </div>
+                <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/80 border border-emerald-800 px-2 py-0.5 rounded font-semibold">
+                  Satuan: {unit || 'cm'}
+                </span>
               </div>
 
-              <div className="space-y-2">
-                {measurements.map((m, i) => (
-                  <div key={i} className="flex items-center justify-between text-xs">
-                    <span className="w-36 px-3 py-1.5 bg-amber-500/20 text-amber-300 font-display font-black rounded-xl border border-amber-500/30 text-[11px]">
-                      {m.label.toUpperCase()}
-                    </span>
-                    <div className="flex gap-2">
+              <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950">
+                <table className="w-full text-xs text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-900 text-amber-400 font-display font-black text-[10px] sm:text-xs uppercase border-b border-slate-800">
+                      <th className="py-2.5 px-3 text-left font-bold tracking-wider">KETERANGAN</th>
                       {sizes.map(s => (
-                        <span
-                          key={s}
-                          className="w-12 py-1.5 text-center bg-amber-500/10 text-amber-100 font-bold rounded-xl border border-amber-500/20 text-[11px]"
-                        >
-                          {m.values[s] || '-'}
-                        </span>
+                        <th key={s} className="py-2.5 px-2 text-center font-black">{s}</th>
                       ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="text-[10px] text-slate-400 italic text-right pt-1">
-                * Satuan ukuran dalam {unit}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/80">
+                    {measurements.map((m, idx) => (
+                      <tr key={idx} className="hover:bg-slate-900/60 transition-colors">
+                        <td className="py-2.5 px-3 font-display font-bold text-emerald-300 text-[11px] sm:text-xs whitespace-nowrap">
+                          {m.label.toUpperCase()}
+                        </td>
+                        {sizes.map(s => (
+                          <td key={s} className="py-2.5 px-2 text-center font-mono font-bold text-slate-100 text-xs sm:text-sm">
+                            {m.values[s] || '-'}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>

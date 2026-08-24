@@ -313,7 +313,7 @@ export default function ProductDetailModal({
                 {/* Tab 2: Size Chart */}
                 {activeTab === 'sizechart' && (
                   <div className="space-y-4 animate-in fade-in duration-150">
-                    {/* Database Master Size Chart Table (Matching exact design of user screenshot) */}
+                    {/* Sleek & Formal Master Size Chart Table */}
                     {(() => {
                       const sc = product.size_chart || fetchedSizeChart
                       if (!sc || !sc.sizes || sc.sizes.length === 0) {
@@ -325,37 +325,38 @@ export default function ProductDetailModal({
                         )
                       }
                       return (
-                        <div className="bg-gradient-to-br from-amber-50/80 via-orange-50/40 to-amber-100/50 border border-amber-200/90 rounded-3xl p-4 sm:p-5 space-y-4 shadow-sm">
-                          <div className="text-center">
-                            <h3 className="font-display font-black text-amber-950 text-base sm:text-lg tracking-widest uppercase">
-                              {sc.name || 'PANDUAN UKURAN'}
-                            </h3>
-                            <p className="text-[11px] text-amber-800 font-semibold">Semua ukuran dalam satuan ({sc.unit || 'cm'})</p>
+                        <div className="bg-slate-900 text-white rounded-2xl p-4 sm:p-5 space-y-3.5 border border-slate-800 shadow-lg">
+                          <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+                            <div className="flex items-center gap-2">
+                              <Ruler className="w-4 h-4 text-emerald-400" />
+                              <h3 className="font-display font-black text-white text-xs sm:text-sm tracking-wide uppercase">
+                                {sc.name || 'PANDUAN UKURAN'}
+                              </h3>
+                            </div>
+                            <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/80 border border-emerald-800 px-2 py-0.5 rounded font-semibold">
+                              Satuan: {sc.unit || 'cm'}
+                            </span>
                           </div>
 
-                          <div className="overflow-x-auto">
-                            <table className="w-full text-xs text-left border-separate border-spacing-y-2 sm:border-spacing-y-2.5">
+                          <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950">
+                            <table className="w-full text-xs text-left border-collapse">
                               <thead>
-                                <tr className="text-amber-950 font-display font-black text-xs sm:text-sm uppercase">
-                                  <th className="px-3 py-1 text-left tracking-wider min-w-[140px]">KETERANGAN</th>
+                                <tr className="bg-slate-900 text-amber-400 font-display font-black text-[10px] sm:text-xs uppercase border-b border-slate-800">
+                                  <th className="py-2.5 px-3 text-left font-bold tracking-wider">KETERANGAN</th>
                                   {sc.sizes.map(s => (
-                                    <th key={s} className="px-1.5 py-1 text-center min-w-[48px] tracking-wider">{s}</th>
+                                    <th key={s} className="py-2.5 px-2 text-center font-black">{s}</th>
                                   ))}
                                 </tr>
                               </thead>
-                              <tbody>
+                              <tbody className="divide-y divide-slate-800/80">
                                 {(sc.measurements || []).map((m, idx) => (
-                                  <tr key={idx}>
-                                    <td className="pr-2">
-                                      <div className="px-3.5 py-2.5 bg-gradient-to-r from-amber-200 to-amber-300/90 text-amber-950 font-display font-black rounded-xl sm:rounded-2xl text-[11px] sm:text-xs tracking-wider uppercase border border-amber-300 shadow-xs">
-                                        {m.label}
-                                      </div>
+                                  <tr key={idx} className="hover:bg-slate-900/60 transition-colors">
+                                    <td className="py-2.5 px-3 font-display font-bold text-emerald-300 text-[11px] sm:text-xs whitespace-nowrap">
+                                      {m.label.toUpperCase()}
                                     </td>
                                     {sc.sizes.map(s => (
-                                      <td key={s} className="px-1 font-display text-center">
-                                        <div className="py-2.5 bg-amber-100/90 text-amber-950 rounded-xl sm:rounded-2xl text-xs sm:text-sm border border-amber-200/90 font-black shadow-xs">
-                                          {m.values[s] || '-'}
-                                        </div>
+                                      <td key={s} className="py-2.5 px-2 text-center font-mono font-bold text-slate-100 text-xs sm:text-sm">
+                                        {m.values[s] || '-'}
                                       </td>
                                     ))}
                                   </tr>
@@ -363,6 +364,10 @@ export default function ProductDetailModal({
                               </tbody>
                             </table>
                           </div>
+                          
+                          <p className="text-[10px] text-slate-400 italic text-right pt-0.5">
+                            * Toleransi ukuran ±1-2 cm dapat terjadi karena proses penjahitan.
+                          </p>
                         </div>
                       )
                     })()}
