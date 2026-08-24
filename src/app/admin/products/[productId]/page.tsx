@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation'
 import EditProductClient from './EditProductClient'
 
 export const metadata: Metadata = { title: 'Edit Produk' }
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export default async function EditProductPage({
   params,

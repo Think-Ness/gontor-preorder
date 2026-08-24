@@ -126,8 +126,7 @@ export default function EditProductClient({ initialProduct }: Props) {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
 
-      router.push('/admin/products')
-      router.refresh()
+      window.location.href = '/admin/products'
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Gagal memperbarui produk')
     } finally {

@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/server'
 import ProductsListClient from './ProductsListClient'
 
 export const metadata: Metadata = { title: 'Produk' }
+export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 export default async function ProductsPage() {

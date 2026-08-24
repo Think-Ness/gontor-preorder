@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { checkIsAdmin } from '@/lib/auth'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { productSchema } from '@/lib/validations/schemas'
+
+export const dynamic = 'force-dynamic'
 
 // GET product detail with variants
 export async function GET(
@@ -21,7 +24,11 @@ export async function GET(
     return NextResponse.json({ error: 'Produk tidak ditemukan' }, { status: 404 })
   }
 
-  return NextResponse.json({ data: product })
+  return NextResponse.json({ data: product }, {
+    headers: {
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+    }
+  })
 }
 
 // PUT update product
@@ -72,7 +79,7 @@ export async function PUT(
       const variantRows = variants.map((v: any, index: number) => {
         const row: any = {
           product_id: productId,
-          sku: v.sku || `${data.product_code}-${v.name.toLowerCase().replace(/\\s+/g, '-')}`,
+          sku: v.sku || `${data.product_code}-${v.name.toLowerCase().replace(/\s+/g, '-')}`,
           name: v.name,
           price: Number(v.price ?? data.price),
           stock: v.stock !== undefined && v.stock !== '' && v.stock !== null ? Number(v.stock) : null,
@@ -102,6 +109,12 @@ export async function PUT(
       // Clear variants if no longer has variants
       await supabase.from('product_variants').delete().eq('product_id', productId)
     }
+
+    // Purge Vercel App Router caches across admin & public pages
+    revalidatePath('/admin/products')
+    revalidatePath(`/admin/products/${productId}`)
+    revalidatePath('/order')
+    revalidatePath('/')
 
     return NextResponse.json({ success: true })
   } catch (err) {
@@ -134,6 +147,12 @@ export async function DELETE(
     const { error } = await supabase.from('products').delete().eq('id', productId)
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+    // Purge Vercel App Router caches across admin & public pages
+    revalidatePath('/admin/products')
+    revalidatePath(`/admin/products/${productId}`)
+    revalidatePath('/order')
+    revalidatePath('/')
 
     return NextResponse.json({ success: true })
   } catch (err) {

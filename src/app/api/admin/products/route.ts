@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { checkIsAdmin } from '@/lib/auth'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { productSchema } from '@/lib/validations/schemas'
+
+export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
   try {
@@ -63,6 +66,11 @@ export async function POST(req: NextRequest) {
       if (varErr) console.error('[POST /api/admin/products] Variants error:', varErr)
     }
 
+    // Purge App Router caches
+    revalidatePath('/admin/products')
+    revalidatePath('/order')
+    revalidatePath('/')
+
     return NextResponse.json({ success: true, id: product.id })
   } catch (err) {
     console.error('[POST /api/admin/products]', err)
@@ -100,6 +108,11 @@ export async function DELETE(req: NextRequest) {
       console.error('[DELETE /api/admin/products]', error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
+
+    // Purge App Router caches
+    revalidatePath('/admin/products')
+    revalidatePath('/order')
+    revalidatePath('/')
 
     return NextResponse.json({ success: true, deletedCount: ids.length })
   } catch (err) {
