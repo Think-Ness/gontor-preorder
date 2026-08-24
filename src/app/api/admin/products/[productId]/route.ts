@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache'
 import { checkIsAdmin } from '@/lib/auth'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { productSchema } from '@/lib/validations/schemas'
+import { slugify } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -47,8 +48,15 @@ export async function PUT(
     const body = await req.json()
     const { variants, ...productData } = body
 
+    if (!productData.slug || productData.slug.trim() === '') {
+      productData.slug = slugify(productData.name || 'product')
+    } else {
+      productData.slug = slugify(productData.slug)
+    }
+
     const parsed = productSchema.safeParse(productData)
     if (!parsed.success) {
+      console.warn('[PUT /api/admin/products/[productId]] Validation failed:', parsed.error.issues)
       return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Data tidak valid' }, { status: 400 })
     }
 

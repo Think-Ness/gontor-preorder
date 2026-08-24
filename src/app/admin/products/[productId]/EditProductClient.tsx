@@ -19,6 +19,7 @@ export default function EditProductClient({ initialProduct }: Props) {
   const [deleting, setDeleting] = useState(false)
   const [uploadingImage, setUploadingImage] = useState(false)
   const [error, setError] = useState('')
+  const [savedSuccess, setSavedSuccess] = useState(false)
 
   const [form, setForm] = useState({
     product_code: initialProduct.product_code ?? '',
@@ -124,9 +125,12 @@ export default function EditProductClient({ initialProduct }: Props) {
       })
 
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
+      if (!res.ok) throw new Error(data.error || 'Gagal memperbarui produk')
 
-      window.location.href = '/admin/products'
+      setSavedSuccess(true)
+      setTimeout(() => {
+        window.location.href = '/admin/products'
+      }, 600)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Gagal memperbarui produk')
     } finally {
@@ -144,8 +148,7 @@ export default function EditProductClient({ initialProduct }: Props) {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
 
-      router.push('/admin/products')
-      router.refresh()
+      window.location.href = '/admin/products'
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Gagal menghapus produk')
     } finally {
@@ -186,6 +189,13 @@ export default function EditProductClient({ initialProduct }: Props) {
           </button>
         </div>
       </div>
+
+      {savedSuccess && (
+        <div className="bg-green-50 border border-green-200 text-green-800 font-semibold text-sm p-4 rounded-xl flex items-center gap-2 animate-in fade-in duration-200">
+          <span className="w-5 h-5 rounded-full bg-green-600 text-white flex items-center justify-center font-bold text-xs">✓</span>
+          Perubahan produk berhasil disimpan! Mengalihkan ke daftar produk...
+        </div>
+      )}
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-4 rounded-xl">
