@@ -39,6 +39,24 @@ export type PreorderStatus = 'SCHEDULED' | 'OPEN' | 'CLOSED'
 // Database types
 // ============================================================
 
+export interface SizeChartMeasurement {
+  label: string
+  values: Record<string, string>
+}
+
+export interface SizeChart {
+  id: string
+  name: string
+  category?: string | null
+  unit: string
+  sizes: string[]
+  measurements: SizeChartMeasurement[]
+  image_drive_file_id?: string | null
+  image_url?: string | null
+  created_at?: string
+  updated_at?: string
+}
+
 export interface Product {
   id: string
   product_code: string
@@ -54,6 +72,8 @@ export interface Product {
   size_chart_drive_file_id?: string | null
   size_chart_image_url?: string | null
   size_chart_filename?: string | null
+  size_chart_id?: string | null
+  size_chart?: SizeChart | null
   has_variants: boolean
   stock_enabled: boolean
   stock: number | null

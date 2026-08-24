@@ -129,6 +129,7 @@ export const productSchema = z.object({
   size_chart_drive_file_id: z.string().optional().nullable(),
   size_chart_image_url: z.string().optional().nullable(),
   size_chart_filename: z.string().optional().nullable(),
+  size_chart_id: z.string().optional().nullable(),
 })
 
 export type ProductFormData = z.infer<typeof productSchema>

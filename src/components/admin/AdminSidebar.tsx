@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, ShoppingCart, Shirt, ShieldCheck,
   BarChart3, Settings, ScrollText, ChevronDown, ChevronRight,
-  Package, Truck, Clock, FileSpreadsheet, Tv, Factory, Store
+  Package, Truck, Clock, FileSpreadsheet, Tv, Factory, Store, Ruler
 } from 'lucide-react'
 
 interface NavGroup {
@@ -47,6 +47,7 @@ const nav: NavGroup[] = [
       { label: 'Daftar Produk', href: '/admin/products' },
       { label: 'Paket Promo', href: '/admin/packages' },
       { label: 'Stok Barang', href: '/admin/stock' },
+      { label: 'Master Size Chart', href: '/admin/size-charts', icon: Ruler },
     ],
   },
   {

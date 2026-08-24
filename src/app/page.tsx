@@ -43,7 +43,7 @@ async function getPageData() {
       .single(),
     supabase
       .from('products')
-      .select('*, variants:product_variants(*)')
+      .select('*, variants:product_variants(*), size_chart:size_charts(*)')
       .eq('is_active', true)
       .order('display_order'),
     supabase

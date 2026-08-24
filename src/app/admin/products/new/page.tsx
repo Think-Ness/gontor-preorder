@@ -3,10 +3,12 @@
 import { Suspense, useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, Loader2, Plus, Trash2, Upload, Shirt, Copy } from 'lucide-react'
+import { ChevronLeft, Loader2, Plus, Trash2, Upload, Shirt, Copy, Ruler } from 'lucide-react'
 import { slugify } from '@/lib/utils'
+import { SizeChart } from '@/types'
 import { buildDriveImageUrl } from '@/lib/drive-urls'
 import { compressImageFile, safeParseJsonResponse } from '@/lib/image-compression'
+import SizeChartEditorModal from '@/components/admin/SizeChartEditorModal'
 
 function NewProductFormContent() {
   const router = useRouter()
@@ -19,6 +21,23 @@ function NewProductFormContent() {
   const [uploadingImage, setUploadingImage] = useState(false)
   const [uploadingSizeChart, setUploadingSizeChart] = useState(false)
   const [error, setError] = useState('')
+
+  const [sizeCharts, setSizeCharts] = useState<SizeChart[]>([])
+  const [isSizeChartModalOpen, setIsSizeChartModalOpen] = useState(false)
+
+  const fetchSizeCharts = async () => {
+    try {
+      const res = await fetch('/api/admin/size-charts')
+      const data = await res.json()
+      if (data.data) setSizeCharts(data.data)
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  useEffect(() => {
+    fetchSizeCharts()
+  }, [])
 
   const [form, setForm] = useState({
     product_code: '',
@@ -40,6 +59,7 @@ function NewProductFormContent() {
     size_chart_drive_file_id: '',
     size_chart_image_url: '',
     size_chart_filename: '',
+    size_chart_id: '',
   })
 
   const [variants, setVariants] = useState<Array<{ name: string; sku: string; price: string; stock: string }>>([
@@ -401,30 +421,111 @@ function NewProductFormContent() {
           </div>
         </div>
 
-        {/* Size Chart Image */}
+        {/* Master Size Chart Section */}
         <div className="card-premium p-6 space-y-4">
-          <div>
-            <h2 className="font-display font-bold text-gray-900 border-b border-gray-100 pb-2">Foto Chart Ukuran / Size Chart (Google Drive)</h2>
-            <p className="text-xs text-gray-500 mt-1">Upload gambar tabel chart ukuran (panjang x lebar) agar pembeli dapat melihat rincian ukuran di pop-up detail produk.</p>
-          </div>
-          <div className="flex items-center gap-4">
-            {form.size_chart_image_url ? (
-              <div className="relative w-28 h-20 rounded-xl overflow-hidden bg-gray-100 border">
-                <img src={form.size_chart_image_url} alt="Size Chart Preview" className="w-full h-full object-cover" />
-              </div>
-            ) : (
-              <div className="w-28 h-20 rounded-xl bg-gray-50 border border-dashed border-gray-300 flex items-center justify-center text-gray-400">
-                <Upload className="w-6 h-6 opacity-40" />
-              </div>
-            )}
-
+          <div className="flex items-center justify-between border-b border-gray-100 pb-3">
             <div>
-              <label className="btn-primary cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 text-sm">
-                {uploadingSizeChart ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                {uploadingSizeChart ? 'Uploading...' : (form.size_chart_image_url ? 'Ganti Foto Size Chart' : 'Upload Foto Size Chart')}
-                <input type="file" accept="image/*" onChange={handleSizeChartUpload} className="hidden" />
-              </label>
-              <p className="text-xs text-gray-400 mt-1">Otomatis tersimpan di Google Drive</p>
+              <h2 className="font-display font-bold text-gray-900 flex items-center gap-2">
+                <Ruler className="w-5 h-5 text-emerald-600" />
+                Template Chart Ukuran / Size Chart (Database)
+              </h2>
+              <p className="text-xs text-gray-500 mt-0.5">Pilih template tabel panduan ukuran dari database untuk ditampilkan di pop-up produk pembeli.</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsSizeChartModalOpen(true)}
+              className="px-3.5 py-1.5 bg-emerald-100 text-emerald-800 rounded-xl text-xs font-display font-bold hover:bg-emerald-200 flex items-center gap-1 shrink-0"
+            >
+              <Plus className="w-4 h-4" />
+              Buat Size Chart Baru
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            <label className="block text-xs font-bold text-gray-700 font-display">
+              Pilih Master Size Chart:
+            </label>
+            <select
+              value={form.size_chart_id}
+              onChange={e => setForm(p => ({ ...p, size_chart_id: e.target.value }))}
+              className={inputCls}
+            >
+              <option value="">-- Tanpa Size Chart --</option>
+              {sizeCharts.map(sc => (
+                <option key={sc.id} value={sc.id}>
+                  {sc.name} ({sc.category || 'Pakaian'}) - [{sc.sizes.join(', ')}]
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Selected Size Chart Preview */}
+          {form.size_chart_id && (() => {
+            const selectedSc = sizeCharts.find(sc => sc.id === form.size_chart_id)
+            if (!selectedSc) return null
+            return (
+              <div className="bg-slate-900 text-white p-4 rounded-2xl space-y-3 border border-slate-800">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-display font-black text-amber-400 uppercase tracking-wider">
+                    {selectedSc.name}
+                  </span>
+                  <span className="text-[10px] text-slate-400">Satuan: {selectedSc.unit || 'cm'}</span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left border-collapse">
+                    <thead className="bg-slate-950 text-amber-300 font-display font-black text-[10px] uppercase border-b border-slate-800">
+                      <tr>
+                        <th className="px-3 py-2">KETERANGAN</th>
+                        {selectedSc.sizes.map(s => (
+                          <th key={s} className="px-2 py-2 text-center">{s}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800">
+                      {selectedSc.measurements.map((m, idx) => (
+                        <tr key={idx}>
+                          <td className="px-3 py-2 font-display font-black text-amber-300 text-[11px]">
+                            {m.label.toUpperCase()}
+                          </td>
+                          {selectedSc.sizes.map(s => (
+                            <td key={s} className="px-2 py-2 text-center font-bold text-slate-200 text-[11px]">
+                              {m.values[s] || '-'}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )
+          })()}
+
+          {/* Optional Size Chart Image Upload */}
+          <div className="pt-2 border-t border-gray-100">
+            <label className="block text-xs font-bold text-gray-700 mb-1 font-display">
+              Foto Tambahan / Visual Size Chart (Opsional)
+            </label>
+            <div className="flex items-center gap-4">
+              {form.size_chart_image_url ? (
+                <div className="relative w-24 h-16 rounded-xl overflow-hidden bg-gray-100 border">
+                  <img src={form.size_chart_image_url} alt="Size Chart Preview" className="w-full h-full object-cover" />
+                </div>
+              ) : (
+                <div className="w-24 h-16 rounded-xl bg-gray-50 border border-dashed border-gray-300 flex items-center justify-center text-gray-400">
+                  <Upload className="w-5 h-5 opacity-40" />
+                </div>
+              )}
+
+              <div>
+                <label className="btn-primary cursor-pointer inline-flex items-center gap-2 px-3.5 py-2 text-xs">
+                  {uploadingSizeChart ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                  {uploadingSizeChart ? 'Uploading...' : (form.size_chart_image_url ? 'Ganti Foto Chart' : 'Upload Foto Chart')}
+                  <input type="file" accept="image/*" onChange={handleSizeChartUpload} className="hidden" />
+                </label>
+                <p className="text-[11px] text-gray-400 mt-1">Gunakan gambar pendukung jika ada gambar desain grafik ukuran khusus</p>
+              </div>
             </div>
           </div>
         </div>
@@ -500,6 +601,15 @@ function NewProductFormContent() {
           {loading ? 'Menyimpan Produk...' : (duplicatedSource ? 'Simpan Produk Duplikat' : 'Simpan & Publis Produk')}
         </button>
       </form>
+
+      <SizeChartEditorModal
+        isOpen={isSizeChartModalOpen}
+        onClose={() => setIsSizeChartModalOpen(false)}
+        onSaved={newSc => {
+          fetchSizeCharts()
+          setForm(p => ({ ...p, size_chart_id: newSc.id }))
+        }}
+      />
     </div>
   )
 }

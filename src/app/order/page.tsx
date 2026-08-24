@@ -15,7 +15,7 @@ export default async function OrderPage() {
   const [{ data: settings }, { data: products }, { data: packages }, { data: paymentMethods }] =
     await Promise.all([
       supabase.from('event_settings').select('*').single(),
-      supabase.from('products').select('*, variants:product_variants(*)').eq('is_active', true).order('display_order'),
+      supabase.from('products').select('*, variants:product_variants(*), size_chart:size_charts(*)').eq('is_active', true).order('display_order'),
       supabase.from('packages').select('*, items:package_items(*, product:products(*), variant:product_variants(*))').eq('is_active', true).order('display_order'),
       supabase.from('payment_methods').select('*').eq('is_active', true).order('display_order'),
     ])
