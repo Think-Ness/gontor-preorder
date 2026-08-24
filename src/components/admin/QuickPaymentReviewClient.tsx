@@ -146,8 +146,8 @@ export default function QuickPaymentReviewClient({ pendingOrders, initialSelecte
                       <span className="text-xs font-bold text-green-800 font-display">
                         {formatRupiah(Number(order.total_amount))}
                       </span>
-                      <span className="text-[10px] text-gray-400">
-                        {new Date(order.created_at).toLocaleDateString('id-ID')}
+                      <span className="text-[10px] text-gray-400 font-medium">
+                        {new Date(order.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })} &bull; {new Date(order.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }).replace('.', ':')} WIB
                       </span>
                     </div>
                   </div>

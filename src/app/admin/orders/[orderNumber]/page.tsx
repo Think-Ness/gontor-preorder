@@ -45,7 +45,9 @@ export default async function OrderDetailPage({
         </Link>
         <div>
           <h1 className="font-display font-bold text-xl text-gray-900">{order.order_number}</h1>
-          <p className="text-gray-500 text-sm">{new Date(order.created_at).toLocaleDateString('id-ID', { dateStyle: 'full' })}</p>
+          <p className="text-gray-500 text-sm font-medium">
+            {new Date(order.created_at).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} &bull; Pukul {new Date(order.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }).replace('.', ':')} WIB
+          </p>
         </div>
         <div className="ml-auto flex gap-2">
           <span className={`text-xs px-3 py-1.5 rounded-full font-semibold border ${statusCls[order.order_status] ?? 'badge-unpaid'}`}>

@@ -247,8 +247,10 @@ export default function OrderTableClient({ orders }: { orders: any[] }) {
                       {statusLabels[order.order_status] || order.order_status}
                     </span>
                     <div className="text-[10px] text-gray-400 font-medium mt-1.5 flex items-center justify-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {new Date(order.created_at).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}
+                      <Clock className="w-3 h-3 text-gray-400" />
+                      <span>
+                        {new Date(order.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })} &bull; {new Date(order.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }).replace('.', ':')} WIB
+                      </span>
                     </div>
                   </td>
                   <td className="px-4 py-4 text-right pr-6">
