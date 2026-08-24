@@ -21,6 +21,9 @@ export interface MapPinData {
   lng: number
   isAlumni: boolean
   province: string | null
+  city: string | null
+  district: string | null
+  fulfillmentMethod: string | null
 }
 
 async function getPageData() {
@@ -70,7 +73,7 @@ async function getPageData() {
     // Map pins data
     supabase
       .from('orders')
-      .select('shipping_latitude, shipping_longitude, is_alumni, shipping_province')
+      .select('shipping_latitude, shipping_longitude, is_alumni, shipping_province, shipping_city, shipping_district, fulfillment_method')
       .neq('order_status', 'CANCELLED')
       .neq('order_status', 'REJECTED')
       .neq('order_status', 'DRAFT')
@@ -127,6 +130,9 @@ async function getPageData() {
     lng: Number(row.shipping_longitude),
     isAlumni: row.is_alumni,
     province: row.shipping_province || null,
+    city: row.shipping_city || null,
+    district: row.shipping_district || null,
+    fulfillmentMethod: row.fulfillment_method || null,
   }))
 
   return {

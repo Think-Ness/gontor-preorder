@@ -21,6 +21,7 @@ function project(lng: number, lat: number): [number, number] {
 
 export default function IndonesiaMapSection({ mapPins }: Props) {
   const [isLegendOpen, setIsLegendOpen] = useState(false)
+  const [hoveredPinIndex, setHoveredPinIndex] = useState<number | null>(null)
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
@@ -47,7 +48,7 @@ export default function IndonesiaMapSection({ mapPins }: Props) {
   // Deduplicate pins with identical GPS coordinates so pins never stack on top of each other
   const uniquePinsMap = new Map<string, MapPinData>()
   mapPins.forEach(pin => {
-    const key = `${Number(pin.lat).toFixed(5)},${Number(pin.lng).toFixed(5)}`
+    const key = `${Number(pin.lat).toFixed(4)},${Number(pin.lng).toFixed(4)}`
     const existing = uniquePinsMap.get(key)
     if (!existing) {
       uniquePinsMap.set(key, pin)
@@ -86,82 +87,176 @@ export default function IndonesiaMapSection({ mapPins }: Props) {
             centerOnInit
             wheel={{ step: 0.1 }}
           >
-            {({ zoomIn, zoomOut, resetTransform }) => (
-              <>
-                {/* Controls */}
-                <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 bg-white/90 backdrop-blur-sm p-1.5 rounded-xl shadow border border-emerald-100 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button onClick={() => zoomIn()} className="p-2 hover:bg-emerald-50 rounded-lg text-emerald-700 transition-colors" title="Zoom In">
-                    <ZoomIn className="w-5 h-5" />
-                  </button>
-                  <button onClick={() => zoomOut()} className="p-2 hover:bg-emerald-50 rounded-lg text-emerald-700 transition-colors" title="Zoom Out">
-                    <ZoomOut className="w-5 h-5" />
-                  </button>
-                  <button onClick={() => resetTransform()} className="p-2 hover:bg-emerald-50 rounded-lg text-emerald-700 transition-colors" title="Reset View">
-                    <Maximize className="w-5 h-5" />
-                  </button>
-                </div>
+            {({ zoomIn, zoomOut, resetTransform, state }) => {
+              const scale = state?.scale ?? 1
+              // Responsive pin scaling: scale pins down as map zooms in so pins stay crisp & pinpoint exact locations
+              const pinScale = Math.max(0.28, 1 / Math.pow(scale, 0.65))
 
-                <TransformComponent 
-                  wrapperStyle={{ width: "100%", height: "100%" }}
-                  contentStyle={{ width: "100%", height: "100%" }}
-                >
-                  <svg
-                    viewBox="0 0 900 420"
-                    preserveAspectRatio="xMidYMid meet"
-                    className="w-full h-full"
+              return (
+                <>
+                  {/* Controls */}
+                  <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 bg-white/90 backdrop-blur-sm p-1.5 rounded-xl shadow border border-emerald-100 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onClick={() => zoomIn()} className="p-2 hover:bg-emerald-50 rounded-lg text-emerald-700 transition-colors" title="Zoom In">
+                      <ZoomIn className="w-5 h-5" />
+                    </button>
+                    <button onClick={() => zoomOut()} className="p-2 hover:bg-emerald-50 rounded-lg text-emerald-700 transition-colors" title="Zoom Out">
+                      <ZoomOut className="w-5 h-5" />
+                    </button>
+                    <button onClick={() => resetTransform()} className="p-2 hover:bg-emerald-50 rounded-lg text-emerald-700 transition-colors" title="Reset View">
+                      <Maximize className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <TransformComponent 
+                    wrapperStyle={{ width: "100%", height: "100%" }}
+                    contentStyle={{ width: "100%", height: "100%" }}
                   >
-                    {/* Sea background grid */}
-                    <defs>
-                      <pattern id="seaGrid" width="40" height="40" patternUnits="userSpaceOnUse">
-                        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(6,61,46,0.06)" strokeWidth="0.5" />
-                      </pattern>
-                      
-                      <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-                        <feDropShadow dx="0" dy="1" stdDeviation="1.5" floodColor="#000000" floodOpacity="0.4" />
-                      </filter>
-                    </defs>
+                    <svg
+                      viewBox="0 0 900 420"
+                      preserveAspectRatio="xMidYMid meet"
+                      className="w-full h-full overflow-visible"
+                    >
+                      {/* Sea background grid */}
+                      <defs>
+                        <pattern id="seaGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+                          <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(6,61,46,0.06)" strokeWidth="0.5" />
+                        </pattern>
+                        
+                        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                          <feDropShadow dx="0" dy="1" stdDeviation="1.5" floodColor="#000000" floodOpacity="0.4" />
+                        </filter>
+                      </defs>
 
-                    <rect width="900" height="420" fill="url(#seaGrid)" />
-                    <rect width="900" height="420" fill="rgba(232,244,248,0.6)" />
+                      <rect width="900" height="420" fill="url(#seaGrid)" />
+                      <rect width="900" height="420" fill="rgba(232,244,248,0.6)" />
 
-                    {/* Real Island shapes from TopoJSON */}
-                    {INDONESIA_ISLAND_PATHS.map((path, i) => (
-                      <path
-                        key={i}
-                        d={path}
-                        fill="#d1ede4"
-                        stroke="#a7d7c5"
-                        strokeWidth="0.8"
-                        strokeLinejoin="round"
-                      />
-                    ))}
+                      {/* Real Island shapes from TopoJSON */}
+                      {INDONESIA_ISLAND_PATHS.map((path, i) => (
+                        <path
+                          key={i}
+                          d={path}
+                          fill="#d1ede4"
+                          stroke="#a7d7c5"
+                          strokeWidth="0.8"
+                          strokeLinejoin="round"
+                        />
+                      ))}
 
-                    {/* Individual Unique Pins */}
-                    {uniqueMapPins.map((pin, i) => {
-                      const [x, y] = project(pin.lng, pin.lat)
-                      const color = pin.isAlumni ? '#eab308' : '#10b981' // Yellow for Alumni, Green for Umum
-                      const glowColor = pin.isAlumni ? 'rgba(234, 179, 8, 0.4)' : 'rgba(16, 185, 129, 0.4)'
+                      {/* Individual Unique Pins with Responsive Scaling */}
+                      {uniqueMapPins.map((pin, i) => {
+                        const [x, y] = project(pin.lng, pin.lat)
+                        const color = pin.isAlumni ? '#eab308' : '#10b981' // Yellow for Alumni, Green for Umum
+                        const glowColor = pin.isAlumni ? 'rgba(234, 179, 8, 0.4)' : 'rgba(16, 185, 129, 0.4)'
+                        const isHovered = hoveredPinIndex === i
+                        const currentPinScale = isHovered ? pinScale * 1.35 : pinScale
 
-                      return (
-                        <g key={i} transform={`translate(${x}, ${y})`} className="animate-in fade-in zoom-in duration-1000" style={{ animationDelay: `${(i % 10) * 100}ms` }}>
-                          {/* Base Glow */}
-                          <circle cx="0" cy="0" r="4.5" fill={glowColor} className="animate-pulse" />
-                          
-                          {/* Google Maps style Pin Path */}
-                          <path 
-                            d="M0,0 C-2.5,-3.5 -5,-6.5 -5,-9.5 C-5,-12.5 -2.5,-15 0,-15 C2.5,-15 5,-12.5 5,-9.5 C5,-6.5 2.5,-3.5 0,0 Z" 
-                            fill={color}
-                            filter="url(#shadow)"
-                          />
-                          {/* Pin Dot */}
-                          <circle cx="0" cy="-9.5" r="1.5" fill="white" />
-                        </g>
-                      )
-                    })}
-                  </svg>
-                </TransformComponent>
-              </>
-            )}
+                        return (
+                          <g
+                            key={i}
+                            transform={`translate(${x}, ${y}) scale(${currentPinScale})`}
+                            className="cursor-pointer transition-transform duration-150 ease-out"
+                            onMouseEnter={() => setHoveredPinIndex(i)}
+                            onMouseLeave={() => setHoveredPinIndex(null)}
+                            onTouchStart={() => setHoveredPinIndex(hoveredPinIndex === i ? null : i)}
+                          >
+                            {/* Base Glow */}
+                            <circle cx="0" cy="0" r={isHovered ? 7 : 4.5} fill={glowColor} className="animate-pulse" />
+                            
+                            {/* Google Maps style Pin Path */}
+                            <path 
+                              d="M0,0 C-2.5,-3.5 -5,-6.5 -5,-9.5 C-5,-12.5 -2.5,-15 0,-15 C2.5,-15 5,-12.5 5,-9.5 C5,-6.5 2.5,-3.5 0,0 Z" 
+                              fill={color}
+                              stroke={isHovered ? '#ffffff' : 'none'}
+                              strokeWidth={isHovered ? 1.5 : 0}
+                              filter="url(#shadow)"
+                            />
+                            {/* Pin Dot */}
+                            <circle cx="0" cy="-9.5" r="1.5" fill="white" />
+                          </g>
+                        )
+                      })}
+
+                      {/* Render Hovered Tooltip Card on top of pins */}
+                      {hoveredPinIndex !== null && uniqueMapPins[hoveredPinIndex] && (() => {
+                        const pin = uniqueMapPins[hoveredPinIndex]
+                        const [x, y] = project(pin.lng, pin.lat)
+                        const isAlumni = pin.isAlumni
+                        const locationName = pin.city || pin.district || 'Pemesan'
+                        const provinceText = pin.province ? pin.province : 'Indonesia'
+                        const methodText = pin.fulfillmentMethod === 'PICKUP' ? 'Ambil di Stand' : 'Kirim Alamat'
+
+                        return (
+                          <g transform={`translate(${x}, ${y - 18 * pinScale}) scale(${pinScale})`} className="pointer-events-none z-30">
+                            {/* Card Background */}
+                            <rect
+                              x="-95"
+                              y="-62"
+                              width="190"
+                              height="52"
+                              rx="10"
+                              fill="#0f172a"
+                              fillOpacity="0.94"
+                              stroke={isAlumni ? '#eab308' : '#10b981'}
+                              strokeWidth="1.2"
+                              filter="url(#shadow)"
+                            />
+                            {/* Pointer Arrow */}
+                            <polygon points="-6,-10 6,-10 0,-3" fill="#0f172a" opacity="0.94" />
+
+                            {/* Status Badge Pill */}
+                            <rect
+                              x="-87"
+                              y="-53"
+                              width="54"
+                              height="14"
+                              rx="4"
+                              fill={isAlumni ? '#eab308' : '#10b981'}
+                            />
+                            <text
+                              x="-60"
+                              y="-42"
+                              fill="#000000"
+                              fontSize="8.5"
+                              fontWeight="900"
+                              textAnchor="middle"
+                              fontFamily="sans-serif"
+                            >
+                              {isAlumni ? 'ALUMNI' : 'PEMESAN'}
+                            </text>
+
+                            {/* Location City / District */}
+                            <text
+                              x="-26"
+                              y="-41"
+                              fill="#ffffff"
+                              fontSize="11"
+                              fontWeight="bold"
+                              textAnchor="start"
+                              fontFamily="sans-serif"
+                            >
+                              {locationName.length > 18 ? locationName.substring(0, 16) + '...' : locationName}
+                            </text>
+
+                            {/* Detailed Address Subtitle */}
+                            <text
+                              x="-87"
+                              y="-22"
+                              fill="#cbd5e1"
+                              fontSize="9"
+                              fontWeight="600"
+                              textAnchor="start"
+                              fontFamily="sans-serif"
+                            >
+                              📍 {provinceText} • {methodText}
+                            </text>
+                          </g>
+                        )
+                      })()}
+                    </svg>
+                  </TransformComponent>
+                </>
+              )
+            }}
           </TransformWrapper>
 
           {/* Minimizable Legend Card */}
