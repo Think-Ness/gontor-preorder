@@ -31,7 +31,7 @@ async function getPageData() {
 
   const [
     { data: settings },
-    { data: products },
+    { data: productsRaw },
     { data: packages },
     { data: paymentMethods },
     { data: orderItemsRaw },

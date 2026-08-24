@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import Image from 'next/image'
-import { Product, ProductVariant, CartItem } from '@/types'
+import { Product, ProductVariant, CartItem, SizeChart } from '@/types'
 import { formatRupiah, sortVariants } from '@/lib/utils'
 import { buildDriveImageUrl } from '@/lib/drive-urls'
 import { X, Plus, ShoppingBag, Shirt, Ruler, Sparkles, Check, ZoomIn } from 'lucide-react'
