@@ -229,11 +229,9 @@ export default function OrderTableClient({ orders }: { orders: any[] }) {
                       {isPickup ? <Package className="w-3.5 h-3.5 text-amber-600" /> : <Truck className="w-3.5 h-3.5 text-blue-600" />}
                       {isPickup ? 'AMBIL DI STAND' : 'KIRIM ALAMAT'}
                     </div>
-                    {!isPickup && (
-                      <div className="text-xs text-gray-500 line-clamp-1 max-w-[200px]" title={order.shipping_city}>
-                        {order.shipping_city}
-                      </div>
-                    )}
+                    <div className="text-xs text-gray-500 line-clamp-1 max-w-[200px]" title={order.shipping_city || order.district || order.shipping_province}>
+                      {order.shipping_city || order.district || order.shipping_province || '-'}
+                    </div>
                   </td>
                   <td className="px-4 py-4 text-right">
                     <div className="font-black text-gray-900 text-sm mb-1">{formatRupiah(order.total_amount)}</div>
