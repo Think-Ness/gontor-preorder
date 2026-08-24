@@ -342,40 +342,11 @@ export default function ProductDetailModal({
                           </div>
                         </div>
                       )
-                    })() : null}
-
-                    {/* Optional Image Size Chart */}
-                    {sizeChartImageUrl ? (
-                      <div className="space-y-2 pt-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-gray-700 font-display">Tabel / Panduan Gambar Ukuran</span>
-                          <button
-                            onClick={() => setIsZoomingSizeChart(true)}
-                            className="text-[11px] text-emerald-700 font-semibold flex items-center gap-1 hover:underline"
-                          >
-                            <ZoomIn className="w-3.5 h-3.5" /> Perbesar Gambar
-                          </button>
-                        </div>
-                        <div 
-                          className="relative w-full aspect-[4/3] bg-gray-50 rounded-2xl overflow-hidden border border-gray-200 cursor-pointer hover:opacity-95 transition-opacity"
-                          onClick={() => setIsZoomingSizeChart(true)}
-                        >
-                          <Image
-                            src={sizeChartImageUrl}
-                            alt={`Size Chart ${product.name}`}
-                            fill
-                            className="object-contain"
-                            sizes="(max-width: 768px) 100vw, 500px"
-                          />
-                        </div>
+                    })() : (
+                      <div className="bg-emerald-50/60 border border-emerald-200/80 rounded-2xl p-6 text-center space-y-1">
+                        <p className="text-xs font-bold text-emerald-900 font-display">Tabel Size Chart Belum Dipasang</p>
+                        <p className="text-[11px] text-emerald-700">Panitia belum memilih template tabel ukuran untuk produk ini. Silakan pilih varian ukuran langsung pada tab Spesifikasi.</p>
                       </div>
-                    ) : (
-                      !product.size_chart && (
-                        <div className="bg-emerald-50/60 border border-emerald-200/80 rounded-2xl p-6 text-center space-y-1">
-                          <p className="text-xs font-bold text-emerald-900 font-display">Foto Panduan Size Chart Belum Tersedia</p>
-                          <p className="text-[11px] text-emerald-700">Panitia belum mengunggah gambar tabel ukuran untuk produk ini. Silakan pilih varian ukuran langsung pada tab Spesifikasi.</p>
-                        </div>
-                      )
                     )}
                   </div>
                 )}

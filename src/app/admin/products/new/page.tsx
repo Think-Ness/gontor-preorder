@@ -502,33 +502,6 @@ function NewProductFormContent() {
               </div>
             )
           })()}
-
-          {/* Optional Size Chart Image Upload */}
-          <div className="pt-2 border-t border-gray-100">
-            <label className="block text-xs font-bold text-gray-700 mb-1 font-display">
-              Foto Tambahan / Visual Size Chart (Opsional)
-            </label>
-            <div className="flex items-center gap-4">
-              {form.size_chart_image_url ? (
-                <div className="relative w-24 h-16 rounded-xl overflow-hidden bg-gray-100 border">
-                  <img src={form.size_chart_image_url} alt="Size Chart Preview" className="w-full h-full object-cover" />
-                </div>
-              ) : (
-                <div className="w-24 h-16 rounded-xl bg-gray-50 border border-dashed border-gray-300 flex items-center justify-center text-gray-400">
-                  <Upload className="w-5 h-5 opacity-40" />
-                </div>
-              )}
-
-              <div>
-                <label className="btn-primary cursor-pointer inline-flex items-center gap-2 px-3.5 py-2 text-xs">
-                  {uploadingSizeChart ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                  {uploadingSizeChart ? 'Uploading...' : (form.size_chart_image_url ? 'Ganti Foto Chart' : 'Upload Foto Chart')}
-                  <input type="file" accept="image/*" onChange={handleSizeChartUpload} className="hidden" />
-                </label>
-                <p className="text-[11px] text-gray-400 mt-1">Gunakan gambar pendukung jika ada gambar desain grafik ukuran khusus</p>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Variants */}

@@ -26,6 +26,9 @@ export async function POST(req: NextRequest) {
     if (data.weight_gram === undefined || data.weight_gram === null) {
       delete data.weight_gram
     }
+    if (!data.size_chart_id || (typeof data.size_chart_id === 'string' && data.size_chart_id.trim() === '')) {
+      data.size_chart_id = null
+    }
 
     // Insert main product with fallback if column not yet added to Supabase schema
     let { data: product, error: prodErr } = await supabase
@@ -42,6 +45,7 @@ export async function POST(req: NextRequest) {
       delete fallbackData.size_chart_drive_file_id
       delete fallbackData.size_chart_image_url
       delete fallbackData.size_chart_filename
+      delete fallbackData.size_chart_id
 
       const retry = await supabase
         .from('products')
