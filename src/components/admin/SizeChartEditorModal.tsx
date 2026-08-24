@@ -312,42 +312,40 @@ export default function SizeChartEditorModal({
           </div>
 
           {/* Live Preview Card */}
-          <div className="bg-slate-950 text-white p-5 rounded-2xl space-y-3 shadow-inner border border-slate-800">
-            <div className="text-xs font-display font-bold text-emerald-400 uppercase tracking-wider">
+          <div className="bg-gray-50 p-5 rounded-2xl space-y-3 border border-gray-200">
+            <div className="text-xs font-display font-bold text-gray-700 uppercase tracking-wider">
               Live Preview Tampilan di User Pembeli:
             </div>
 
-            <div className="bg-slate-900 text-white rounded-2xl p-4 sm:p-5 space-y-3.5 border border-slate-800 shadow-lg">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-                <div className="flex items-center gap-2">
-                  <Ruler className="w-4 h-4 text-emerald-400" />
-                  <h3 className="font-display font-black text-white text-xs sm:text-sm tracking-wide uppercase">
-                    {name || 'PANDUAN UKURAN'}
-                  </h3>
-                </div>
-                <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/80 border border-emerald-800 px-2 py-0.5 rounded font-semibold">
+            <div className="space-y-3 bg-white p-4 rounded-xl border border-gray-200">
+              <div className="flex items-center justify-between border-b border-gray-200 pb-2">
+                <h3 className="font-display font-bold text-gray-900 text-xs sm:text-sm uppercase tracking-wide flex items-center gap-1.5">
+                  <Ruler className="w-4 h-4 text-emerald-700" />
+                  {name || 'Panduan Ukuran'}
+                </h3>
+                <span className="text-[11px] font-semibold text-gray-600 bg-gray-100 px-2.5 py-0.5 rounded-full border border-gray-200">
                   Satuan: {unit || 'cm'}
                 </span>
               </div>
 
-              <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950">
+              <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
                 <table className="w-full text-xs text-left border-collapse">
                   <thead>
-                    <tr className="bg-slate-900 text-amber-400 font-display font-black text-[10px] sm:text-xs uppercase border-b border-slate-800">
-                      <th className="py-2.5 px-3 text-left font-bold tracking-wider">KETERANGAN</th>
+                    <tr className="bg-emerald-800 text-white font-display font-bold text-[11px] uppercase">
+                      <th className="py-2.5 px-3 font-bold border-b border-emerald-900">Keterangan</th>
                       {sizes.map(s => (
-                        <th key={s} className="py-2.5 px-2 text-center font-black">{s}</th>
+                        <th key={s} className="py-2.5 px-2 text-center font-bold border-b border-emerald-900">{s}</th>
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/80">
+                  <tbody className="divide-y divide-gray-100">
                     {measurements.map((m, idx) => (
-                      <tr key={idx} className="hover:bg-slate-900/60 transition-colors">
-                        <td className="py-2.5 px-3 font-display font-bold text-emerald-300 text-[11px] sm:text-xs whitespace-nowrap">
-                          {m.label.toUpperCase()}
+                      <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/60'}>
+                        <td className="py-2.5 px-3 font-display font-semibold text-gray-800 text-xs whitespace-nowrap">
+                          {m.label}
                         </td>
                         {sizes.map(s => (
-                          <td key={s} className="py-2.5 px-2 text-center font-mono font-bold text-slate-100 text-xs sm:text-sm">
+                          <td key={s} className="py-2.5 px-2 text-center font-medium text-gray-700 text-xs sm:text-sm">
                             {m.values[s] || '-'}
                           </td>
                         ))}
