@@ -16,7 +16,7 @@ function project(lng: number, lat: number): [number, number] {
   const translate = [-1870.4115041247428, 159.9104722285771]
   const x = translate[0] + scale * (lng * Math.PI / 180)
   const y = translate[1] - scale * Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI / 180) / 2))
-  return [x, y]
+  return [Number(x.toFixed(4)), Number(y.toFixed(4))]
 }
 
 export default function IndonesiaMapSection({ mapPins }: Props) {
