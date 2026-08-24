@@ -45,11 +45,15 @@ export interface Product {
   name: string
   slug: string
   description: string | null
+  material_description?: string | null
   product_type: ProductType
   price: number
   image_drive_file_id: string | null
   image_url: string | null
   image_filename: string | null
+  size_chart_drive_file_id?: string | null
+  size_chart_image_url?: string | null
+  size_chart_filename?: string | null
   has_variants: boolean
   stock_enabled: boolean
   stock: number | null

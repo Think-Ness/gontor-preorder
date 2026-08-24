@@ -113,7 +113,8 @@ export const productSchema = z.object({
   product_code: z.string().min(1, 'Kode produk wajib diisi'),
   name: z.string().min(2, 'Nama produk wajib diisi'),
   slug: z.string().min(1).regex(/^[a-z0-9-]+$/, 'Slug hanya boleh huruf kecil, angka, dan tanda hubung'),
-  description: z.string().optional(),
+  description: z.string().optional().nullable(),
+  material_description: z.string().optional().nullable(),
   product_type: z.enum(['SIMPLE', 'VARIABLE', 'PACKAGE']),
   price: z.number().min(0, 'Harga tidak boleh negatif'),
   has_variants: z.boolean(),
@@ -125,6 +126,9 @@ export const productSchema = z.object({
   image_drive_file_id: z.string().optional().nullable(),
   image_url: z.string().optional().nullable(),
   image_filename: z.string().optional().nullable(),
+  size_chart_drive_file_id: z.string().optional().nullable(),
+  size_chart_image_url: z.string().optional().nullable(),
+  size_chart_filename: z.string().optional().nullable(),
 })
 
 export type ProductFormData = z.infer<typeof productSchema>

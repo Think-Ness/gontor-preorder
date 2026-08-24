@@ -71,11 +71,18 @@ export async function PUT(
       .update(data)
       .eq('id', productId)
 
-    if (updateErr && updateErr.message?.includes('weight_gram')) {
-      delete data.weight_gram
+    if (updateErr) {
+      console.warn('[PUT /api/admin/products] Update warning/error:', updateErr.message)
+      const fallbackData = { ...data }
+      delete fallbackData.weight_gram
+      delete fallbackData.material_description
+      delete fallbackData.size_chart_drive_file_id
+      delete fallbackData.size_chart_image_url
+      delete fallbackData.size_chart_filename
+
       const retry = await supabase
         .from('products')
-        .update(data)
+        .update(fallbackData)
         .eq('id', productId)
       updateErr = retry.error
     }

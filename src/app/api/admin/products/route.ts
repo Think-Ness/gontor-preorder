@@ -34,11 +34,18 @@ export async function POST(req: NextRequest) {
       .select('id')
       .single()
 
-    if (prodErr && prodErr.message?.includes('weight_gram')) {
-      delete data.weight_gram
+    if (prodErr) {
+      console.warn('[POST /api/admin/products] Insert warning/error:', prodErr.message)
+      const fallbackData = { ...data }
+      delete fallbackData.weight_gram
+      delete fallbackData.material_description
+      delete fallbackData.size_chart_drive_file_id
+      delete fallbackData.size_chart_image_url
+      delete fallbackData.size_chart_filename
+
       const retry = await supabase
         .from('products')
-        .insert(data)
+        .insert(fallbackData)
         .select('id')
         .single()
       product = retry.data

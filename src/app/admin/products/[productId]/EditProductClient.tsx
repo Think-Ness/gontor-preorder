@@ -18,6 +18,7 @@ export default function EditProductClient({ initialProduct }: Props) {
   const [loading, setLoading] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [uploadingImage, setUploadingImage] = useState(false)
+  const [uploadingSizeChart, setUploadingSizeChart] = useState(false)
   const [error, setError] = useState('')
   const [savedSuccess, setSavedSuccess] = useState(false)
 
@@ -26,6 +27,7 @@ export default function EditProductClient({ initialProduct }: Props) {
     name: initialProduct.name ?? '',
     slug: initialProduct.slug ?? '',
     description: initialProduct.description ?? '',
+    material_description: initialProduct.material_description ?? '',
     product_type: initialProduct.product_type ?? 'SIMPLE',
     price: initialProduct.price ? String(initialProduct.price) : '',
     weight_gram: initialProduct.weight_gram !== null && initialProduct.weight_gram !== undefined ? String(initialProduct.weight_gram) : '',
@@ -37,6 +39,9 @@ export default function EditProductClient({ initialProduct }: Props) {
     image_drive_file_id: initialProduct.image_drive_file_id ?? '',
     image_url: initialProduct.image_drive_file_id ? buildDriveImageUrl(initialProduct.image_drive_file_id) : (initialProduct.image_url ?? ''),
     image_filename: initialProduct.image_filename ?? '',
+    size_chart_drive_file_id: initialProduct.size_chart_drive_file_id ?? '',
+    size_chart_image_url: initialProduct.size_chart_drive_file_id ? buildDriveImageUrl(initialProduct.size_chart_drive_file_id) : (initialProduct.size_chart_image_url ?? ''),
+    size_chart_filename: initialProduct.size_chart_filename ?? '',
   })
 
   const [variants, setVariants] = useState<Array<{ id?: string; name: string; sku: string; price: string; stock: string }>>(
@@ -88,6 +93,40 @@ export default function EditProductClient({ initialProduct }: Props) {
       setError(err instanceof Error ? err.message : 'Gagal upload gambar')
     } finally {
       setUploadingImage(false)
+    }
+  }
+
+  const handleSizeChartUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawFile = e.target.files?.[0]
+    if (!rawFile) return
+    setUploadingSizeChart(true)
+    setError('')
+
+    try {
+      const file = await compressImageFile(rawFile)
+      const fd = new FormData()
+      fd.append('file', file)
+      if (form.name) {
+        fd.append('product_name', `${form.name}-SizeChart`)
+      }
+
+      const res = await fetch('/api/upload/product-image', {
+        method: 'POST',
+        body: fd,
+      })
+
+      const data = await safeParseJsonResponse(res)
+
+      setForm(p => ({
+        ...p,
+        size_chart_drive_file_id: data.file_id,
+        size_chart_image_url: data.url,
+        size_chart_filename: data.filename,
+      }))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Gagal upload foto size chart')
+    } finally {
+      setUploadingSizeChart(false)
     }
   }
 
@@ -258,6 +297,20 @@ export default function EditProductClient({ initialProduct }: Props) {
             />
           </div>
 
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1 font-display">
+              Spesifikasi Bahan (Material)
+              <span className="text-xs font-normal text-gray-400 ml-1">(Tampil di Pop-up Detail Produk Pembeli)</span>
+            </label>
+            <textarea
+              value={form.material_description}
+              onChange={e => setForm(p => ({ ...p, material_description: e.target.value }))}
+              placeholder="Contoh: Cotton Combed 30s Premium, Sablon Plastisol, Bahan Adem, Halus & Menyerap Keringat"
+              rows={2}
+              className={inputCls}
+            />
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1 font-display">Harga (Rp) *</label>
@@ -300,7 +353,7 @@ export default function EditProductClient({ initialProduct }: Props) {
 
         {/* Product Image */}
         <div className="card-premium p-6 space-y-4">
-          <h2 className="font-display font-bold text-gray-900 border-b border-gray-100 pb-3">Foto Produk (Google Drive)</h2>
+          <h2 className="font-display font-bold text-gray-900 border-b border-gray-100 pb-3">Foto Utama Produk (Google Drive)</h2>
           <div className="flex items-center gap-4">
             {form.image_url ? (
               <div className="relative w-24 h-24 rounded-xl overflow-hidden bg-gray-100 border">
@@ -317,6 +370,34 @@ export default function EditProductClient({ initialProduct }: Props) {
                 {uploadingImage ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                 {uploadingImage ? 'Uploading...' : 'Ganti Gambar Produk'}
                 <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+              </label>
+              <p className="text-xs text-gray-400 mt-1">Otomatis tersimpan di Google Drive</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Size Chart Image */}
+        <div className="card-premium p-6 space-y-4">
+          <div>
+            <h2 className="font-display font-bold text-gray-900 border-b border-gray-100 pb-2">Foto Chart Ukuran / Size Chart (Google Drive)</h2>
+            <p className="text-xs text-gray-500 mt-1">Upload gambar tabel chart ukuran (panjang x lebar) agar pembeli dapat melihat rincian ukuran di pop-up detail produk.</p>
+          </div>
+          <div className="flex items-center gap-4">
+            {form.size_chart_image_url ? (
+              <div className="relative w-28 h-20 rounded-xl overflow-hidden bg-gray-100 border">
+                <img src={form.size_chart_image_url} alt="Size Chart Preview" className="w-full h-full object-cover" />
+              </div>
+            ) : (
+              <div className="w-28 h-20 rounded-xl bg-gray-50 border border-dashed border-gray-300 flex items-center justify-center text-gray-400">
+                <Upload className="w-6 h-6 opacity-40" />
+              </div>
+            )}
+
+            <div>
+              <label className="btn-primary cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 text-sm">
+                {uploadingSizeChart ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                {uploadingSizeChart ? 'Uploading...' : (form.size_chart_image_url ? 'Ganti Foto Size Chart' : 'Upload Foto Size Chart')}
+                <input type="file" accept="image/*" onChange={handleSizeChartUpload} className="hidden" />
               </label>
               <p className="text-xs text-gray-400 mt-1">Otomatis tersimpan di Google Drive</p>
             </div>
