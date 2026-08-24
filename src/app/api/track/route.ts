@@ -42,33 +42,45 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Pesanan tidak ditemukan. Pastikan Nomor Order, Stambuk, atau No. WA sudah benar.' }, { status: 404 })
     }
 
-    const formattedOrders = ordersData.map(order => ({
-      id: order.id,
-      order_number: order.order_number,
-      stambuk: order.stambuk,
-      full_name: order.full_name,
-      district: order.district,
-      generation_year: order.generation_year,
-      fulfillment_method: order.fulfillment_method,
-      shipping_address: order.shipping_address,
-      shipping_city: order.shipping_city,
-      shipping_province: order.shipping_province,
-      subtotal: order.subtotal,
-      shipping_cost: order.shipping_cost,
-      total_amount: order.total_amount,
-      payment_status: order.payment_status,
-      order_status: order.order_status,
-      admin_note: order.admin_note,
-      created_at: order.created_at,
-      items: (order.items ?? []).map((i: any) => ({
+    const formattedOrders = ordersData.map(order => {
+      const mappedItems = (order.items ?? []).map((i: any) => ({
+        ...i,
         id: i.id,
-        name: i.item_name_snapshot,
-        variantName: i.variant_name_snapshot,
-        unitPrice: Number(i.unit_price_snapshot),
-        quantity: i.quantity,
-        subtotal: Number(i.subtotal),
-      })),
-    }))
+        name: i.item_name_snapshot || 'Merchandise',
+        item_name_snapshot: i.item_name_snapshot || 'Merchandise',
+        product_name: i.item_name_snapshot || 'Merchandise',
+        variantName: i.variant_name_snapshot || '',
+        variant_name_snapshot: i.variant_name_snapshot || '',
+        variant_name: i.variant_name_snapshot || '',
+        unitPrice: Number(i.unit_price_snapshot || 0),
+        quantity: i.quantity || 1,
+        subtotal: Number(i.subtotal || 0),
+      }))
+
+      return {
+        ...order,
+        id: order.id,
+        order_number: order.order_number,
+        stambuk: order.stambuk,
+        full_name: order.full_name,
+        whatsapp: order.whatsapp,
+        district: order.district,
+        generation_year: order.generation_year,
+        fulfillment_method: order.fulfillment_method,
+        shipping_address: order.shipping_address,
+        shipping_city: order.shipping_city,
+        shipping_province: order.shipping_province,
+        subtotal: order.subtotal,
+        shipping_cost: order.shipping_cost,
+        total_amount: order.total_amount,
+        payment_status: order.payment_status,
+        order_status: order.order_status,
+        admin_note: order.admin_note,
+        created_at: order.created_at,
+        items: mappedItems,
+        order_items: mappedItems,
+      }
+    })
 
     return NextResponse.json({
       order: formattedOrders[0],

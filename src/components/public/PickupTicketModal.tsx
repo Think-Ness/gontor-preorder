@@ -87,8 +87,9 @@ export default function PickupTicketModal({ order, isOpen, onClose }: PickupTick
     const formattedItemsSvg = items.length > 0
       ? items.slice(0, 10).map((item: any, idx: number) => {
           const qty = item.quantity || 1
-          const rawName = item.item_name_snapshot || item.product_name || 'Merchandise'
-          const rawVariant = item.variant_name_snapshot || item.variant_name ? ` (${item.variant_name_snapshot || item.variant_name})` : ''
+          const rawName = item.name || item.item_name_snapshot || item.product_name || 'Merchandise'
+          const variantVal = item.variantName || item.variant_name_snapshot || item.variant_name
+          const rawVariant = variantVal ? ` (${variantVal})` : ''
           const itemText = escapeXml(`• ${qty}x ${rawName}${rawVariant}`)
           return `<text x="50" y="${300 + idx * 24}" fill="#111827" font-size="13" font-weight="600">${itemText}</text>`
         }).join('\n')
@@ -302,8 +303,9 @@ export default function PickupTicketModal({ order, isOpen, onClose }: PickupTick
                   {items.length > 0 ? (
                     items.map((it: any, i: number) => {
                       const qty = it.quantity || 1
-                      const name = it.item_name_snapshot || it.product_name || 'Merchandise'
-                      const variant = it.variant_name_snapshot || it.variant_name ? ` (${it.variant_name_snapshot || it.variant_name})` : ''
+                      const name = it.name || it.item_name_snapshot || it.product_name || 'Merchandise'
+                      const rawVariant = it.variantName || it.variant_name_snapshot || it.variant_name
+                      const variant = rawVariant ? ` (${rawVariant})` : ''
                       return (
                         <li key={i} className="flex items-start gap-2 border-b border-gray-200/50 pb-1.5 last:border-none last:pb-0">
                           <span className="font-bold text-[#063D2E] bg-emerald-100 px-2 py-0.5 rounded-md min-w-[28px] text-center">
