@@ -8,6 +8,7 @@ import { formatRupiah } from '@/lib/utils'
 interface Props {
   draft: CheckoutDraft | null
   cart?: Cart | null
+  settings?: any
   onSave: (data: Partial<CheckoutDraft>) => void
   onBack: () => void
 }
@@ -52,9 +53,34 @@ const COURIER_MULTIPLIERS = [
 
 const PACKAGING_WEIGHT_GRAMS = 150 // Standard packaging & protective wrap weight
 
-export default function StepFulfillment({ draft, cart, onSave, onBack }: Props) {
+export default function StepFulfillment({ draft, cart, settings, onSave, onBack }: Props) {
   const [method, setMethod] = useState<FulfillmentMethod>(draft?.fulfillmentMethod || 'PICKUP')
   
+  // Courier active settings from admin
+  const [courierSettings, setCourierSettings] = useState<Record<string, boolean> | null>(() => {
+    if (settings?.allowed_couriers) {
+      try {
+        return typeof settings.allowed_couriers === 'string'
+          ? JSON.parse(settings.allowed_couriers)
+          : settings.allowed_couriers
+      } catch {
+        return null
+      }
+    }
+    return null
+  })
+
+  useEffect(() => {
+    fetch('/api/admin/settings/shipping')
+      .then(res => res.json())
+      .then(data => {
+        if (data?.couriers) {
+          setCourierSettings(data.couriers)
+        }
+      })
+      .catch(() => {})
+  }, [])
+
   // Calculate total cart weight (items + packaging + courier 200g tolerance rule)
   const cartWeight = useMemo(() => {
     const items = cart?.items || []
@@ -62,8 +88,6 @@ export default function StepFulfillment({ draft, cart, onSave, onBack }: Props) 
     const packagingGrams = itemsGrams > 0 ? PACKAGING_WEIGHT_GRAMS : 0
     const totalActualGrams = itemsGrams + packagingGrams
     
-    // Standard courier weight tolerance (up to 200g extra within 1 kg boundary)
-    // e.g. <= 1200g -> 1 Kg. 1201g - 2200g -> 2 Kg. 2201g - 3200g -> 3 Kg.
     let billableKg = 1
     if (totalActualGrams > 1200) {
       billableKg = Math.ceil((totalActualGrams - 200) / 1000)
@@ -104,10 +128,21 @@ export default function StepFulfillment({ draft, cart, onSave, onBack }: Props) 
     }
   }, [draft?.address?.province])
 
-  // Calculate dynamic weight-based tariff per courier
+  // Calculate dynamic weight-based tariff ONLY for active couriers enabled in admin settings
   const currentCouriers = useMemo(() => {
     const zoneInfo = ZONE_BASE_RATES_PER_KG[activeZone] || ZONE_BASE_RATES_PER_KG.ZONA_2
-    return COURIER_MULTIPLIERS.map(c => {
+
+    const activeCouriers = COURIER_MULTIPLIERS.filter(c => {
+      if (!courierSettings) return true // fallback if settings fail to load
+      if (c.id in courierSettings) {
+        return Boolean(courierSettings[c.id])
+      }
+      return c.id === 'pos' // default POS if missing in settings
+    })
+
+    const couriersToUse = activeCouriers.length > 0 ? activeCouriers : [COURIER_MULTIPLIERS[0]]
+
+    return couriersToUse.map(c => {
       const calculatedCost = Math.round((zoneInfo.baseCostPerKg * c.multiplier * cartWeight.billableKg) / 1000) * 1000
       return {
         id: c.id,
@@ -117,26 +152,33 @@ export default function StepFulfillment({ draft, cart, onSave, onBack }: Props) 
         isDefault: c.isDefault || false,
       }
     })
-  }, [activeZone, cartWeight.billableKg])
+  }, [activeZone, cartWeight.billableKg, courierSettings])
 
-  // POS Indonesia is default courier
-  const defaultPos = useMemo(() => {
-    return currentCouriers.find(c => c.id === 'pos') || currentCouriers[0]
+  const defaultCourier = useMemo(() => {
+    return currentCouriers.find(c => c.isDefault) || currentCouriers[0]
   }, [currentCouriers])
 
-  const [selectedCourier, setSelectedCourier] = useState(draft?.address?.courierName || defaultPos.name)
-  const [shippingCost, setShippingCost] = useState<number>(draft?.address?.shippingCost ?? defaultPos.cost)
+  const [selectedCourier, setSelectedCourier] = useState<string>(() => {
+    if (draft?.address?.courierName && currentCouriers.some(c => c.name === draft.address?.courierName)) {
+      return draft.address.courierName
+    }
+    return defaultCourier ? defaultCourier.name : 'POS Indonesia — Kilat Khusus'
+  })
+  const [shippingCost, setShippingCost] = useState<number>(() => {
+    if (draft?.address?.shippingCost !== undefined) return draft.address.shippingCost
+    return defaultCourier ? defaultCourier.cost : 10000
+  })
 
   // Keep shipping cost updated with active zone tariff & total weight for selected courier
   useEffect(() => {
     const activeCourier = currentCouriers.find(c => c.name === selectedCourier)
     if (activeCourier) {
       setShippingCost(activeCourier.cost)
-    } else {
-      setSelectedCourier(defaultPos.name)
-      setShippingCost(defaultPos.cost)
+    } else if (currentCouriers.length > 0) {
+      setSelectedCourier(currentCouriers[0].name)
+      setShippingCost(currentCouriers[0].cost)
     }
-  }, [activeZone, currentCouriers, defaultPos, selectedCourier])
+  }, [activeZone, currentCouriers, selectedCourier])
 
   const handleNext = () => {
     onSave({
