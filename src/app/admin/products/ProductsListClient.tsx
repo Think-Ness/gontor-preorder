@@ -18,7 +18,9 @@ import {
   ChevronUp,
   ChevronDown,
   Save,
+  Ruler,
 } from 'lucide-react'
+import BulkSizeChartModal from '@/components/admin/BulkSizeChartModal'
 
 interface ProductItem {
   id: string
@@ -32,6 +34,8 @@ interface ProductItem {
   has_variants: boolean
   image_drive_file_id?: string | null
   display_order?: number
+  size_chart_id?: string | null
+  size_chart?: { id: string; name: string } | null
 }
 
 interface Props {
@@ -45,6 +49,8 @@ export default function ProductsListClient({ initialProducts }: Props) {
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState('')
+
+  const [isBulkSizeChartOpen, setIsBulkSizeChartOpen] = useState(false)
 
   // Drag & drop / Reordering states
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
@@ -210,14 +216,23 @@ export default function ProductsListClient({ initialProducts }: Props) {
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
           {selectedIds.length > 0 && (
-            <button
-              onClick={handleBulkDelete}
-              disabled={deleting}
-              className="flex-1 sm:flex-none justify-center flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-semibold rounded-xl bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition-colors shadow-sm"
-            >
-              {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-              Hapus ({selectedIds.length}) Terpilih
-            </button>
+            <>
+              <button
+                onClick={() => setIsBulkSizeChartOpen(true)}
+                className="flex-1 sm:flex-none justify-center flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-bold rounded-xl bg-emerald-700 text-white hover:bg-emerald-800 transition-colors shadow-sm"
+              >
+                <Ruler className="w-4 h-4" />
+                Set Size Chart ({selectedIds.length})
+              </button>
+              <button
+                onClick={handleBulkDelete}
+                disabled={deleting}
+                className="flex-1 sm:flex-none justify-center flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-semibold rounded-xl bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition-colors shadow-sm"
+              >
+                {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                Hapus ({selectedIds.length})
+              </button>
+            </>
           )}
 
           <Link
@@ -385,7 +400,7 @@ export default function ProductsListClient({ initialProducts }: Props) {
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-3 mt-0.5">
+                  <div className="flex items-center gap-3 mt-0.5 flex-wrap">
                     <span
                       className="font-semibold text-sm"
                       style={{ color: 'var(--gontor-green)' }}
@@ -398,6 +413,12 @@ export default function ProductsListClient({ initialProducts }: Props) {
                     )}
                     {product.has_variants && (
                       <span className="text-xs text-gray-400">Memiliki varian</span>
+                    )}
+                    {product.size_chart?.name && (
+                      <span className="text-[11px] px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold flex items-center gap-1">
+                        <Ruler className="w-3 h-3 text-emerald-600" />
+                        {product.size_chart.name}
+                      </span>
                     )}
                   </div>
                 </div>
@@ -447,6 +468,18 @@ export default function ProductsListClient({ initialProducts }: Props) {
           )}
         </div>
       </div>
+
+      {/* Bulk Edit Size Chart Modal */}
+      <BulkSizeChartModal
+        isOpen={isBulkSizeChartOpen}
+        onClose={() => setIsBulkSizeChartOpen(false)}
+        selectedIds={selectedIds}
+        selectedNames={products.filter(p => selectedIds.includes(p.id)).map(p => p.name)}
+        onSuccess={() => {
+          setSelectedIds([])
+          router.refresh()
+        }}
+      />
     </div>
   )
 }
