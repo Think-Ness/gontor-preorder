@@ -99,6 +99,7 @@ function NewProductFormContent() {
             size_chart_drive_file_id: prod.size_chart_drive_file_id || '',
             size_chart_image_url: prod.size_chart_drive_file_id ? buildDriveImageUrl(prod.size_chart_drive_file_id) : (prod.size_chart_image_url || ''),
             size_chart_filename: prod.size_chart_filename || '',
+            size_chart_id: prod.size_chart_id || '',
           })
 
           if (prod.has_variants && Array.isArray(prod.variants) && prod.variants.length > 0) {

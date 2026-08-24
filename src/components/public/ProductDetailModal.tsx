@@ -299,47 +299,50 @@ export default function ProductDetailModal({
                 {activeTab === 'sizechart' && (
                   <div className="space-y-4 animate-in fade-in duration-150">
                     {/* Database Master Size Chart Table (Matching exact design of user screenshot) */}
-                    {product.size_chart && product.size_chart.sizes && product.size_chart.sizes.length > 0 ? (
-                      <div className="bg-gradient-to-br from-amber-50/80 via-orange-50/40 to-amber-100/50 border border-amber-200/90 rounded-3xl p-4 sm:p-5 space-y-4 shadow-sm">
-                        <div className="text-center">
-                          <h3 className="font-display font-black text-amber-950 text-base sm:text-lg tracking-widest uppercase">
-                            {product.size_chart.name || 'PANDUAN UKURAN'}
-                          </h3>
-                          <p className="text-[11px] text-amber-800 font-semibold">Semua ukuran dalam satuan ({product.size_chart.unit || 'cm'})</p>
-                        </div>
+                    {product.size_chart && product.size_chart.sizes && product.size_chart.sizes.length > 0 ? (() => {
+                      const sc = product.size_chart
+                      return (
+                        <div className="bg-gradient-to-br from-amber-50/80 via-orange-50/40 to-amber-100/50 border border-amber-200/90 rounded-3xl p-4 sm:p-5 space-y-4 shadow-sm">
+                          <div className="text-center">
+                            <h3 className="font-display font-black text-amber-950 text-base sm:text-lg tracking-widest uppercase">
+                              {sc.name || 'PANDUAN UKURAN'}
+                            </h3>
+                            <p className="text-[11px] text-amber-800 font-semibold">Semua ukuran dalam satuan ({sc.unit || 'cm'})</p>
+                          </div>
 
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-xs text-left border-separate border-spacing-y-2 sm:border-spacing-y-2.5">
-                            <thead>
-                              <tr className="text-amber-950 font-display font-black text-xs sm:text-sm uppercase">
-                                <th className="px-3 py-1 text-left tracking-wider min-w-[140px]">KETERANGAN</th>
-                                {product.size_chart.sizes.map(s => (
-                                  <th key={s} className="px-1.5 py-1 text-center min-w-[48px] tracking-wider">{s}</th>
-                                ))}
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {(product.size_chart.measurements || []).map((m, idx) => (
-                                <tr key={idx}>
-                                  <td className="pr-2">
-                                    <div className="px-3.5 py-2.5 bg-gradient-to-r from-amber-200 to-amber-300/90 text-amber-950 font-display font-black rounded-xl sm:rounded-2xl text-[11px] sm:text-xs tracking-wider uppercase border border-amber-300 shadow-xs">
-                                      {m.label}
-                                    </div>
-                                  </td>
-                                  {product.size_chart.sizes.map(s => (
-                                    <td key={s} className="px-1 font-display text-center">
-                                      <div className="py-2.5 bg-amber-100/90 text-amber-950 rounded-xl sm:rounded-2xl text-xs sm:text-sm border border-amber-200/90 font-black shadow-xs">
-                                        {m.values[s] || '-'}
-                                      </div>
-                                    </td>
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-xs text-left border-separate border-spacing-y-2 sm:border-spacing-y-2.5">
+                              <thead>
+                                <tr className="text-amber-950 font-display font-black text-xs sm:text-sm uppercase">
+                                  <th className="px-3 py-1 text-left tracking-wider min-w-[140px]">KETERANGAN</th>
+                                  {sc.sizes.map(s => (
+                                    <th key={s} className="px-1.5 py-1 text-center min-w-[48px] tracking-wider">{s}</th>
                                   ))}
                                 </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                              </thead>
+                              <tbody>
+                                {(sc.measurements || []).map((m, idx) => (
+                                  <tr key={idx}>
+                                    <td className="pr-2">
+                                      <div className="px-3.5 py-2.5 bg-gradient-to-r from-amber-200 to-amber-300/90 text-amber-950 font-display font-black rounded-xl sm:rounded-2xl text-[11px] sm:text-xs tracking-wider uppercase border border-amber-300 shadow-xs">
+                                        {m.label}
+                                      </div>
+                                    </td>
+                                    {sc.sizes.map(s => (
+                                      <td key={s} className="px-1 font-display text-center">
+                                        <div className="py-2.5 bg-amber-100/90 text-amber-950 rounded-xl sm:rounded-2xl text-xs sm:text-sm border border-amber-200/90 font-black shadow-xs">
+                                          {m.values[s] || '-'}
+                                        </div>
+                                      </td>
+                                    ))}
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
                         </div>
-                      </div>
-                    ) : null}
+                      )
+                    })() : null}
 
                     {/* Optional Image Size Chart */}
                     {sizeChartImageUrl ? (
