@@ -36,6 +36,7 @@ async function getPageData() {
     { data: paymentMethods },
     { data: orderItemsRaw },
     { data: provinceRaw },
+    { data: sizeChartsRaw },
   ] = await Promise.all([
     supabase
       .from('event_settings')
@@ -79,7 +80,17 @@ async function getPageData() {
       .neq('order_status', 'DRAFT')
       .not('shipping_latitude', 'is', null)
       .not('shipping_longitude', 'is', null),
+    supabase
+      .from('size_charts')
+      .select('*'),
   ])
+
+  // Attach size_chart fallback if relation didn't auto-resolve
+  const sizeChartMap = new Map((sizeChartsRaw || []).map((sc: any) => [sc.id, sc]))
+  const products = (productsRaw || []).map((p: any) => ({
+    ...p,
+    size_chart: p.size_chart || (p.size_chart_id ? sizeChartMap.get(p.size_chart_id) : null) || null,
+  }))
 
   // -- Build product stats --
   const statMap = new Map<string, ProductStat>()

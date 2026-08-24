@@ -28,6 +28,7 @@ export default function ProductDetailModal({
   const [activeTab, setActiveTab] = useState<'details' | 'sizechart'>('details')
   const [isZoomingSizeChart, setIsZoomingSizeChart] = useState(false)
   const [addedSuccess, setAddedSuccess] = useState(false)
+  const [fetchedSizeChart, setFetchedSizeChart] = useState<SizeChart | null>(null)
 
   const sortedVariants = useMemo(() => {
     if (!product || !product.variants) return []
@@ -41,6 +42,20 @@ export default function ProductDetailModal({
       setActiveTab('details')
       setIsZoomingSizeChart(false)
       setAddedSuccess(false)
+
+      if (product.size_chart_id && !product.size_chart) {
+        fetch('/api/admin/size-charts')
+          .then(res => res.json())
+          .then(res => {
+            if (res.data && Array.isArray(res.data)) {
+              const found = res.data.find((sc: SizeChart) => sc.id === product.size_chart_id)
+              if (found) setFetchedSizeChart(found)
+            }
+          })
+          .catch(console.error)
+      } else {
+        setFetchedSizeChart(null)
+      }
     }
   }, [product])
 
@@ -299,8 +314,16 @@ export default function ProductDetailModal({
                 {activeTab === 'sizechart' && (
                   <div className="space-y-4 animate-in fade-in duration-150">
                     {/* Database Master Size Chart Table (Matching exact design of user screenshot) */}
-                    {product.size_chart && product.size_chart.sizes && product.size_chart.sizes.length > 0 ? (() => {
-                      const sc = product.size_chart
+                    {(() => {
+                      const sc = product.size_chart || fetchedSizeChart
+                      if (!sc || !sc.sizes || sc.sizes.length === 0) {
+                        return (
+                          <div className="bg-emerald-50/60 border border-emerald-200/80 rounded-2xl p-6 text-center space-y-1">
+                            <p className="text-xs font-bold text-emerald-900 font-display">Tabel Size Chart Belum Dipasang</p>
+                            <p className="text-[11px] text-emerald-700">Panitia belum memilih template tabel ukuran untuk produk ini. Silakan pilih varian ukuran langsung pada tab Spesifikasi.</p>
+                          </div>
+                        )
+                      }
                       return (
                         <div className="bg-gradient-to-br from-amber-50/80 via-orange-50/40 to-amber-100/50 border border-amber-200/90 rounded-3xl p-4 sm:p-5 space-y-4 shadow-sm">
                           <div className="text-center">
@@ -342,12 +365,7 @@ export default function ProductDetailModal({
                           </div>
                         </div>
                       )
-                    })() : (
-                      <div className="bg-emerald-50/60 border border-emerald-200/80 rounded-2xl p-6 text-center space-y-1">
-                        <p className="text-xs font-bold text-emerald-900 font-display">Tabel Size Chart Belum Dipasang</p>
-                        <p className="text-[11px] text-emerald-700">Panitia belum memilih template tabel ukuran untuk produk ini. Silakan pilih varian ukuran langsung pada tab Spesifikasi.</p>
-                      </div>
-                    )}
+                    })()}
                   </div>
                 )}
               </div>
