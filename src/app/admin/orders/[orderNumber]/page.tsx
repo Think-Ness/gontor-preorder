@@ -4,7 +4,7 @@ import { formatRupiah } from '@/lib/utils'
 import PaymentActions from '@/components/admin/PaymentActions'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, MapPin, Package, Truck, User, MessageCircle, CreditCard } from 'lucide-react'
+import { ChevronLeft, MapPin, Package, Truck, User, MessageCircle, CreditCard, Mail } from 'lucide-react'
 import OrderRowActions from '@/components/admin/OrderRowActions'
 import Image from 'next/image'
 
@@ -96,6 +96,22 @@ export default async function OrderDetailPage({
                   <MessageCircle className="w-3.5 h-3.5" />
                   Chat WA
                 </a>
+              </dd>
+            </div>
+            <div className="flex gap-2 items-center">
+              <dt className="text-gray-500 w-20 flex-shrink-0">Email</dt>
+              <dd className="font-semibold text-gray-800 flex items-center gap-2 break-all">
+                <span>{order.email || '-'}</span>
+                {order.email && (
+                  <a
+                    href={`mailto:${order.email}`}
+                    className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold transition-all border border-gray-200"
+                    title="Kirim Email"
+                  >
+                    <Mail className="w-3.5 h-3.5 text-gray-600" />
+                    Email
+                  </a>
+                )}
               </dd>
             </div>
           </dl>
