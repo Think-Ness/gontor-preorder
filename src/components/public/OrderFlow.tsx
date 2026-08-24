@@ -70,44 +70,6 @@ export default function OrderFlow({
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [step])
 
-  useEffect(() => {
-    const supabase = createClient()
-    const channel = supabase
-      .channel('public-stock-updates')
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'products' },
-        (payload) => {
-          const updated = payload.new as Product
-          setLocalProducts(prev => prev.map(p => p.id === updated.id ? { ...p, stock: updated.stock, stock_enabled: updated.stock_enabled } : p))
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'product_variants' },
-        (payload) => {
-          const updatedVar = payload.new as any
-          setLocalProducts(prev => prev.map(p => {
-            if (!p.variants) return p
-            const hasVar = p.variants.some(v => v.id === updatedVar.id)
-            if (!hasVar) return p
-            const updatedVariants = p.variants.map(v => v.id === updatedVar.id ? { ...v, stock: updatedVar.stock } : v)
-            const sumStock = updatedVariants.reduce((sum, v) => sum + (v.stock ?? 0), 0)
-            return {
-              ...p,
-              stock: sumStock,
-              variants: updatedVariants,
-            }
-          }))
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [])
-
   // Check for existing draft on load (only after mounted)
   useEffect(() => {
     if (isMounted && isLoaded && !hasCheckedResume.current) {
