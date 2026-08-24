@@ -123,23 +123,43 @@ export default async function OrderDetailPage({
             <MapPin className="w-4 h-4" />
             Pengiriman
           </h2>
-          <div className="text-sm">
-            <div className="font-semibold text-gray-800 mb-2 flex items-center gap-1.5">
+          <div className="text-sm space-y-3">
+            <div className="font-semibold text-gray-800 flex items-center gap-1.5">
               {order.fulfillment_method === 'PICKUP' ? (
-                <span className="flex items-center gap-1.5 text-green-800"><Package className="w-4 h-4 text-green-700" /> Ambil di Stand</span>
+                <span className="flex items-center gap-1.5 text-green-800 bg-green-50 border border-green-200 px-3 py-1 rounded-full text-xs font-bold">
+                  <Package className="w-4 h-4 text-green-700" /> Ambil di Stand
+                </span>
               ) : (
-                <span className="flex items-center gap-1.5 text-blue-800"><Truck className="w-4 h-4 text-blue-600" /> Kirim ke Rumah</span>
+                <span className="flex items-center gap-1.5 text-blue-800 bg-blue-50 border border-blue-200 px-3 py-1 rounded-full text-xs font-bold">
+                  <Truck className="w-4 h-4 text-blue-600" /> Kirim ke Rumah
+                </span>
               )}
             </div>
-            {order.fulfillment_method === 'DELIVERY' && (
-              <div className="text-gray-600 space-y-1">
-                <p>{order.shipping_address}</p>
-                <p>{order.shipping_village}, {order.shipping_district}</p>
-                <p>{order.shipping_city}, {order.shipping_province} {order.shipping_postal_code}</p>
 
-                <div className="pt-3 border-t border-gray-100">
-                  <OrderRowActions order={order} />
-                </div>
+            {/* Address Details */}
+            {(order.shipping_address || order.shipping_city || order.shipping_province || order.district) ? (
+              <div className="text-gray-700 space-y-1 bg-gray-50/80 p-3.5 rounded-xl border border-gray-100 text-xs sm:text-sm">
+                <p className="font-bold text-gray-800 flex items-center gap-1.5 mb-1.5 text-xs">
+                  <MapPin className="w-3.5 h-3.5 text-green-700" /> Alamat Pemesan:
+                </p>
+                {order.shipping_address && <p className="font-medium text-gray-900">{order.shipping_address}</p>}
+                <p className="text-gray-600">
+                  {[
+                    order.shipping_village,
+                    order.shipping_district || order.district,
+                    order.shipping_city,
+                    order.shipping_province,
+                    order.shipping_postal_code
+                  ].filter(Boolean).join(', ')}
+                </p>
+              </div>
+            ) : (
+              <p className="text-xs text-gray-400 italic">Alamat pengiriman tidak terdaftar.</p>
+            )}
+
+            {order.fulfillment_method === 'DELIVERY' && (
+              <div className="pt-2 border-t border-gray-100">
+                <OrderRowActions order={order} />
               </div>
             )}
           </div>
