@@ -8,6 +8,7 @@ import {
 import { formatRupiah } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import { broadcastOrderUpdate } from '@/lib/realtime'
 import Link from 'next/link'
 
 export interface OrderPending {
@@ -84,6 +85,7 @@ export default function QuickPaymentReviewClient({ pendingOrders, initialSelecte
         setSelectedId('')
       }
 
+      broadcastOrderUpdate()
       router.refresh()
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Gagal memproses keputusan')

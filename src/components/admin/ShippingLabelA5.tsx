@@ -1,10 +1,13 @@
+'use client'
+
 import type { Order } from '@/types'
 
 interface ShippingLabelProps {
   order: Order
+  logoUrl?: string | null
 }
 
-export default function ShippingLabelA5({ order }: ShippingLabelProps) {
+export default function ShippingLabelA5({ order, logoUrl }: ShippingLabelProps) {
   // Filter out any kurir/maps pin text from address if present
   let cleanAddress = order.shipping_address || ''
   cleanAddress = cleanAddress.replace(/\[Kurir:.*?\]/g, '')
@@ -19,8 +22,7 @@ export default function ShippingLabelA5({ order }: ShippingLabelProps) {
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${qrData}`
 
   return (
-    <div className="w-[210mm] h-[148mm] bg-white text-black p-8 relative shadow-lg print:shadow-none overflow-hidden"
-         style={{ pageBreakAfter: 'always' }}>
+    <div className="w-[210mm] h-[145mm] bg-white text-black p-6 relative shadow-lg print:shadow-none overflow-hidden shrink-0">
       
       {/* Background Watermark/Accent */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-green-50 rounded-bl-full -z-10"></div>
@@ -29,10 +31,23 @@ export default function ShippingLabelA5({ order }: ShippingLabelProps) {
       {/* Header */}
       <div className="flex justify-between items-start mb-6 pb-4 border-b-2 border-green-700">
         <div className="flex items-center gap-4">
-          {/* Logo Placeholder */}
-          <div className="w-14 h-14 bg-gradient-to-br from-green-700 to-green-600 rounded-lg flex items-center justify-center text-white font-black text-xl shadow-sm">
-            G
-          </div>
+          {/* Logo from Event Settings */}
+          {logoUrl ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={logoUrl}
+              alt="Logo Gontor"
+              className="h-14 w-auto max-w-[140px] object-contain shrink-0"
+              onError={(e) => {
+                // Fallback to styled box if image fails to load
+                (e.target as HTMLElement).style.display = 'none'
+              }}
+            />
+          ) : (
+            <div className="w-14 h-14 bg-gradient-to-br from-green-700 to-green-600 rounded-lg flex items-center justify-center text-white font-black text-xl shadow-sm">
+              G
+            </div>
+          )}
           <div>
             <h1 className="font-black text-2xl tracking-tight text-green-900 leading-tight">
               Reunion Kit 100 Tahun Gontor
@@ -110,3 +125,4 @@ export default function ShippingLabelA5({ order }: ShippingLabelProps) {
     </div>
   )
 }
+

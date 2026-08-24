@@ -5,9 +5,10 @@ import { useSearchParams } from 'next/navigation'
 import { formatRupiah } from '@/lib/utils'
 import {
   Search, CheckCircle, Clock, Truck, Package,
-  Copy, Check, AlertTriangle, ChevronLeft, ArrowRight, Info
+  Copy, Check, AlertTriangle, ChevronLeft, ArrowRight, Info, Ticket
 } from 'lucide-react'
 import Link from 'next/link'
+import PickupTicketModal from '@/components/public/PickupTicketModal'
 
 interface TrackedOrder {
   id: string
@@ -47,6 +48,8 @@ function TrackingContent() {
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+
+  const [showTicketModal, setShowTicketModal] = useState(false)
 
   // Re-upload state
   const [reuploadFile, setReuploadFile] = useState<File | null>(null)
@@ -249,6 +252,36 @@ function TrackingContent() {
                   <div className="text-xs text-gray-400">Stambuk: {order.stambuk}</div>
                 </div>
               </div>
+
+              {/* Pickup Ticket E-Voucher Banner (If Pickup Order) */}
+              {order.fulfillment_method === 'PICKUP' && (
+                <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-emerald-950 via-[#063D2E] to-emerald-900 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md border border-emerald-800/50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-300 shrink-0">
+                      <Ticket className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold text-amber-300 uppercase tracking-widest block font-display">Tiket Pengambilan Stand</span>
+                      <h4 className="font-display font-bold text-sm text-white">E-Voucher & QR Code Pengambilan</h4>
+                      <p className="text-xs text-gray-300">Tunjukkan QR Code ini kepada petugas stand saat mengambil barang.</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowTicketModal(true)}
+                    className="px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-gray-950 font-display font-black text-xs flex items-center gap-1.5 shadow-sm transition-all shrink-0 w-full sm:w-auto justify-center cursor-pointer"
+                  >
+                    <Ticket className="w-4 h-4 text-gray-950" />
+                    <span>Buka Tiket E-Voucher</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Pickup Ticket Modal */}
+              <PickupTicketModal
+                order={order as any}
+                isOpen={showTicketModal}
+                onClose={() => setShowTicketModal(false)}
+              />
 
               {/* Progress Timeline */}
               <div className="py-2">

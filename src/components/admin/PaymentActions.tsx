@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { CheckCircle, XCircle, AlertTriangle, RefreshCw, Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { broadcastOrderUpdate } from '@/lib/realtime'
 
 interface Props {
   orderId: string
@@ -37,6 +38,7 @@ export default function PaymentActions({
       try { data = JSON.parse(text) } catch (e) {}
 
       if (!res.ok) throw new Error(data.error || `Server error (${res.status})`)
+      broadcastOrderUpdate()
       router.refresh()
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Gagal memperbarui pembayaran')
@@ -59,6 +61,7 @@ export default function PaymentActions({
       try { data = JSON.parse(text) } catch (e) {}
 
       if (!res.ok) throw new Error(data.error || `Server error (${res.status})`)
+      broadcastOrderUpdate()
       router.refresh()
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Gagal memperbarui status')

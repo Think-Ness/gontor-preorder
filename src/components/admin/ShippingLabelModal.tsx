@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { Printer, Download, X, Tag, QrCode, Copy, Check } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Printer, Download, X, Tag, Copy, Check } from 'lucide-react'
 
 interface ShippingLabelModalProps {
   order: any | null
@@ -11,6 +11,16 @@ interface ShippingLabelModalProps {
 
 export default function ShippingLabelModal({ order, isOpen, onClose }: ShippingLabelModalProps) {
   const [copied, setCopied] = useState(false)
+  const [logoUrl, setLogoUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch('/api/admin/settings/event')
+      .then(res => res.json())
+      .then(res => {
+        if (res.data?.favicon_url) setLogoUrl(res.data.favicon_url)
+      })
+      .catch(() => {})
+  }, [])
 
   if (!isOpen || !order) return null
 
@@ -231,7 +241,14 @@ export default function ShippingLabelModal({ order, isOpen, onClose }: ShippingL
           >
             {/* Formal Header Bar */}
             <div className="p-3 rounded-xs text-white flex items-center justify-between" style={{ background: '#063D2E' }}>
-              <div>
+              <div className="flex items-center gap-3">
+                {logoUrl ? (
+                  <img src={logoUrl} alt="Logo" className="h-8 w-auto max-w-[90px] object-contain shrink-0" />
+                ) : (
+                  <div className="w-8 h-8 rounded bg-emerald-800 flex items-center justify-center font-bold text-white text-xs">
+                    G
+                  </div>
+                )}
                 <p className="text-lg sm:text-xl font-bold tracking-wider font-display" style={{ color: '#D4AF37' }}>
                   PANITIA 100 TAHUN GONTOR — REUNION KIT
                 </p>

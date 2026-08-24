@@ -7,11 +7,12 @@ import { useCheckoutDraft } from '@/hooks/useCheckoutDraft'
 import { formatRupiah } from '@/lib/utils'
 import {
   User, ShoppingBag, Truck, CreditCard, CheckCircle,
-  ChevronLeft, ChevronRight, AlertTriangle, Copy, Check, Search, Info
+  ChevronLeft, ChevronRight, AlertTriangle, Copy, Check, Search, Info, Ticket
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import PickupTicketModal from '@/components/public/PickupTicketModal'
 
 // Steps
 import StepCustomer from './steps/StepCustomer'
@@ -48,6 +49,8 @@ export default function OrderFlow({
   const { draft, saveDraft, clearDraft, sessionId, isLoaded } = useCheckoutDraft()
   const [showResume, setShowResume] = useState(false)
   const [copiedOrder, setCopiedOrder] = useState(false)
+  const [showSuccessTicketModal, setShowSuccessTicketModal] = useState(false)
+  const [createdOrderObj, setCreatedOrderObj] = useState<any | null>(null)
   const router = useRouter()
 
   const hasCheckedResume = useRef(false)
@@ -158,14 +161,39 @@ export default function OrderFlow({
           <div className="bg-green-50 border border-green-100 rounded-2xl p-5 mb-6 text-center relative">
             <p className="text-xs text-green-700 font-semibold mb-1 uppercase tracking-widest font-display">Nomor Order Anda</p>
             <p className="font-display font-black text-3xl text-green-900 mb-3">{orderNumber}</p>
-            <button
-              onClick={copyOrder}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-display font-bold bg-white text-green-800 border border-green-200 hover:bg-green-100 transition-all shadow-sm mx-auto"
-            >
-              {copiedOrder ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-green-600" />}
-              {copiedOrder ? 'Nomor Order Disalin ✓' : 'Copy Nomor Order'}
-            </button>
+            <div className="flex items-center justify-center gap-2.5 mt-3">
+              <button
+                onClick={copyOrder}
+                title="Copy Nomor Order"
+                className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-display font-bold bg-white text-green-900 border border-green-200 hover:bg-green-100 transition-all shadow-xs cursor-pointer"
+              >
+                {copiedOrder ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-green-700" />}
+                <span>{copiedOrder ? 'Disalin' : 'Copy'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowSuccessTicketModal(true)}
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-display font-bold bg-[#063D2E] hover:bg-[#0a523e] text-white shadow-xs transition-all cursor-pointer"
+              >
+                <Ticket className="w-4 h-4 text-amber-400" />
+                <span>E-Ticket</span>
+              </button>
+            </div>
           </div>
+
+          <PickupTicketModal
+            order={createdOrderObj || {
+              order_number: orderNumber,
+              full_name: 'Pembeli',
+              stambuk: '-',
+              whatsapp: '-',
+              fulfillment_method: 'PICKUP',
+              order_items: [],
+            }}
+            isOpen={showSuccessTicketModal}
+            onClose={() => setShowSuccessTicketModal(false)}
+          />
 
           <div className="bg-amber-50 rounded-xl p-4 border border-amber-200 text-left text-xs text-amber-800 mb-6 flex items-start gap-2.5">
             <Info className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
@@ -378,6 +406,22 @@ export default function OrderFlow({
                 })
                 const result = await response.json()
                 if (!response.ok) throw new Error(result.error || 'Terjadi kesalahan')
+
+                const orderItemsForTicket = cart.items.map(i => ({
+                  item_name_snapshot: i.name,
+                  variant_name_snapshot: i.variantName,
+                  quantity: i.quantity,
+                }))
+
+                setCreatedOrderObj(result.order || {
+                  order_number: result.order_number,
+                  full_name: draft?.name || 'Pembeli',
+                  stambuk: draft?.stambuk || '-',
+                  whatsapp: draft?.whatsapp || '-',
+                  fulfillment_method: draft?.fulfillmentMethod || 'PICKUP',
+                  order_items: orderItemsForTicket,
+                })
+
                 clearDraft()
                 clearCart()
                 setOrderNumber(result.order_number)

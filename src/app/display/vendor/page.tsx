@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Factory, Download, RefreshCw, Maximize, Minimize, Clock, Boxes, Warehouse, ShieldCheck } from 'lucide-react'
 import DisplayPinModal from '@/components/public/DisplayPinModal'
+import { subscribeToOrdersRealtime } from '@/lib/realtime'
 
 export default function PublicDisplayVendorPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
@@ -62,10 +63,21 @@ export default function PublicDisplayVendorPage() {
 
   useEffect(() => {
     if (!isAuthenticated) return
+
+    fetchData()
+
+    const unsubscribeRealtime = subscribeToOrdersRealtime(() => {
+      fetchData()
+    })
+
     const interval = setInterval(() => {
       fetchData()
-    }, 8000)
-    return () => clearInterval(interval)
+    }, 5000)
+
+    return () => {
+      unsubscribeRealtime()
+      clearInterval(interval)
+    }
   }, [isAuthenticated])
 
   const toggleFullscreen = () => {
