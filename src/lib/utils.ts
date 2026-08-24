@@ -87,3 +87,60 @@ export function sanitizeFilename(filename: string): string {
     .replace(/_+/g, '_')
     .toLowerCase()
 }
+
+const STANDARD_SIZE_ORDER: Record<string, number> = {
+  'xxs': 1,
+  'xs': 2,
+  's': 3,
+  'm': 4,
+  'l': 5,
+  'xl': 6,
+  '2xl': 7,
+  'xxl': 7,
+  '3xl': 8,
+  'xxxl': 8,
+  '4xl': 9,
+  'xxxxl': 9,
+  '5xl': 10,
+  '6xl': 11,
+}
+
+// Sort product variants intelligently (Numbers: 13, 13.5, 14... | Sizes: S, M, L, XL, XXL... | Alphanumeric A-Z)
+export function sortVariants<T extends { name: string }>(variants: T[]): T[] {
+  if (!variants || variants.length <= 1) return variants || []
+
+  return [...variants].sort((a, b) => {
+    const cleanA = (a.name || '').trim().toLowerCase().replace(',', '.')
+    const cleanB = (b.name || '').trim().toLowerCase().replace(',', '.')
+
+    const isNumA = !isNaN(Number(cleanA)) && cleanA !== ''
+    const isNumB = !isNaN(Number(cleanB)) && cleanB !== ''
+
+    // 1. Both are numeric (e.g. 13, 13.5, 14, 14.5, 15, 15.5, 16)
+    if (isNumA && isNumB) {
+      return Number(cleanA) - Number(cleanB)
+    }
+
+    // 2. Both are standard apparel sizes (e.g. S, M, L, XL, XXL)
+    const apparelRankA = STANDARD_SIZE_ORDER[cleanA]
+    const apparelRankB = STANDARD_SIZE_ORDER[cleanB]
+
+    if (apparelRankA !== undefined && apparelRankB !== undefined) {
+      return apparelRankA - apparelRankB
+    }
+
+    // Apparel size vs non-apparel size
+    if (apparelRankA !== undefined && apparelRankB === undefined) return -1
+    if (apparelRankA === undefined && apparelRankB !== undefined) return 1
+
+    // Numeric vs non-numeric
+    if (isNumA && !isNumB) return -1
+    if (!isNumA && isNumB) return 1
+
+    // 3. Fallback: Natural alphanumeric sort (A-Z, 1-9)
+    return (a.name || '').localeCompare(b.name || '', undefined, {
+      numeric: true,
+      sensitivity: 'base',
+    })
+  })
+}

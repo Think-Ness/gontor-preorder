@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import Image from 'next/image'
 import { Product, ProductVariant, CartItem } from '@/types'
-import { formatRupiah } from '@/lib/utils'
+import { formatRupiah, sortVariants } from '@/lib/utils'
 import { Plus, Minus, ShoppingBag, AlertCircle, Award } from 'lucide-react'
 import { buildDriveImageUrl } from '@/lib/drive-urls'
 
@@ -16,9 +16,21 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, onAdd, cartItems, isOpen, isTopTier }: ProductCardProps) {
-  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
-    product.variants?.[0] ?? null
-  )
+  const sortedVariants = useMemo(() => {
+    return sortVariants((product.variants || []).filter(v => v.is_active))
+  }, [product.variants])
+
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(() => {
+    return sortedVariants[0] ?? null
+  })
+
+  useEffect(() => {
+    if (sortedVariants.length > 0) {
+      if (!selectedVariant || !sortedVariants.some(v => v.id === selectedVariant.id)) {
+        setSelectedVariant(sortedVariants[0])
+      }
+    }
+  }, [sortedVariants])
 
   let fileId = product.image_drive_file_id
   if (!fileId && product.image_url) {
@@ -134,11 +146,11 @@ export default function ProductCard({ product, onAdd, cartItems, isOpen, isTopTi
         </div>
 
         {/* Variant selector */}
-        {product.has_variants && product.variants && product.variants.length > 0 && (
+        {product.has_variants && sortedVariants.length > 0 && (
           <div className="mb-3">
             <div className="text-[11px] sm:text-xs text-gray-500 mb-1.5 font-semibold">Ukuran</div>
             <div className="flex flex-wrap gap-1.5">
-              {product.variants.filter(v => v.is_active).map(variant => {
+              {sortedVariants.map(variant => {
                 const outOfStock = variant.stock !== null && variant.stock !== undefined && variant.stock <= 0
                 return (
                   <button
