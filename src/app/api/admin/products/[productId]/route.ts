@@ -84,34 +84,62 @@ export async function PUT(
 
     // Update or replace variants
     if (data.has_variants && Array.isArray(variants)) {
-      const variantRows = variants.map((v: any, index: number) => {
+      const validVariants = variants.filter((v: any) => v.name && String(v.name).trim() !== '')
+      
+      const existingVariants = validVariants.filter((v: any) => v.id && String(v.id).trim() !== '')
+      const newVariants = validVariants.filter((v: any) => !v.id || String(v.id).trim() === '')
+      const existingIds = existingVariants.map((v: any) => v.id)
+
+      // Fetch current variants in DB to calculate diff
+      const { data: currentDbVariants } = await supabase
+        .from('product_variants')
+        .select('id')
+        .eq('product_id', productId)
+
+      const currentIds = (currentDbVariants || []).map(v => v.id)
+      const idsToDelete = currentIds.filter(id => !existingIds.includes(id))
+
+      // 1. Delete removed variants
+      if (idsToDelete.length > 0) {
+        const { error: delErr } = await supabase
+          .from('product_variants')
+          .delete()
+          .in('id', idsToDelete)
+        if (delErr) console.error('[PUT /api/admin/products/[productId]] Variant delete error:', delErr)
+      }
+
+      // 2. Update existing variants
+      for (const v of existingVariants) {
         const row: any = {
-          product_id: productId,
           sku: v.sku || `${data.product_code}-${v.name.toLowerCase().replace(/\s+/g, '-')}`,
-          name: v.name,
+          name: v.name.trim(),
           price: Number(v.price ?? data.price),
           stock: v.stock !== undefined && v.stock !== '' && v.stock !== null ? Number(v.stock) : null,
           is_active: v.is_active ?? true,
-          display_order: index,
         }
-        if (v.id) row.id = v.id
-        return row
-      })
-
-      const existingIds = variantRows.filter(v => v.id).map(v => v.id)
-
-      // Delete removed variants
-      if (existingIds.length > 0) {
-        await supabase.from('product_variants')
-          .delete()
-          .eq('product_id', productId)
-          .not('id', 'in', `(${existingIds.join(',')})`)
-      } else {
-        await supabase.from('product_variants').delete().eq('product_id', productId)
+        const { error: updErr } = await supabase
+          .from('product_variants')
+          .update(row)
+          .eq('id', v.id)
+        if (updErr) console.error('[PUT /api/admin/products/[productId]] Variant update error:', updErr)
       }
 
-      if (variantRows.length > 0) {
-        await supabase.from('product_variants').upsert(variantRows)
+      // 3. Insert new variants
+      if (newVariants.length > 0) {
+        const newRows = newVariants.map((v: any, index: number) => ({
+          product_id: productId,
+          sku: v.sku || `${data.product_code}-${v.name.toLowerCase().replace(/\s+/g, '-')}`,
+          name: v.name.trim(),
+          price: Number(v.price ?? data.price),
+          stock: v.stock !== undefined && v.stock !== '' && v.stock !== null ? Number(v.stock) : null,
+          is_active: v.is_active ?? true,
+          display_order: existingVariants.length + index,
+        }))
+
+        const { error: insErr } = await supabase
+          .from('product_variants')
+          .insert(newRows)
+        if (insErr) console.error('[PUT /api/admin/products/[productId]] Variant insert error:', insErr)
       }
     } else if (!data.has_variants) {
       // Clear variants if no longer has variants

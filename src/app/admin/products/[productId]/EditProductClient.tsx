@@ -111,11 +111,14 @@ export default function EditProductClient({ initialProduct }: Props) {
         price: Number(form.price),
         weight_gram: form.weight_gram !== '' ? Number(form.weight_gram) : null,
         stock: computedTotalStock,
-        variants: form.has_variants ? variants.map(v => ({
-          ...v,
-          price: v.price ? Number(v.price) : Number(form.price),
-          stock: v.stock !== '' ? Number(v.stock) : null,
-        })) : [],
+        variants: form.has_variants ? variants
+          .filter(v => v.name && v.name.trim() !== '')
+          .map(v => ({
+            ...v,
+            name: v.name.trim(),
+            price: v.price ? Number(v.price) : Number(form.price),
+            stock: v.stock !== '' && v.stock !== null && v.stock !== undefined ? Number(v.stock) : null,
+          })) : [],
       }
 
       const res = await fetch(`/api/admin/products/${initialProduct.id}`, {
