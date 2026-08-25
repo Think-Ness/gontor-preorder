@@ -139,7 +139,7 @@ export default function OrderFlow({
                 className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-display font-bold bg-[#063D2E] hover:bg-[#0a523e] text-white shadow-xs transition-all cursor-pointer"
               >
                 <Ticket className="w-4 h-4 text-amber-400" />
-                <span>E-Ticket</span>
+                <span>{createdOrderObj?.fulfillment_method === 'DELIVERY' ? 'E-Receipt' : 'E-Ticket'}</span>
               </button>
             </div>
           </div>
@@ -150,7 +150,13 @@ export default function OrderFlow({
               full_name: 'Pembeli',
               stambuk: '-',
               whatsapp: '-',
-              fulfillment_method: 'PICKUP',
+              fulfillment_method: draft?.fulfillmentMethod || 'PICKUP',
+              shipping_address: draft?.address?.fullAddress || '',
+              shipping_village: draft?.address?.village || '',
+              shipping_district: draft?.address?.district || '',
+              shipping_city: draft?.address?.city || '',
+              shipping_province: draft?.address?.province || '',
+              shipping_postal_code: draft?.address?.postalCode || '',
               order_items: [],
             }}
             isOpen={showSuccessTicketModal}
@@ -382,6 +388,12 @@ export default function OrderFlow({
                   stambuk: draft?.stambuk || '-',
                   whatsapp: draft?.whatsapp || '-',
                   fulfillment_method: draft?.fulfillmentMethod || 'PICKUP',
+                  shipping_address: draft?.address?.fullAddress || '',
+                  shipping_village: draft?.address?.village || '',
+                  shipping_district: draft?.address?.district || '',
+                  shipping_city: draft?.address?.city || '',
+                  shipping_province: draft?.address?.province || '',
+                  shipping_postal_code: draft?.address?.postalCode || '',
                   order_items: orderItemsForTicket,
                 })
 
