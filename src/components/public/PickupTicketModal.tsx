@@ -110,11 +110,24 @@ export default function PickupTicketModal({ order, isOpen, onClose }: PickupTick
       ? `<image href="${logoImageHref}" x="480" y="25" width="80" height="60" preserveAspectRatio="xMidYMid meet" />`
       : ''
 
+    const addressWords = (fullShippingAddress || 'Dikirim ke alamat pemesan').split(' ')
+    const addressLines: string[] = []
+    let currentLine = ''
+    addressWords.forEach(word => {
+      if ((currentLine + ' ' + word).length <= 52) {
+        currentLine += (currentLine ? ' ' : '') + word
+      } else {
+        addressLines.push(currentLine)
+        currentLine = word
+      }
+    })
+    if (currentLine) addressLines.push(currentLine)
+
     const headerTitle = isDelivery ? 'E-RECEIPT RESMI PEMESANAN' : 'TIKET RESMI PENGAMBILAN STAND'
     const methodLabel = isDelivery ? 'Metode: Kirim ke Alamat' : 'Metode: Ambil di Stand'
     const bottomBoxTitle = isDelivery ? '&#x1F4CD; ALAMAT PENGIRIMAN TUJUAN:' : '&#x1F4CD; LOKASI PENGAMBILAN:'
-    const bottomLine1 = isDelivery ? escAddress.substring(0, 60) : 'Stand Bazar Resmi Panitia 100 Tahun Gontor'
-    const bottomLine2 = isDelivery ? escAddress.substring(60, 120) : 'Pondok Modern Darussalam Gontor, Ponorogo'
+    const bottomLine1 = isDelivery ? (addressLines[0] || '') : 'Stand Bazar Resmi Panitia 100 Tahun Gontor'
+    const bottomLine2 = isDelivery ? (addressLines.slice(1).join(' ') || '') : 'Pondok Modern Darussalam Gontor, Ponorogo'
 
     return `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 750" width="600" height="750" style="background-color: #ffffff; font-family: Arial, sans-serif;">
@@ -168,41 +181,24 @@ export default function PickupTicketModal({ order, isOpen, onClose }: PickupTick
   const handleExportPDF = async () => {
     setIsExportingPdf(true)
     try {
-      // 1. Fetch QR & Logo base64 data URLs for clean offline SVG canvas rendering
-      const [qrBase64, logoBase64] = await Promise.all([
-        getBase64Image(qrApiUrl),
-        logoUrl ? getBase64Image(logoUrl) : Promise.resolve(null),
-      ])
+      const element = document.getElementById('printable-pickup-ticket')
+      if (!element) throw new Error('Elemen tiket tidak ditemukan')
 
-      const svgContent = generateTicketSVG(qrBase64, logoBase64)
+      const html2canvas = (await import('html2canvas')).default
+      const { jsPDF } = await import('jspdf')
 
-      // 2. Render SVG onto high-resolution offscreen canvas
-      const canvas = document.createElement('canvas')
-      canvas.width = 1200
-      canvas.height = 1500
-      const ctx = canvas.getContext('2d')
-      if (!ctx) throw new Error('Canvas context not available')
-
-      const img = new Image()
-      const svgBlob = new Blob([svgContent], { type: 'image/svg+xml;charset=utf-8' })
-      const url = URL.createObjectURL(svgBlob)
-
-      await new Promise<void>((resolve, reject) => {
-        img.onload = () => resolve()
-        img.onerror = (e) => reject(e)
-        img.src = url
+      // Capture web modal card directly with 2.5x scale for sharp vector-like text & graphics
+      const canvas = await html2canvas(element, {
+        scale: 2.5,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
       })
 
-      ctx.fillStyle = '#ffffff'
-      ctx.fillRect(0, 0, canvas.width, canvas.height)
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-      URL.revokeObjectURL(url)
-
       const imgData = canvas.toDataURL('image/png')
-
-      // 3. Generate PDF via jsPDF
-      const { jsPDF } = await import('jspdf')
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a5' })
+      
       const pdfWidth = pdf.internal.pageSize.getWidth()
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width
 
