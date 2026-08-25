@@ -114,7 +114,7 @@ export default function PickupTicketModal({ order, isOpen, onClose }: PickupTick
     const addressLines: string[] = []
     let currentLine = ''
     addressWords.forEach(word => {
-      if ((currentLine + ' ' + word).length <= 52) {
+      if ((currentLine + ' ' + word).length <= 48) {
         currentLine += (currentLine ? ' ' : '') + word
       } else {
         addressLines.push(currentLine)
@@ -126,8 +126,13 @@ export default function PickupTicketModal({ order, isOpen, onClose }: PickupTick
     const headerTitle = isDelivery ? 'E-RECEIPT RESMI PEMESANAN' : 'TIKET RESMI PENGAMBILAN STAND'
     const methodLabel = isDelivery ? 'Metode: Kirim ke Alamat' : 'Metode: Ambil di Stand'
     const bottomBoxTitle = isDelivery ? '&#x1F4CD; ALAMAT PENGIRIMAN TUJUAN:' : '&#x1F4CD; LOKASI PENGAMBILAN:'
-    const bottomLine1 = isDelivery ? (addressLines[0] || '') : 'Stand Bazar Resmi Panitia 100 Tahun Gontor'
-    const bottomLine2 = isDelivery ? (addressLines.slice(1).join(' ') || '') : 'Pondok Modern Darussalam Gontor, Ponorogo'
+    
+    const addressSvgText = isDelivery
+      ? addressLines.slice(0, 4).map((lineText, idx) => {
+          return `<text x="50" y="${645 + idx * 18}" fill="#1E3A8A" font-size="11.5" font-weight="600">${escapeXml(lineText)}</text>`
+        }).join('\n')
+      : `<text x="50" y="648" fill="#78350F" font-size="12" font-weight="600">Stand Bazar Resmi Panitia 100 Tahun Gontor</text>
+         <text x="50" y="670" fill="#78350F" font-size="12">Pondok Modern Darussalam Gontor, Ponorogo</text>`
 
     return `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 750" width="600" height="750" style="background-color: #ffffff; font-family: Arial, sans-serif;">
@@ -150,10 +155,9 @@ export default function PickupTicketModal({ order, isOpen, onClose }: PickupTick
   <text x="40" y="275" fill="#063D2E" font-size="14" font-weight="bold">RINCIAN BARANG REUNION KIT:</text>
   ${formattedItemsSvg}
 
-  <rect x="35" y="590" width="530" height="110" fill="${isDelivery ? '#EFF6FF' : '#FEF3C7'}" stroke="${isDelivery ? '#3B82F6' : '#F59E0B'}" stroke-width="1.5" rx="10" />
+  <rect x="35" y="590" width="530" height="120" fill="${isDelivery ? '#EFF6FF' : '#FEF3C7'}" stroke="${isDelivery ? '#3B82F6' : '#F59E0B'}" stroke-width="1.5" rx="10" />
   <text x="50" y="620" fill="${isDelivery ? '#1E40AF' : '#92400E'}" font-size="13" font-weight="bold">${bottomBoxTitle}</text>
-  <text x="50" y="648" fill="${isDelivery ? '#1E3A8A' : '#78350F'}" font-size="12" font-weight="600">${bottomLine1}</text>
-  <text x="50" y="670" fill="${isDelivery ? '#1E3A8A' : '#78350F'}" font-size="12">${bottomLine2}</text>
+  ${addressSvgText}
 </svg>
     `.trim()
   }
@@ -181,24 +185,41 @@ export default function PickupTicketModal({ order, isOpen, onClose }: PickupTick
   const handleExportPDF = async () => {
     setIsExportingPdf(true)
     try {
-      const element = document.getElementById('printable-pickup-ticket')
-      if (!element) throw new Error('Elemen tiket tidak ditemukan')
+      // 1. Fetch QR & Logo base64 data URLs for clean SVG canvas rendering
+      const [qrBase64, logoBase64] = await Promise.all([
+        getBase64Image(qrApiUrl),
+        logoUrl ? getBase64Image(logoUrl) : Promise.resolve(null),
+      ])
 
-      const html2canvas = (await import('html2canvas')).default
-      const { jsPDF } = await import('jspdf')
+      const svgContent = generateTicketSVG(qrBase64, logoBase64)
 
-      // Capture web modal card directly with 2.5x scale for sharp vector-like text & graphics
-      const canvas = await html2canvas(element, {
-        scale: 2.5,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        logging: false,
+      // 2. Render SVG onto high-resolution offscreen canvas (bypassing lab() CSS color errors)
+      const canvas = document.createElement('canvas')
+      canvas.width = 1200
+      canvas.height = 1500
+      const ctx = canvas.getContext('2d')
+      if (!ctx) throw new Error('Canvas context not available')
+
+      const img = new Image()
+      const svgBlob = new Blob([svgContent], { type: 'image/svg+xml;charset=utf-8' })
+      const url = URL.createObjectURL(svgBlob)
+
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve()
+        img.onerror = (e) => reject(e)
+        img.src = url
       })
 
+      ctx.fillStyle = '#ffffff'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+      URL.revokeObjectURL(url)
+
       const imgData = canvas.toDataURL('image/png')
+
+      // 3. Export clean high-res PDF via jsPDF
+      const { jsPDF } = await import('jspdf')
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a5' })
-      
       const pdfWidth = pdf.internal.pageSize.getWidth()
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width
 
