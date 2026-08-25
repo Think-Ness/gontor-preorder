@@ -47,9 +47,9 @@ VALUES
   'cm',
   '["S", "M", "L", "XL", "XXL"]'::jsonb,
   '[
-    {"label": "Panjang Lengan", "values": {"S": "58", "M": "60", "L": "62", "XL": "64", "XXL": "66"}},
-    {"label": "Tinggi Badan", "values": {"S": "66", "M": "68", "L": "70", "XL": "72", "XXL": "74"}},
-    {"label": "Lebar Dada", "values": {"S": "52", "M": "55", "L": "58", "XL": "61", "XXL": "64"}}
+    {"label": "Panjang Jaket (PJ)", "values": {"S": "64", "M": "68", "L": "72", "XL": "75", "XXL": "78"}},
+    {"label": "Lingkar Dada (LD)", "values": {"S": "114", "M": "116", "L": "118", "XL": "120", "XXL": "122"}},
+    {"label": "Panjang Tangan (PT)", "values": {"S": "60", "M": "62", "L": "64", "XL": "66", "XXL": "68"}}
   ]'::jsonb
 ),
 (
