@@ -176,7 +176,7 @@ export default function IndonesiaMapSection({ mapPins }: Props) {
                         )
                       })}
 
-                      {/* Render Hovered Tooltip Card on top of pins */}
+                      {/* Render Hovered Tooltip Card on top of pins with Smart Boundary Flipping */}
                       {hoveredPinIndex !== null && uniqueMapPins[hoveredPinIndex] && (() => {
                         const pin = uniqueMapPins[hoveredPinIndex]
                         const [x, y] = project(pin.lng, pin.lat)
@@ -185,36 +185,53 @@ export default function IndonesiaMapSection({ mapPins }: Props) {
                         const provinceText = pin.province ? pin.province : 'Indonesia'
                         const methodText = pin.fulfillmentMethod === 'PICKUP' ? 'Ambil di Stand' : 'Kirim Alamat'
 
+                        // Smart boundary flip: if pin is near top boundary (y < 90), pop card DOWNWARDS below pin
+                        const isNearTop = y < 90
+                        const yOffset = isNearTop ? (20 * pinScale) : (-18 * pinScale)
+
+                        // Relative coordinates inside card
+                        const cardY = isNearTop ? 10 : -62
+                        const badgeY = isNearTop ? 19 : -53
+                        const badgeTextY = isNearTop ? 30 : -42
+                        const locationY = isNearTop ? 31 : -41
+                        const subtitleY = isNearTop ? 50 : -22
+                        const arrowPoints = isNearTop ? "-6,10 6,10 0,3" : "-6,-10 6,-10 0,-3"
+
+                        // Horizontal clamping if pin is near left or right edge
+                        let cardX = -95
+                        if (x < 110) cardX = -20
+                        else if (x > 790) cardX = -170
+
                         return (
-                          <g transform={`translate(${x}, ${y - 18 * pinScale}) scale(${pinScale})`} className="pointer-events-none z-30">
+                          <g transform={`translate(${x}, ${y + yOffset}) scale(${pinScale})`} className="pointer-events-none z-30">
                             {/* Card Background */}
                             <rect
-                              x="-95"
-                              y="-62"
+                              x={cardX}
+                              y={cardY}
                               width="190"
                               height="52"
                               rx="10"
                               fill="#0f172a"
-                              fillOpacity="0.94"
+                              fillOpacity="0.95"
                               stroke={isAlumni ? '#eab308' : '#10b981'}
-                              strokeWidth="1.2"
+                              strokeWidth="1.4"
                               filter="url(#shadow)"
                             />
                             {/* Pointer Arrow */}
-                            <polygon points="-6,-10 6,-10 0,-3" fill="#0f172a" opacity="0.94" />
+                            <polygon points={arrowPoints} fill="#0f172a" opacity="0.95" />
 
                             {/* Status Badge Pill */}
                             <rect
-                              x="-87"
-                              y="-53"
+                              x={cardX + 8}
+                              y={badgeY}
                               width="54"
                               height="14"
                               rx="4"
                               fill={isAlumni ? '#eab308' : '#10b981'}
                             />
                             <text
-                              x="-60"
-                              y="-42"
+                              x={cardX + 35}
+                              y={badgeTextY}
                               fill="#000000"
                               fontSize="8.5"
                               fontWeight="900"
@@ -226,8 +243,8 @@ export default function IndonesiaMapSection({ mapPins }: Props) {
 
                             {/* Location City / District */}
                             <text
-                              x="-26"
-                              y="-41"
+                              x={cardX + 69}
+                              y={locationY}
                               fill="#ffffff"
                               fontSize="11"
                               fontWeight="bold"
@@ -239,8 +256,8 @@ export default function IndonesiaMapSection({ mapPins }: Props) {
 
                             {/* Detailed Address Subtitle */}
                             <text
-                              x="-87"
-                              y="-22"
+                              x={cardX + 8}
+                              y={subtitleY}
                               fill="#cbd5e1"
                               fontSize="9"
                               fontWeight="600"
