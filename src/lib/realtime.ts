@@ -64,3 +64,35 @@ export function subscribeToOrdersRealtime(onUpdate: () => void) {
     if (bc) bc.close()
   }
 }
+
+/**
+ * Subscribes to Supabase Realtime WebSocket changes for `products`, `product_variants`,
+ * and `cart_reservations` tables to notify when stock or reservations change.
+ */
+export function subscribeToStockRealtime(onStockChange: () => void) {
+  const supabase = createClient()
+
+  const channel = supabase
+    .channel('public-stock-realtime-channel')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'products' },
+      () => onStockChange()
+    )
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'product_variants' },
+      () => onStockChange()
+    )
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'cart_reservations' },
+      () => onStockChange()
+    )
+    .subscribe()
+
+  return () => {
+    supabase.removeChannel(channel)
+  }
+}
+

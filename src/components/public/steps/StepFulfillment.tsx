@@ -9,6 +9,7 @@ interface Props {
   draft: CheckoutDraft | null
   cart?: Cart | null
   settings?: any
+  sessionId?: string | null
   onSave: (data: Partial<CheckoutDraft>) => void
   onBack: () => void
 }
@@ -53,8 +54,10 @@ const COURIER_MULTIPLIERS = [
 
 const PACKAGING_WEIGHT_GRAMS = 150 // Standard packaging & protective wrap weight
 
-export default function StepFulfillment({ draft, cart, settings, onSave, onBack }: Props) {
+export default function StepFulfillment({ draft, cart, settings, sessionId, onSave, onBack }: Props) {
   const [method, setMethod] = useState<FulfillmentMethod>(draft?.fulfillmentMethod || 'PICKUP')
+  const [isCheckingStock, setIsCheckingStock] = useState(false)
+  const [stockError, setStockError] = useState<string | null>(null)
   
   // Courier active settings from admin
   const [courierSettings, setCourierSettings] = useState<Record<string, boolean> | null>(() => {
@@ -180,7 +183,41 @@ export default function StepFulfillment({ draft, cart, settings, onSave, onBack 
     }
   }, [activeZone, currentCouriers, selectedCourier])
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    setStockError(null)
+
+    // Pre-check & reserve stock before displaying payment step
+    if (sessionId && cart?.items && cart.items.length > 0) {
+      setIsCheckingStock(true)
+      try {
+        const res = await fetch('/api/cart/reserve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId,
+            items: cart.items.map(i => ({
+              productId: i.productId,
+              variantId: i.variantId,
+              packageId: i.packageId,
+              itemType: i.itemType,
+              quantity: i.quantity,
+            })),
+            ttlMinutes: 15,
+          }),
+        })
+        const data = await res.json()
+        if (!res.ok || !data.success) {
+          setStockError(data.error || 'Maaf, stok produk tidak mencukupi untuk dipesan saat ini.')
+          setIsCheckingStock(false)
+          return
+        }
+      } catch {
+        // Continue if network glitch
+      } finally {
+        setIsCheckingStock(false)
+      }
+    }
+
     onSave({
       fulfillmentMethod: method,
       address: {
@@ -208,6 +245,16 @@ export default function StepFulfillment({ draft, cart, settings, onSave, onBack 
         <h2 className="font-display font-bold text-xl" style={{ color: 'var(--gontor-green-dark)' }}>Metode Pengiriman</h2>
         <p className="text-sm text-gray-500 mt-1">Pilih cara Anda menerima pesanan</p>
       </div>
+
+      {stockError && (
+        <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-start gap-2.5">
+          <span className="text-lg leading-none">⚠️</span>
+          <div className="flex-1">
+            <p className="font-bold">Stok Tidak Mencukupi</p>
+            <p className="text-xs mt-0.5">{stockError}</p>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* PICKUP */}
@@ -383,13 +430,14 @@ export default function StepFulfillment({ draft, cart, settings, onSave, onBack 
       )}
 
       <div className="flex gap-3 pt-4 border-t border-gray-100">
-        <button type="button" onClick={onBack} className="px-6 py-4 min-h-[48px] rounded-xl border border-gray-200 font-display font-bold text-gray-600 hover:bg-gray-50 transition-all flex items-center justify-center">
+        <button type="button" onClick={onBack} disabled={isCheckingStock} className="px-6 py-4 min-h-[48px] rounded-xl border border-gray-200 font-display font-bold text-gray-600 hover:bg-gray-50 transition-all flex items-center justify-center disabled:opacity-50">
           Kembali
         </button>
-        <button onClick={handleNext} className="flex-1 btn-primary py-4 min-h-[48px] font-display font-bold flex items-center justify-center">
-          Lanjut ke Pembayaran
+        <button onClick={handleNext} disabled={isCheckingStock} className="flex-1 btn-primary py-4 min-h-[48px] font-display font-bold flex items-center justify-center disabled:opacity-50">
+          {isCheckingStock ? 'Memeriksa Stok...' : 'Lanjut ke Pembayaran'}
         </button>
       </div>
     </div>
   )
 }
+

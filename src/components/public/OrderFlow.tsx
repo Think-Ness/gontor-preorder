@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { EventSettings, PreorderStatus, Product, Package, PaymentMethod, CartItem } from '@/types'
 import { useCart } from '@/hooks/useCart'
 import { useCheckoutDraft } from '@/hooks/useCheckoutDraft'
+import { useStockReservation } from '@/hooks/useStockReservation'
+import { subscribeToStockRealtime } from '@/lib/realtime'
 import { formatRupiah } from '@/lib/utils'
 import {
   User, ShoppingBag, Truck, CreditCard, CheckCircle,
@@ -53,11 +55,29 @@ export default function OrderFlow({
   const [createdOrderObj, setCreatedOrderObj] = useState<any | null>(null)
   const router = useRouter()
 
+  // Stock reservation hook (15 mins hold)
+  const stockReservation = useStockReservation({
+    sessionId,
+    cartItems: cart.items,
+    step,
+  })
+
+  // Realtime Stock & Reservation Change Listener
+  useEffect(() => {
+    const unsubscribe = subscribeToStockRealtime(() => {
+      if (step === 4) {
+        stockReservation.reserveStock()
+      }
+    })
+    return () => unsubscribe()
+  }, [step, stockReservation.reserveStock])
+
   const hasCheckedResume = useRef(false)
 
   // Hydration safety flag
   useEffect(() => {
     setIsMounted(true)
+
   }, [])
 
   // Realtime Stock Updates
@@ -324,6 +344,7 @@ export default function OrderFlow({
             draft={draft}
             cart={cart}
             settings={settings}
+            sessionId={sessionId}
             onSave={(data) => {
               saveDraft({ ...data, paymentStep: 4 })
               setStep(4)
@@ -338,6 +359,7 @@ export default function OrderFlow({
             paymentMethods={paymentMethods}
             sessionId={sessionId}
             isSubmitting={isSubmitting}
+            stockReservation={stockReservation}
             onSubmit={async (proofData) => {
               setIsSubmitting(true)
               setError(null)

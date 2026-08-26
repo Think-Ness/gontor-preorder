@@ -1,12 +1,10 @@
-'use client'
-
 import { useState, useRef, useCallback } from 'react'
 import { CheckoutDraft, PaymentMethod, CartItem } from '@/types'
 import { formatRupiah, formatNumber } from '@/lib/utils'
 import { compressImageFile, safeParseJsonResponse } from '@/lib/image-compression'
 import {
   CreditCard, Copy, Check, Upload, X, ChevronLeft,
-  Loader2, AlertTriangle, FileImage, Info
+  Loader2, AlertTriangle, FileImage, Info, Lock, Clock
 } from 'lucide-react'
 import Image from 'next/image'
 
@@ -26,6 +24,15 @@ interface Props {
   paymentMethods: PaymentMethod[]
   sessionId: string
   isSubmitting: boolean
+  stockReservation: {
+    isReserved: boolean
+    secondsRemaining: number | null
+    isExpired: boolean
+    reservationError: string | null
+    isReserving: boolean
+    reserveStock: () => Promise<{ success: boolean; error?: string }>
+    formatRemainingTime: () => string
+  }
   onSubmit: (proofData: ProofData) => Promise<void>
   onBack: () => void
 }
@@ -33,7 +40,9 @@ interface Props {
 const MAX_MB = Number(process.env.NEXT_PUBLIC_MAX_UPLOAD_MB ?? 5)
 const ACCEPTED = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
 
-export default function StepPayment({ draft, cart, paymentMethods, sessionId, isSubmitting, onSubmit, onBack }: Props) {
+export default function StepPayment({
+  draft, cart, paymentMethods, sessionId, isSubmitting, stockReservation, onSubmit, onBack
+}: Props) {
   const primaryMethod = paymentMethods[0] ?? null
   const [copiedAccount, setCopiedAccount] = useState(false)
   const [copiedAmount, setCopiedAmount] = useState(false)
@@ -93,7 +102,14 @@ export default function StepPayment({ draft, cart, paymentMethods, sessionId, is
     }
   }, [draft])
 
-  const canSubmit = !isSubmitting && !uploading && !!uploadedProof && cart.items.length > 0
+  const canSubmit =
+    !isSubmitting &&
+    !uploading &&
+    !!uploadedProof &&
+    cart.items.length > 0 &&
+    stockReservation.isReserved &&
+    !stockReservation.isExpired &&
+    !stockReservation.reservationError
 
   return (
     <div className="space-y-5">
@@ -105,6 +121,82 @@ export default function StepPayment({ draft, cart, paymentMethods, sessionId, is
         <h2 className="font-display font-bold text-xl" style={{ color: 'var(--gontor-green-dark)' }}>Pembayaran</h2>
         <p className="text-sm text-gray-500 mt-1">Transfer dan upload bukti pembayaran</p>
       </div>
+
+      {/* Stock Hold Countdown Banner */}
+      {stockReservation.isReserved && !stockReservation.isExpired && !stockReservation.reservationError && (
+        <div className="bg-emerald-50/80 border border-emerald-200/80 rounded-xl p-3.5 sm:p-4 shadow-xs flex items-center justify-between gap-3 animate-in fade-in duration-300">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-9 h-9 rounded-lg bg-emerald-100/90 border border-emerald-200 flex items-center justify-center shrink-0">
+              <Lock className="w-4 h-4 text-emerald-700" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping shrink-0" />
+                <p className="font-display font-bold text-xs text-emerald-900 uppercase tracking-wider truncate">
+                  Stok Dikunci Sementara
+                </p>
+              </div>
+              <p className="text-xs text-emerald-700 font-medium">Selesaikan transfer sebelum batas waktu berakhir</p>
+            </div>
+          </div>
+          <div className="bg-white border border-emerald-200 px-3 py-1.5 rounded-lg text-center shrink-0 shadow-2xs">
+            <div className="text-[10px] text-emerald-600 font-display font-bold uppercase tracking-wider">Sisa Waktu</div>
+            <div className="font-mono font-bold text-sm sm:text-base text-emerald-900 tracking-tight flex items-center gap-1 justify-center">
+              <Clock className="w-3.5 h-3.5 text-emerald-600" />
+              <span>{stockReservation.formatRemainingTime()}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Expired Reservation Warning Banner */}
+      {stockReservation.isExpired && (
+        <div className="bg-amber-50/90 border border-amber-200 rounded-xl p-4 text-amber-900 text-sm space-y-3 shadow-xs">
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-lg bg-amber-100 border border-amber-200 flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-4 h-4 text-amber-700" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-display font-bold text-amber-950 text-sm">Waktu Hold 15 Menit Telah Habis</p>
+              <p className="text-xs text-amber-800 leading-relaxed mt-0.5">
+                Stok di keranjang Anda telah dilepas kembali. Silakan amankan stok Anda kembali sebelum melakukan transfer.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => stockReservation.reserveStock()}
+            disabled={stockReservation.isReserving}
+            className="w-full py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-display font-bold text-xs transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+          >
+            {stockReservation.isReserving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
+            Kunci (Hold) Stok Kembali
+          </button>
+        </div>
+      )}
+
+      {/* Out of Stock Error Banner */}
+      {stockReservation.reservationError && (
+        <div className="bg-red-50/90 border border-red-200 rounded-xl p-4 text-red-900 text-sm space-y-3 shadow-xs">
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-lg bg-red-100 border border-red-200 flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-4 h-4 text-red-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-display font-bold text-red-950 text-sm">Stok Tidak Mencukupi — Jangan Transfer</p>
+              <p className="text-xs text-red-800 leading-relaxed mt-0.5">
+                {stockReservation.reservationError}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onBack}
+            className="w-full py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-display font-bold text-xs transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Kembali &amp; Ubah Keranjang
+          </button>
+        </div>
+      )}
 
       {/* Order Summary */}
       <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
