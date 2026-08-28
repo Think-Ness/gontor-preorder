@@ -495,42 +495,70 @@ export default function EditProductClient({ initialProduct }: Props) {
 
           {form.has_variants && (
             <div className="space-y-3">
+              {variants.length > 0 && (
+                <div className="grid grid-cols-12 gap-2 text-xs font-semibold text-gray-500 px-1 font-display">
+                  <div className="col-span-4">Nama Varian / Ukuran *</div>
+                  <div className="col-span-4">Harga (Rp)</div>
+                  <div className="col-span-3">Stok</div>
+                  <div className="col-span-1 text-center"></div>
+                </div>
+              )}
               {variants.map((v, idx) => (
-                <div key={idx} className="flex gap-3 items-center">
-                  <input
-                    value={v.name}
-                    onChange={e => {
-                      const newV = [...variants]
-                      newV[idx].name = e.target.value
-                      setVariants(newV)
-                    }}
-                    placeholder="Ukuran (misal: S)"
-                    className="w-1/3 px-3 py-2 border border-gray-200 rounded-lg text-sm"
-                  />
-                  <input
-                    type="number"
-                    value={v.stock}
-                    onChange={e => {
-                      const newV = [...variants]
-                      newV[idx].stock = e.target.value
-                      setVariants(newV)
-                    }}
-                    placeholder="Stok"
-                    className="w-1/3 px-3 py-2 border border-gray-200 rounded-lg text-sm"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setVariants(variants.filter((_, i) => i !== idx))}
-                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                <div key={idx} className="grid grid-cols-12 gap-2 items-center">
+                  <div className="col-span-4">
+                    <input
+                      value={v.name}
+                      onChange={e => {
+                        const newV = [...variants]
+                        newV[idx].name = e.target.value
+                        setVariants(newV)
+                      }}
+                      placeholder="Ukuran (misal: S)"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100"
+                    />
+                  </div>
+                  <div className="col-span-4">
+                    <input
+                      type="number"
+                      value={v.price}
+                      onChange={e => {
+                        const newV = [...variants]
+                        newV[idx].price = e.target.value
+                        setVariants(newV)
+                      }}
+                      placeholder={form.price ? `Default (${form.price})` : "Harga (Rp)"}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100"
+                    />
+                  </div>
+                  <div className="col-span-3">
+                    <input
+                      type="number"
+                      value={v.stock}
+                      onChange={e => {
+                        const newV = [...variants]
+                        newV[idx].stock = e.target.value
+                        setVariants(newV)
+                      }}
+                      placeholder="Stok"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100"
+                    />
+                  </div>
+                  <div className="col-span-1 flex justify-center">
+                    <button
+                      type="button"
+                      onClick={() => setVariants(variants.filter((_, i) => i !== idx))}
+                      className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Hapus varian"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               ))}
               <button
                 type="button"
-                onClick={() => setVariants([...variants, { name: '', sku: '', price: '', stock: '50' }])}
-                className="flex items-center gap-1 text-xs font-semibold text-green-600 hover:text-green-700"
+                onClick={() => setVariants([...variants, { name: '', sku: '', price: form.price || '', stock: '50' }])}
+                className="flex items-center gap-1 text-xs font-semibold text-green-600 hover:text-green-700 pt-1"
               >
                 <Plus className="w-3.5 h-3.5" /> Tambah Varian
               </button>
