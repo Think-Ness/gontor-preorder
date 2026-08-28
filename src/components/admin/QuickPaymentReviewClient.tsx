@@ -21,6 +21,11 @@ export interface OrderPending {
   generation_year: number
   fulfillment_method: 'PICKUP' | 'DELIVERY'
   shipping_address?: string
+  shipping_village?: string
+  shipping_district?: string
+  shipping_city?: string
+  shipping_province?: string
+  shipping_postal_code?: string
   total_amount: number
   subtotal: number
   shipping_cost: number
@@ -271,21 +276,93 @@ export default function QuickPaymentReviewClient({ pendingOrders, initialSelecte
                   )}
                 </div>
 
-                {/* Items Summary */}
-                <div className="bg-gray-50/70 rounded-xl p-4 border border-gray-100">
-                  <span className="font-display font-bold text-xs text-gray-700 uppercase tracking-wider block mb-2">Rincian Item Pesanan</span>
-                  <div className="space-y-1.5">
+                {/* Items & Payment Breakdown Summary */}
+                <div className="bg-gray-50/80 rounded-2xl p-4 border border-gray-200/80 space-y-3">
+                  <div className="flex items-center justify-between border-b border-gray-200/60 pb-2">
+                    <span className="font-display font-bold text-xs text-gray-800 uppercase tracking-wider">
+                      Rincian Item &amp; Biaya Pesanan
+                    </span>
+                    <span className="text-[11px] font-semibold text-gray-500 bg-white px-2 py-0.5 rounded-full border border-gray-200">
+                      {(selectedOrder.items ?? []).length} barang
+                    </span>
+                  </div>
+
+                  {/* List of items */}
+                  <div className="space-y-2">
                     {(selectedOrder.items ?? []).map(item => (
-                      <div key={item.id} className="flex justify-between text-xs text-gray-700 font-medium">
-                        <span>
-                          {item.item_name_snapshot}
-                          {item.variant_name_snapshot ? ` (${item.variant_name_snapshot})` : ''}
-                          {' × '}{item.quantity}
+                      <div key={item.id} className="flex items-start justify-between text-xs text-gray-700 font-medium">
+                        <div className="pr-3">
+                          <p className="font-semibold text-gray-900">
+                            {item.item_name_snapshot}
+                            {item.variant_name_snapshot ? (
+                              <span className="text-gray-500 font-normal"> ({item.variant_name_snapshot})</span>
+                            ) : null}
+                          </p>
+                          <p className="text-[11px] text-gray-500">
+                            {formatRupiah(Number(item.unit_price_snapshot))} &times; {item.quantity}
+                          </p>
+                        </div>
+                        <span className="font-bold text-gray-900 flex-shrink-0">
+                          {formatRupiah(Number(item.subtotal))}
                         </span>
-                        <span className="font-bold text-gray-900">{formatRupiah(Number(item.subtotal))}</span>
                       </div>
                     ))}
                   </div>
+
+                  {/* Cost breakdown calculation */}
+                  <div className="border-t border-gray-200/80 pt-2.5 space-y-1.5 text-xs">
+                    <div className="flex justify-between text-gray-600">
+                      <span>Subtotal Produk</span>
+                      <span className="font-semibold text-gray-800">
+                        {formatRupiah(Number(selectedOrder.subtotal ?? 0))}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between items-center text-gray-600">
+                      <span className="flex items-center gap-1.5 font-medium">
+                        <Truck className="w-3.5 h-3.5 text-blue-600" />
+                        Ongkos Kirim (Ongkir)
+                        {selectedOrder.fulfillment_method === 'DELIVERY' && (
+                          <span className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-semibold">
+                            Pengiriman
+                          </span>
+                        )}
+                      </span>
+                      <span className={`font-bold ${Number(selectedOrder.shipping_cost) > 0 ? 'text-gray-900' : 'text-green-700'}`}>
+                        {selectedOrder.fulfillment_method === 'PICKUP'
+                          ? 'Gratis (Ambil di Stand)'
+                          : Number(selectedOrder.shipping_cost) > 0
+                          ? formatRupiah(Number(selectedOrder.shipping_cost))
+                          : 'Gratis'}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between items-center pt-2.5 border-t border-gray-200/80 font-display font-bold text-sm text-gray-900">
+                      <span>Total Tagihan Pembayaran</span>
+                      <span className="text-green-800 text-base font-black">
+                        {formatRupiah(Number(selectedOrder.total_amount))}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Optional Delivery Address Snippet */}
+                  {selectedOrder.fulfillment_method === 'DELIVERY' && (selectedOrder.shipping_address || selectedOrder.shipping_city) && (
+                    <div className="mt-3 pt-2.5 border-t border-dashed border-gray-200 text-xs">
+                      <p className="font-bold text-gray-700 flex items-center gap-1 mb-1">
+                        <MapPin className="w-3.5 h-3.5 text-red-500" /> Alamat Pengiriman:
+                      </p>
+                      <p className="text-gray-600 font-medium leading-relaxed">
+                        {selectedOrder.shipping_address && <span>{selectedOrder.shipping_address}, </span>}
+                        {[
+                          selectedOrder.shipping_village,
+                          selectedOrder.shipping_district,
+                          selectedOrder.shipping_city,
+                          selectedOrder.shipping_province,
+                          selectedOrder.shipping_postal_code
+                        ].filter(Boolean).join(', ')}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 
