@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { ChevronLeft, MapPin, Package, Truck, User, MessageCircle, CreditCard, Mail } from 'lucide-react'
 import OrderRowActions from '@/components/admin/OrderRowActions'
 import Image from 'next/image'
+import { EditOrderButton, ReuploadProofButton } from '@/components/admin/AdminOrderEditControls'
 
 export const metadata: Metadata = { title: 'Detail Order' }
 
@@ -39,33 +40,40 @@ export default async function OrderDetailPage({
 
   return (
     <div className="max-w-4xl space-y-5">
-      <div className="flex items-center gap-3">
-        <Link href="/admin/orders" className="p-2 rounded-lg hover:bg-gray-100 text-gray-500">
-          <ChevronLeft className="w-5 h-5" />
-        </Link>
-        <div>
-          <h1 className="font-display font-bold text-xl text-gray-900">{order.order_number}</h1>
-          <p className="text-gray-500 text-sm font-medium">
-            {new Date(order.created_at).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} &bull; Pukul {new Date(order.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }).replace('.', ':')} WIB
-          </p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <Link href="/admin/orders" className="p-2 rounded-lg hover:bg-gray-100 text-gray-500">
+            <ChevronLeft className="w-5 h-5" />
+          </Link>
+          <div>
+            <h1 className="font-display font-bold text-xl text-gray-900">{order.order_number}</h1>
+            <p className="text-gray-500 text-sm font-medium">
+              {new Date(order.created_at).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} &bull; Pukul {new Date(order.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }).replace('.', ':')} WIB
+            </p>
+          </div>
         </div>
-        <div className="ml-auto flex gap-2">
+
+        <div className="flex items-center gap-2">
           <span className={`text-xs px-3 py-1.5 rounded-full font-semibold border ${statusCls[order.order_status] ?? 'badge-unpaid'}`}>
             {order.order_status.replace(/_/g, ' ')}
           </span>
           <span className={`text-xs px-3 py-1.5 rounded-full font-semibold border ${statusCls[order.payment_status] ?? 'badge-unpaid'}`}>
             {order.payment_status}
           </span>
+          <EditOrderButton order={order} />
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* Customer Info */}
         <div className="card-premium p-5">
-          <h2 className="font-display font-bold text-sm text-gray-700 mb-4 flex items-center gap-2">
-            <User className="w-4 h-4" />
-            Data Pemesan
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-display font-bold text-sm text-gray-700 flex items-center gap-2">
+              <User className="w-4 h-4" />
+              Data Pemesan
+            </h2>
+            <EditOrderButton order={order} />
+          </div>
           <dl className="space-y-2 text-sm">
             <div className="flex gap-2">
               <dt className="text-gray-500 w-20 flex-shrink-0">Stambuk</dt>
@@ -119,10 +127,13 @@ export default async function OrderDetailPage({
 
         {/* Fulfillment */}
         <div className="card-premium p-5">
-          <h2 className="font-display font-bold text-sm text-gray-700 mb-4 flex items-center gap-2">
-            <MapPin className="w-4 h-4" />
-            Pengiriman
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-display font-bold text-sm text-gray-700 flex items-center gap-2">
+              <MapPin className="w-4 h-4" />
+              Pengiriman
+            </h2>
+            <EditOrderButton order={order} />
+          </div>
           <div className="text-sm space-y-3">
             <div className="font-semibold text-gray-800 flex items-center gap-1.5">
               {order.fulfillment_method === 'PICKUP' ? (
@@ -200,25 +211,37 @@ export default async function OrderDetailPage({
         </div>
 
         {/* Payment Proof */}
-        <div className="card-premium p-5">
-          <h2 className="font-display font-bold text-sm text-gray-700 mb-4 flex items-center gap-2">
-            <CreditCard className="w-4 h-4" />
-            Bukti Pembayaran
-          </h2>
-          {proofPreviewUrl ? (
-            <div className="space-y-3">
-              <div className="relative aspect-video bg-gray-50 rounded-xl overflow-hidden">
-                <Image src={proofPreviewUrl} alt="Bukti pembayaran" fill className="object-contain" unoptimized />
+        <div className="card-premium p-5 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-display font-bold text-sm text-gray-700 flex items-center gap-2">
+                <CreditCard className="w-4 h-4" />
+                Bukti Pembayaran
+              </h2>
+            </div>
+            {proofPreviewUrl ? (
+              <div className="space-y-3">
+                <div className="relative aspect-video bg-gray-50 rounded-xl overflow-hidden">
+                  <Image src={proofPreviewUrl} alt="Bukti pembayaran" fill className="object-contain" unoptimized />
+                </div>
+                <p className="text-xs text-gray-500">{order.payment_proof_filename}</p>
               </div>
-              <p className="text-xs text-gray-500">{order.payment_proof_filename}</p>
-            </div>
-          ) : (
-            <div className="text-center py-8 text-gray-400 text-sm">
-              Bukti pembayaran belum diupload
-            </div>
-          )}
+            ) : (
+              <div className="text-center py-8 text-gray-400 text-sm">
+                Bukti pembayaran belum diupload
+              </div>
+            )}
+          </div>
+          <div className="mt-4 pt-3 border-t border-gray-100 flex justify-end">
+            <ReuploadProofButton
+              orderId={order.id}
+              orderNumber={order.order_number}
+              hasExistingProof={!!order.payment_proof_file_id}
+            />
+          </div>
         </div>
       </div>
+
 
       {/* Admin Actions */}
       <PaymentActions
