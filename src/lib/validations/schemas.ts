@@ -6,8 +6,8 @@ import { z } from 'zod'
 export const customerSchema = z.object({
   is_alumni: z.boolean(),
   stambuk: z.preprocess(
-    (val) => (typeof val === 'string' ? val.trim() : ''),
-    z.string().optional().nullable()
+    (val) => (typeof val === 'string' && val.trim() !== '' ? val.trim() : undefined),
+    z.string().optional()
   ),
   full_name: z.string().min(2, 'Nama lengkap wajib diisi'),
   generation_year: z.preprocess(
@@ -17,7 +17,7 @@ export const customerSchema = z.object({
       if (isNaN(num) || num === 0) return undefined
       return num
     },
-    z.number().int().min(1926, 'Angkatan tidak valid').max(new Date().getFullYear(), 'Angkatan tidak valid').optional().nullable()
+    z.number().int().min(1926, 'Angkatan tidak valid').max(new Date().getFullYear(), 'Angkatan tidak valid').optional()
   ),
   whatsapp: z
     .string()
