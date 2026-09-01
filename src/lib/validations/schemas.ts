@@ -5,20 +5,9 @@ import { z } from 'zod'
 // ============================================================
 export const customerSchema = z.object({
   is_alumni: z.boolean(),
-  stambuk: z.preprocess(
-    (val) => (typeof val === 'string' && val.trim() !== '' ? val.trim() : undefined),
-    z.string().optional()
-  ),
+  stambuk: z.string().optional(),
   full_name: z.string().min(2, 'Nama lengkap wajib diisi'),
-  generation_year: z.preprocess(
-    (val) => {
-      if (val === '' || val === null || val === undefined) return undefined
-      const num = Number(val)
-      if (isNaN(num) || num === 0) return undefined
-      return num
-    },
-    z.number().int().min(1926, 'Angkatan tidak valid').max(new Date().getFullYear(), 'Angkatan tidak valid').optional()
-  ),
+  generation_year: z.union([z.number(), z.nan()]).optional(),
   whatsapp: z
     .string()
     .min(1, 'Nomor WhatsApp wajib diisi')
@@ -42,8 +31,10 @@ export const customerSchema = z.object({
     if (!data.stambuk || data.stambuk.trim() === '' || data.stambuk === '-') {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Stambuk wajib diisi untuk alumni', path: ['stambuk'] });
     }
-    if (!data.generation_year) {
+    if (!data.generation_year || Number.isNaN(data.generation_year)) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Angkatan wajib diisi untuk alumni', path: ['generation_year'] });
+    } else if (data.generation_year < 1926 || data.generation_year > new Date().getFullYear()) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Angkatan tidak valid', path: ['generation_year'] });
     }
   }
 })
