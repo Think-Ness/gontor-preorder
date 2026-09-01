@@ -18,11 +18,11 @@ export default function StepCustomer({ draft, onSave }: Props) {
   const [gettingLocation, setGettingLocation] = useState(false)
   const [locationSuccess, setLocationSuccess] = useState(false)
 
-  const { register, handleSubmit, setValue, watch, control, formState: { errors } } = useForm<CustomerFormData>({
+  const { register, handleSubmit, setValue, watch, control, clearErrors, formState: { errors } } = useForm<CustomerFormData>({
     resolver: zodResolver(customerSchema),
     defaultValues: {
       is_alumni: draft?.isAlumni !== undefined ? draft.isAlumni : true,
-      stambuk: draft?.stambuk || '',
+      stambuk: draft?.stambuk && draft.stambuk !== '-' ? draft.stambuk : '',
       full_name: draft?.name || '',
       generation_year: draft?.generationYear && draft.generationYear !== '0' ? Number(draft.generationYear) : undefined,
       whatsapp: draft?.whatsapp || '',
@@ -41,6 +41,19 @@ export default function StepCustomer({ draft, onSave }: Props) {
 
   const isAlumni = watch('is_alumni')
   const mapUrl = watch('shipping_google_maps_url')
+
+  const handleStatusChange = (statusAlumni: boolean) => {
+    setValue('is_alumni', statusAlumni, { shouldValidate: true })
+    if (!statusAlumni) {
+      setValue('stambuk', '-', { shouldValidate: true })
+      setValue('generation_year', undefined, { shouldValidate: true })
+      clearErrors(['stambuk', 'generation_year'])
+    } else {
+      if (watch('stambuk') === '-') {
+        setValue('stambuk', '', { shouldValidate: false })
+      }
+    }
+  }
 
   // Auto-fill from localStorage if available and form is empty
   useEffect(() => {
@@ -157,14 +170,14 @@ export default function StepCustomer({ draft, onSave }: Props) {
           <div className="flex flex-col sm:grid sm:grid-cols-2 gap-3">
             <label className={`cursor-pointer flex flex-col items-center justify-center gap-2 p-4 sm:p-3 min-h-[52px] border-2 rounded-xl transition-all ${isAlumni ? 'border-green-800 bg-green-50' : 'border-gray-200 hover:border-green-200 bg-white'}`}>
               <input type="radio" {...register('is_alumni')} value="true" className="hidden" 
-                onChange={() => setValue('is_alumni', true, { shouldValidate: true })} 
+                onChange={() => handleStatusChange(true)} 
               />
               <GraduationCap className={`w-6 h-6 ${isAlumni ? 'text-green-800' : 'text-gray-400'}`} />
               <span className={`font-display font-bold text-sm ${isAlumni ? 'text-green-900' : 'text-gray-600'}`}>Alumni Gontor</span>
             </label>
             <label className={`cursor-pointer flex flex-col items-center justify-center gap-2 p-4 sm:p-3 min-h-[52px] border-2 rounded-xl transition-all ${!isAlumni ? 'border-green-800 bg-green-50' : 'border-gray-200 hover:border-green-200 bg-white'}`}>
               <input type="radio" {...register('is_alumni')} value="false" className="hidden" 
-                onChange={() => setValue('is_alumni', false, { shouldValidate: true })} 
+                onChange={() => handleStatusChange(false)} 
               />
               <Users className={`w-6 h-6 ${!isAlumni ? 'text-green-800' : 'text-gray-400'}`} />
               <span className={`font-display font-bold text-sm ${!isAlumni ? 'text-green-900' : 'text-gray-600'}`}>Bukan Alumni / Umum</span>

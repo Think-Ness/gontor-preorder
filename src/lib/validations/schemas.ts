@@ -5,9 +5,20 @@ import { z } from 'zod'
 // ============================================================
 export const customerSchema = z.object({
   is_alumni: z.boolean(),
-  stambuk: z.string().optional(),
+  stambuk: z.preprocess(
+    (val) => (typeof val === 'string' ? val.trim() : ''),
+    z.string().optional().nullable()
+  ),
   full_name: z.string().min(2, 'Nama lengkap wajib diisi'),
-  generation_year: z.number({ message: 'Angkatan harus berupa angka' }).int().min(1926, 'Angkatan tidak valid').max(new Date().getFullYear(), 'Angkatan tidak valid').optional().nullable(),
+  generation_year: z.preprocess(
+    (val) => {
+      if (val === '' || val === null || val === undefined) return undefined
+      const num = Number(val)
+      if (isNaN(num) || num === 0) return undefined
+      return num
+    },
+    z.number().int().min(1926, 'Angkatan tidak valid').max(new Date().getFullYear(), 'Angkatan tidak valid').optional().nullable()
+  ),
   whatsapp: z
     .string()
     .min(1, 'Nomor WhatsApp wajib diisi')
@@ -28,7 +39,7 @@ export const customerSchema = z.object({
   shipping_google_maps_url: z.string().optional(),
 }).superRefine((data, ctx) => {
   if (data.is_alumni) {
-    if (!data.stambuk || data.stambuk.trim() === '') {
+    if (!data.stambuk || data.stambuk.trim() === '' || data.stambuk === '-') {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Stambuk wajib diisi untuk alumni', path: ['stambuk'] });
     }
     if (!data.generation_year) {
